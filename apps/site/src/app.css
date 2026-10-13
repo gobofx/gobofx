@@ -1,0 +1,267 @@
+:root {
+  color-scheme: dark;
+
+  /* Same neutral base as plinken.org — sibling project. */
+  --bg: #191919;
+  --bg-deep: #000;
+  --bg-elev: #1f1f1f;
+  --bg-elev-2: #2a2a2a;
+  --border: #473a30;
+  --border-soft: #373737;
+  --text: #e8e8e8;
+  --text-muted: #c2c2c2;
+  --text-dim: #5a5a5a;
+
+  /* plinken.org is lavender + purple (audio). WispFX is amber + coral (visual). */
+  --accent: #f2a65a;        /* amber */
+  --accent-deep: #d9823a;   /* burnt amber */
+  --accent-coral: #ff6b8b;  /* coral */
+  --accent-teal: #4ea3a5;   /* shared family tag colour */
+  --accent-pop: #0f0;       /* sparingly */
+
+  --font-display: 'Unbounded', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier Prime', ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -5%, rgba(242, 166, 90, 0.16), transparent 65%),
+    radial-gradient(ellipse 60% 45% at 90% 100%, rgba(255, 107, 139, 0.12), transparent 65%),
+    radial-gradient(ellipse 40% 30% at 10% 90%, rgba(78, 163, 165, 0.08), transparent 70%),
+    var(--bg);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+a:hover {
+  color: var(--accent-coral);
+  border-bottom-color: currentColor;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+code {
+  background: var(--bg-elev);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  color: var(--accent);
+}
+pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.5;
+  margin: 0;
+}
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+::selection {
+  background: rgba(255, 107, 139, 0.45);
+  color: var(--text);
+}
+
+/* ─── shared page chrome (mirrors plinken.org) ─────── */
+.page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem) 4rem;
+}
+
+.sectionHeader {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  color: var(--accent-teal);
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin: 4rem 0 2rem;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 2.5rem;
+}
+
+.lede {
+  font-family: var(--font-sans);
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  color: var(--text-muted);
+  max-width: 44rem;
+  margin: 0 0 2.5rem;
+  line-height: 1.65;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  margin-bottom: 2.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  background: rgba(242, 166, 90, 0.08);
+  border: 1px solid var(--accent-deep);
+  border-radius: 999px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.3rem;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--border);
+  transition: all 140ms ease;
+}
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent-coral));
+  color: #fff;
+  border-color: var(--accent-deep);
+}
+.btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px -6px rgba(255, 107, 139, 0.6);
+  color: #fff;
+  border-color: var(--accent-coral);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+.btn.ghost:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+  border-color: var(--accent-deep);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+.grid.three {
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+.card:hover {
+  border-color: var(--accent-deep);
+  transform: translateY(-2px);
+}
+.cardTag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: var(--accent-teal);
+  margin-bottom: 0.75rem;
+}
+.card h2,
+.card h3 {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.card p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* dashed key/value list, as plinken.org's STACK */
+.stack {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.stack li {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed var(--border-soft);
+}
+.stack li span:first-child {
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.stack li span:last-child {
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+.dim {
+  color: var(--text-dim);
+}
+
+@media (max-width: 540px) {
+  .badge {
+    letter-spacing: 0.12em;
+    font-size: 0.66rem;
+  }
+  .stack li {
+    grid-template-columns: 6rem 1fr;
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "wisp": "0.1",
+  "id": "org.wispfx.cross-dissolve",
+  "name": "Cross Dissolve",
+  "kind": "transition",
+  "category": "dissolve",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0,
+      "animatable": true
+    }
+  ],
+  "passes": [
+    { "shader": "shader.wgsl", "entry": "fs_main", "inputs": ["from", "to"], "output": "out" }
+  ]
+}

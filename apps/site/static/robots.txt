@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://wispfx.org/sitemap.xml

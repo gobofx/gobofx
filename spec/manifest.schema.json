@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wispfx.org/schema/0.1/manifest.json",
+  "title": "WispFX manifest v0.1",
+  "type": "object",
+  "required": ["wisp", "id", "name", "kind", "version", "passes"],
+  "additionalProperties": false,
+  "properties": {
+    "wisp": { "const": "0.1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$" },
+    "name": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["effect", "transition"] },
+    "category": { "type": "string" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$" },
+    "license": { "type": "string" },
+    "params": { "type": "array", "items": { "$ref": "#/$defs/param" } },
+    "passes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/pass" } }
+  },
+  "$defs": {
+    "param": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
+        "label": { "type": "string" },
+        "type": { "enum": ["float", "int", "bool", "choice", "color", "point"] },
+        "default": {},
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "unit": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "animatable": { "type": "boolean", "default": true }
+      }
+    },
+    "pass": {
+      "type": "object",
+      "required": ["shader", "entry", "inputs", "output"],
+      "additionalProperties": false,
+      "properties": {
+        "shader": { "type": "string", "pattern": "\\.wgsl$" },
+        "entry": { "type": "string" },
+        "constants": { "type": "object", "additionalProperties": { "type": ["number", "boolean"] } },
+        "inputs": { "type": "array", "minItems": 1, "maxItems": 2, "items": { "type": "string" } },
+        "output": { "type": "string" }
+      }
+    }
+  }
+}
