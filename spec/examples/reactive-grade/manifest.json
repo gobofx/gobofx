@@ -1,0 +1,23 @@
+{
+  "wisp": "0.1",
+  "id": "org.wispfx.reactive-grade",
+  "name": "Reactive Grade",
+  "kind": "effect",
+  "category": "color",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    { "id": "saturation", "label": "Saturation", "type": "float", "default": 1.0, "min": 0.0, "max": 2.0 },
+    { "id": "contrast", "label": "Contrast", "type": "float", "default": 1.0, "min": 0.0, "max": 2.0 },
+    { "id": "temperature", "label": "Temperature", "type": "float", "default": 0.0, "min": -1.0, "max": 1.0 },
+    { "id": "bass_to_saturation", "label": "Bass → Saturation", "type": "float", "default": 1.0, "min": -2.0, "max": 2.0 },
+    { "id": "hit_flash", "label": "Hit flash", "type": "float", "default": 0.3, "min": 0.0, "max": 1.0 }
+  ],
+  "signals": [
+    { "id": "bass", "label": "Bass", "cc": 1, "hint": "audio follower, 40–160 Hz", "attack_ms": 10, "release_ms": 250 },
+    { "id": "hit", "label": "Hit", "note": 36, "mode": "gate", "hint": "kick drum", "release_ms": 120 }
+  ],
+  "passes": [
+    { "shader": "shader.wgsl", "entry": "fs_main", "inputs": ["source"], "output": "out" }
+  ]
+}

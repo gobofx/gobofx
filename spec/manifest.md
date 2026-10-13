@@ -15,6 +15,7 @@ Schema: [`manifest.schema.json`](manifest.schema.json).
 | `version` | string | yes | Plugin semver |
 | `license` | string | no | SPDX expression |
 | `params` | array | no | User-facing parameters (below) |
+| `signals` | array | no | MIDI 2.0 controllers and notes the plugin reads each frame — see [`signals.md`](signals.md) |
 | `passes` | array | yes | Render passes, executed in order (below) |
 
 ## Params
@@ -33,6 +34,12 @@ A plugin with no params declares no group 1.
 
 The host lays the struct out with WGSL uniform alignment rules and pads it to a multiple of 16 bytes.
 `animatable: true` (default) lets the host keyframe the param; it uploads the evaluated value per frame.
+
+## Signals
+
+Every plugin has a virtual MIDI 2.0 input. A signal binds a control change or a note on it; the host
+turns audio followers, OSC or hardware into controller values and uploads one `f32` (0..1) per signal to
+`@group(1) @binding(1)`, in declaration order. Full definition in [`signals.md`](signals.md).
 
 ## Passes
 

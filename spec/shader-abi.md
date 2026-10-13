@@ -14,7 +14,8 @@ The host creates pipeline layouts explicitly, so unused bindings stay valid.
 | 0 | 1 | `wisp_globals` | `uniform WispGlobals` — resolution, texel, time, progress |
 | 0 | 2 | `wisp_input0` | `texture_2d<f32>` — first pass input |
 | 0 | 3 | `wisp_input1` | `texture_2d<f32>` — second pass input, or 1×1 transparent |
-| 1 | 0 | `params` | `uniform Params` — declared by the plugin, matches the manifest |
+| 1 | 0 | `params` | `uniform Params` — declared by the plugin, matches the manifest `params` |
+| 1 | 1 | `wisp_signals` | `uniform Signals` — declared by the plugin, one `f32` per manifest signal ([`signals.md`](signals.md)) |
 
 ## Fragment entry
 

@@ -62,6 +62,9 @@ struct RenderArgs {
     /// Param override, `id=value`. Repeatable. Colors `r,g,b,a`, points `x,y`, choices by index or name.
     #[arg(short = 'p', long = "param")]
     params: Vec<String>,
+    /// Signal value, `id=value` in 0..1 (a MIDI 2.0 controller or note level). Repeatable.
+    #[arg(short = 's', long = "signal")]
+    signals: Vec<String>,
     /// Output size `WxH` (default: size of the first input)
     #[arg(long)]
     size: Option<String>,
@@ -85,7 +88,14 @@ struct RenderSummary<'a> {
     width: u32,
     height: u32,
     params: Vec<ParamOut<'a>>,
+    signals: Vec<SignalOut<'a>>,
     frames: Vec<FrameOut>,
+}
+
+#[derive(Serialize)]
+struct SignalOut<'a> {
+    id: &'a str,
+    value: f32,
 }
 
 #[derive(Serialize)]
@@ -212,6 +222,12 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
         overrides.insert(k.trim().to_string(), v.to_string());
     }
     let values = params::resolve(m, &overrides)?;
+    let mut signal_overrides = BTreeMap::new();
+    for s in &args.signals {
+        let (k, v) = s.split_once('=').ok_or_else(|| anyhow!("--signal must be id=value, got '{s}'"))?;
+        signal_overrides.insert(k.trim().to_string(), v.to_string());
+    }
+    let signal_values = params::resolve_signals(m, &signal_overrides)?;
 
     let host = Host::new()?;
     let mut frames = Vec::new();
@@ -221,14 +237,14 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
                 std::fs::create_dir_all(&args.out_dir)?;
                 for i in 0..n {
                     let progress = if n == 1 { args.progress } else { i as f32 / (n - 1) as f32 };
-                    let img = host.render(&plugin, &inputs, size, Globals { time: args.time, progress }, &values)?;
+                    let img = host.render(&plugin, &inputs, size, Globals { time: args.time, progress }, &values, &signal_values)?;
                     let path = args.out_dir.join(format!("frame_{i:03}.png"));
                     img.save_png(&path)?;
                     frames.push(FrameOut { progress, time: args.time, path: path.display().to_string() });
                 }
             }
             _ => {
-                let img = host.render(&plugin, &inputs, size, Globals { time: args.time, progress: args.progress }, &values)?;
+                let img = host.render(&plugin, &inputs, size, Globals { time: args.time, progress: args.progress }, &values, &signal_values)?;
                 img.save_png(&args.output)?;
                 frames.push(FrameOut { progress: args.progress, time: args.time, path: args.output.display().to_string() });
             }
@@ -254,11 +270,15 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
             width: size.0,
             height: size.1,
             params: m.params.iter().zip(&values).map(|(p, v)| ParamOut { id: &p.id, value: v }).collect(),
+            signals: m.signals.iter().zip(&signal_values).map(|(s, v)| SignalOut { id: &s.id, value: *v }).collect(),
             frames,
         };
         println!("{}", serde_json::to_string_pretty(&summary)?);
     } else {
         println!("OK   {} on {} ({}) {}x{}", m.id, host.adapter_name, host.backend, size.0, size.1);
+        for (s, v) in m.signals.iter().zip(&signal_values) {
+            println!("  signal {} = {:.3}", s.id, v);
+        }
         for f in &frames {
             println!("  progress {:.3} → {}", f.progress, f.path);
         }

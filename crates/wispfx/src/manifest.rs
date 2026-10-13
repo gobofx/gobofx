@@ -74,6 +74,40 @@ fn default_true() -> bool {
     true
 }
 
+/// How a note-bound signal reads the note (`spec/signals.md`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NoteMode {
+    Gate,
+    Velocity,
+}
+
+/// A signal: a MIDI 2.0 control change or note on the plugin's virtual input,
+/// delivered to the shader as one `f32` in 0..1 per frame (`spec/signals.md`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Signal {
+    pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cc: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<NoteMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub channel: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hint: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack_ms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub release_ms: Option<f64>,
+}
+
 /// A pipeline-overridable constant value from the manifest (number or boolean).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -122,6 +156,8 @@ pub struct Manifest {
     pub license: Option<String>,
     #[serde(default)]
     pub params: Vec<Param>,
+    #[serde(default)]
+    pub signals: Vec<Signal>,
     pub passes: Vec<Pass>,
 }
 

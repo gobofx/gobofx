@@ -9,9 +9,9 @@ use anyhow::{anyhow, bail, Context, Result};
 use half::f16;
 
 use crate::assemble::assemble;
-use crate::manifest::{Kind, Plugin};
+use crate::manifest::Plugin;
 use crate::params::{self, Value};
-use crate::validate::module_uses_params;
+use crate::validate::module_uses_group1;
 
 /// An 8-bit sRGB image with straight alpha — what PNG stores.
 #[derive(Debug, Clone)]
@@ -171,18 +171,21 @@ impl Host {
                 tex2d(3),
             ],
         });
+        let uniform = |binding: u32| wgpu::BindGroupLayoutEntry {
+            binding,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        };
+        // Group 1 always carries both plugin uniforms (params at 0, wisp_signals at 1); a plugin
+        // that declares only one still gets a valid, zero-filled buffer at the other binding.
         let bgl1 = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("wisp group 1 (params)"),
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::FRAGMENT,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
+            label: Some("wisp group 1 (params, wisp_signals)"),
+            entries: &[uniform(0), uniform(1)],
         });
 
         let blank_tex = device.create_texture(&wgpu::TextureDescriptor {
@@ -213,6 +216,21 @@ impl Host {
             bgl1,
             blank,
         })
+    }
+
+    /// A uniform buffer holding `bytes` (at least 16 bytes, zero-padded).
+    fn uniform_buffer(&self, label: &str, bytes: &[u8]) -> wgpu::Buffer {
+        let size = (bytes.len().max(16) as u64).div_ceil(16) * 16;
+        let buf = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some(label),
+            size,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+        if !bytes.is_empty() {
+            self.queue.write_buffer(&buf, 0, bytes);
+        }
+        buf
     }
 
     fn upload(&self, img: &Image, label: &str) -> wgpu::Texture {
@@ -260,15 +278,13 @@ impl Host {
         size: (u32, u32),
         globals: Globals,
         values: &[Value],
+        signal_values: &[f32],
     ) -> Result<Image> {
         let m = &plugin.manifest;
         for name in m.kind.reserved_inputs() {
             if !inputs.contains_key(*name) {
                 bail!("{:?} plugin needs input \"{}\"", m.kind, name);
             }
-        }
-        if let Kind::Effect = m.kind {
-            // nothing extra
         }
         let (width, height) = size;
         if width == 0 || height == 0 {
@@ -295,16 +311,9 @@ impl Host {
         self.queue.write_buffer(&globals_buf, 0, bytemuck::cast_slice(&globals_bytes));
 
         let layout = params::layout(m);
-        let params_buf = (layout.byte_size > 0).then(|| {
-            let buf = self.device.create_buffer(&wgpu::BufferDescriptor {
-                label: Some("params"),
-                size: layout.byte_size as u64,
-                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-                mapped_at_creation: false,
-            });
-            self.queue.write_buffer(&buf, 0, &params::encode(&layout, values));
-            buf
-        });
+        let params_buf = self.uniform_buffer("params", &params::encode(&layout, values));
+        let signals_layout = params::signals_layout(m);
+        let signals_buf = self.uniform_buffer("wisp_signals", &params::encode_signals(&signals_layout, signal_values));
 
         // Images by name: reserved inputs first, pass outputs as they are produced.
         let mut images: HashMap<String, wgpu::Texture> = HashMap::new();
@@ -323,7 +332,7 @@ impl Host {
             let assembled = assemble(src);
             let module_ir = naga::front::wgsl::parse_str(&assembled)
                 .map_err(|e| anyhow!("pass {}: {}", i, e.emit_to_string(&assembled)))?;
-            let uses_params = module_uses_params(&module_ir);
+            let uses_group1 = module_uses_group1(&module_ir);
 
             self.device.push_error_scope(wgpu::ErrorFilter::Validation);
             let module = self.device.create_shader_module(wgpu::ShaderModuleDescriptor {
@@ -332,7 +341,7 @@ impl Host {
             });
             let constants: Vec<(&str, f64)> = pass.constants.iter().map(|(k, v)| (k.as_str(), v.as_f64())).collect();
             let bgls: Vec<&wgpu::BindGroupLayout> =
-                if uses_params { vec![&self.bgl0, &self.bgl1] } else { vec![&self.bgl0] };
+                if uses_group1 { vec![&self.bgl0, &self.bgl1] } else { vec![&self.bgl0] };
             let pipeline_layout = self.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: None,
                 bind_group_layouts: &bgls,
@@ -391,18 +400,16 @@ impl Host {
                     wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::TextureView(&in1) },
                 ],
             });
-            let bg1 = if uses_params {
-                let buf = params_buf
-                    .as_ref()
-                    .ok_or_else(|| anyhow!("pass {} declares params but the manifest has none", i))?;
-                Some(self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            let bg1 = uses_group1.then(|| {
+                self.device.create_bind_group(&wgpu::BindGroupDescriptor {
                     label: Some("wisp group 1"),
                     layout: &self.bgl1,
-                    entries: &[wgpu::BindGroupEntry { binding: 0, resource: buf.as_entire_binding() }],
-                }))
-            } else {
-                None
-            };
+                    entries: &[
+                        wgpu::BindGroupEntry { binding: 0, resource: params_buf.as_entire_binding() },
+                        wgpu::BindGroupEntry { binding: 1, resource: signals_buf.as_entire_binding() },
+                    ],
+                })
+            });
 
             let target = self.target(width, height, &pass.output);
             let target_view = target.create_view(&Default::default());

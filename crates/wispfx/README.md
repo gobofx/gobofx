@@ -13,6 +13,7 @@ wispfx info   spec/examples/gaussian-blur            # manifest, params layout, 
 
 wispfx render spec/examples/gaussian-blur  -i fixtures/a.png -p radius=12 -o blur.png
 wispfx render spec/examples/cross-dissolve -i fixtures/a.png -i fixtures/b.png --steps 9 --out-dir frames
+wispfx render spec/examples/reactive-grade  -i fixtures/a.png -s bass=1 -s hit=1 -o grade.png
 ```
 
 - Effects take one `-i` (source); transitions take two (from, then to).
@@ -21,6 +22,8 @@ wispfx render spec/examples/cross-dissolve -i fixtures/a.png -i fixtures/b.png -
 - `--param id=value` overrides a manifest default: floats and ints as numbers,
   bools `true`/`false`, choices by index or option name, colors `r,g,b,a`,
   points `x,y`.
+- `--signal id=value` sets a signal (a MIDI 2.0 controller or note level) to a
+  fixed 0..1 value for the frame, so a reactive plugin can be tested without MIDI.
 - Inputs are PNGs (sRGB, straight alpha). They are converted to the working
   space from `spec/shader-abi.md` (linear, premultiplied, rgba16float) on upload
   and back for the output PNG.

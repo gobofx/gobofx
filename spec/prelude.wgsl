@@ -15,6 +15,10 @@ struct WispGlobals {
 @group(0) @binding(2) var wisp_input0: texture_2d<f32>;      // effect: source · transition: from
 @group(0) @binding(3) var wisp_input1: texture_2d<f32>;      // transition: to · effect: 1x1 transparent
 
+// Group 1 is the plugin's: @binding(0) var<uniform> params: Params (manifest `params`)
+// and @binding(1) var<uniform> wisp_signals: Signals (manifest `signals`), both declared
+// by the plugin itself and only when it has them.
+
 struct WispVertexOut {
     @builtin(position) position: vec4f,
     @location(0)       uv:       vec2f, // (0,0) = top-left

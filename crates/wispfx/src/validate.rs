@@ -44,6 +44,8 @@ pub struct PassInfo {
     pub output: String,
     /// Whether the assembled module declares the `params` uniform (group 1, binding 0).
     pub uses_params: bool,
+    /// Whether the assembled module declares the `wisp_signals` uniform (group 1, binding 1).
+    pub uses_signals: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -54,6 +56,7 @@ pub struct Report {
     pub version: String,
     pub kind: Kind,
     pub params: Layout,
+    pub signals: Layout,
     pub passes: Vec<PassInfo>,
     pub diagnostics: Vec<Diagnostic>,
 }
@@ -101,11 +104,25 @@ fn first_line(report: &str) -> String {
     report.lines().next().unwrap_or("").trim_start_matches("error: ").trim().to_string()
 }
 
+fn uses_binding(module: &Module, group: u32, binding: u32) -> bool {
+    module.global_variables.iter().any(|(_, g)| {
+        matches!(g.binding, Some(ref b) if b.group == group && b.binding == binding) && g.space == AddressSpace::Uniform
+    })
+}
+
 /// Does the assembled module declare the plugin `params` uniform at group 1, binding 0?
 pub fn module_uses_params(module: &Module) -> bool {
-    module.global_variables.iter().any(|(_, g)| {
-        matches!(g.binding, Some(ref b) if b.group == 1 && b.binding == 0) && g.space == AddressSpace::Uniform
-    })
+    uses_binding(module, 1, 0)
+}
+
+/// Does the assembled module declare the plugin `wisp_signals` uniform at group 1, binding 1?
+pub fn module_uses_signals(module: &Module) -> bool {
+    uses_binding(module, 1, 1)
+}
+
+/// Does the module bind anything in group 1 (so the host must attach the group)?
+pub fn module_uses_group1(module: &Module) -> bool {
+    module_uses_params(module) || module_uses_signals(module)
 }
 
 /// Validate a plugin completely. Never panics on bad input; everything is a diagnostic.
@@ -157,6 +174,63 @@ pub fn validate(plugin: &Plugin) -> Report {
         }
     }
 
+    // ── signals (spec/signals.md) ─────────────────────────────────────
+    let param_ids: BTreeSet<&str> = m.params.iter().map(|p| p.id.as_str()).collect();
+    let mut sig_seen = BTreeSet::new();
+    let mut cc_seen = BTreeSet::new();
+    let mut note_seen = BTreeSet::new();
+    for s in &m.signals {
+        if !is_valid_param_id(&s.id) {
+            err(&mut d, None, format!("signal id \"{}\" must match ^[a-z_][a-z0-9_]*$", s.id));
+        }
+        if !sig_seen.insert(s.id.as_str()) {
+            err(&mut d, None, format!("signal id \"{}\" is declared twice", s.id));
+        }
+        if param_ids.contains(s.id.as_str()) {
+            err(&mut d, None, format!("signal id \"{}\" collides with a param of the same id", s.id));
+        }
+        match (s.cc, s.note) {
+            (Some(_), Some(_)) => err(&mut d, None, format!("signal \"{}\" binds both cc and note; pick one", s.id)),
+            (None, None) => err(&mut d, None, format!("signal \"{}\" must bind a cc or a note", s.id)),
+            (Some(cc), None) => {
+                if cc > 127 {
+                    err(&mut d, None, format!("signal \"{}\": cc {} is out of range 0..127", s.id, cc));
+                }
+                if !cc_seen.insert((s.channel, cc)) {
+                    err(&mut d, None, format!("signal \"{}\": cc {} is already bound on this channel", s.id, cc));
+                }
+                if s.mode.is_some() {
+                    warn(&mut d, None, format!("signal \"{}\": mode only applies to note signals", s.id));
+                }
+            }
+            (None, Some(n)) => {
+                if n > 127 {
+                    err(&mut d, None, format!("signal \"{}\": note {} is out of range 0..127", s.id, n));
+                }
+                if !note_seen.insert((s.channel, n)) {
+                    err(&mut d, None, format!("signal \"{}\": note {} is already bound on this channel", s.id, n));
+                }
+            }
+        }
+        if let Some(ch) = s.channel {
+            if !(1..=16).contains(&ch) {
+                err(&mut d, None, format!("signal \"{}\": channel {} is out of range 1..16", s.id, ch));
+            }
+        }
+        if let Some(v) = s.default {
+            if !(0.0..=1.0).contains(&v) {
+                err(&mut d, None, format!("signal \"{}\": default {} is outside 0..1", s.id, v));
+            }
+        }
+        for (name, v) in [("attack_ms", s.attack_ms), ("release_ms", s.release_ms)] {
+            if let Some(v) = v {
+                if v < 0.0 {
+                    err(&mut d, None, format!("signal \"{}\": {} must not be negative", s.id, name));
+                }
+            }
+        }
+    }
+
     // ── pass graph ────────────────────────────────────────────────────
     if m.passes.is_empty() {
         err(&mut d, None, "passes must contain at least one pass".into());
@@ -198,6 +272,7 @@ pub fn validate(plugin: &Plugin) -> Report {
 
     // ── shaders: assemble + naga, per pass ─────────────────────────────
     let layout = params::layout(m);
+    let signals_layout = params::signals_layout(m);
     let mut passes_info = Vec::with_capacity(m.passes.len());
     for (i, pass) in m.passes.iter().enumerate() {
         let mut info = PassInfo {
@@ -207,6 +282,7 @@ pub fn validate(plugin: &Plugin) -> Report {
             inputs: pass.inputs.clone(),
             output: pass.output.clone(),
             uses_params: false,
+            uses_signals: false,
         };
         let Some(src) = plugin.shaders.get(&pass.shader) else {
             d.push(Diagnostic {
@@ -246,8 +322,9 @@ pub fn validate(plugin: &Plugin) -> Report {
                 message: format!("WGSL validation error: {}", first_line(&e.emit_to_string(&assembled))),
             });
         }
-        check_module(&module, plugin, i, &layout, &mut d);
+        check_module(&module, plugin, i, &layout, &signals_layout, &mut d);
         info.uses_params = module_uses_params(&module);
+        info.uses_signals = module_uses_signals(&module);
         passes_info.push(info);
     }
 
@@ -259,6 +336,7 @@ pub fn validate(plugin: &Plugin) -> Report {
         version: m.version.clone(),
         kind: m.kind,
         params: layout,
+        signals: signals_layout,
         passes: passes_info,
         diagnostics: d,
     }
@@ -269,7 +347,7 @@ fn diag(d: &mut Vec<Diagnostic>, level: Level, pass: usize, file: &str, message:
     d.push(Diagnostic { level, pass: Some(pass), file: Some(file.to_string()), line: None, message });
 }
 
-fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, d: &mut Vec<Diagnostic>) {
+fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, signals: &Layout, d: &mut Vec<Diagnostic>) {
     let pass = &plugin.manifest.passes[i];
 
     // Entry points: the manifest entry must be a fragment stage; nothing else but the prelude's vertex.
@@ -292,6 +370,7 @@ fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, d: 
 
     // Bindings: only the prelude's group 0 and the plugin's params at group 1 / binding 0.
     let mut params_global = None;
+    let mut signals_global = None;
     for (_, g) in module.global_variables.iter() {
         let name = g.name.clone().unwrap_or_default();
         if let AddressSpace::Storage { .. } = g.space {
@@ -313,8 +392,13 @@ fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, d: 
                 diag(d, Level::Error, i, &pass.shader, format!("\"{}\" at @group(1) @binding(0) must be var<uniform>", name));
             }
             params_global = Some(g);
+        } else if b.group == 1 && b.binding == 1 {
+            if g.space != AddressSpace::Uniform {
+                diag(d, Level::Error, i, &pass.shader, format!("\"{}\" at @group(1) @binding(1) must be var<uniform>", name));
+            }
+            signals_global = Some(g);
         } else {
-            diag(d, Level::Error, i, &pass.shader, format!("\"{}\" declares @group({}) @binding({}); plugins may only declare @group(1) @binding(0) var<uniform> params", name, b.group, b.binding));
+            diag(d, Level::Error, i, &pass.shader, format!("\"{}\" declares @group({}) @binding({}); plugins may only declare @group(1) @binding(0) params and @group(1) @binding(1) wisp_signals", name, b.group, b.binding));
         }
     }
 
@@ -367,6 +451,53 @@ fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, d: 
                 }
                 if member.offset != field.offset {
                     diag(d, Level::Error, i, &pass.shader, format!("Params.{} sits at offset {}, host expects {}", mname, member.offset, field.offset));
+                }
+            }
+        }
+    }
+
+    // Signals struct must match the manifest: one f32 per signal, in order.
+    match signals_global {
+        None => {
+            if !signals.fields.is_empty() {
+                d.push(Diagnostic {
+                    level: Level::Warning,
+                    pass: Some(i),
+                    file: Some(pass.shader.clone()),
+                    line: None,
+                    message: format!("{} declares no wisp_signals uniform; manifest signals are ignored by this pass", pass.shader),
+                });
+            }
+        }
+        Some(g) => {
+            let TypeInner::Struct { members, .. } = &module.types[g.ty].inner else {
+                diag(d, Level::Error, i, &pass.shader, "wisp_signals must be a struct".into());
+                return;
+            };
+            if signals.fields.is_empty() {
+                diag(d, Level::Error, i, &pass.shader, "shader declares wisp_signals but the manifest has no signals".into());
+                return;
+            }
+            if members.len() != signals.fields.len() {
+                diag(d, Level::Error, i, &pass.shader, format!("Signals struct has {} fields, manifest declares {} signals", members.len(), signals.fields.len()));
+            }
+            for (member, field) in members.iter().zip(&signals.fields) {
+                let mname = member.name.clone().unwrap_or_default();
+                let inner = &module.types[member.ty].inner;
+                if !matches!(inner, TypeInner::Scalar(s) if s.kind == ScalarKind::Float && s.width == 4) {
+                    diag(d, Level::Error, i, &pass.shader, format!("Signals.{} must be f32 for signal \"{}\"", mname, field.id));
+                }
+                if mname != field.id {
+                    d.push(Diagnostic {
+                        level: Level::Warning,
+                        pass: Some(i),
+                        file: Some(pass.shader.clone()),
+                        line: None,
+                        message: format!("Signals.{} is bound by position to signal \"{}\"; consider using the same name", mname, field.id),
+                    });
+                }
+                if member.offset != field.offset {
+                    diag(d, Level::Error, i, &pass.shader, format!("Signals.{} sits at offset {}, host expects {}", mname, member.offset, field.offset));
                 }
             }
         }

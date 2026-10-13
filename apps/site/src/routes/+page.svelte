@@ -52,7 +52,12 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
       text: 'The host prepends a prelude that declares every binding and the vertex stage. A plugin writes fs_main and never its own samplers or textures.'
     },
     {
-      tag: '04 / PORTABLE',
+      tag: '04 / SIGNALS',
+      title: 'Audio and MIDI aware',
+      text: 'A plugin declares MIDI 2.0 controllers and notes it reacts to. The host feeds them from an audio follower, a hardware device or OSC, and the shader reads plain 0..1 floats. A grade can follow the bass.'
+    },
+    {
+      tag: '05 / PORTABLE',
       title: 'wgpu and WebGPU',
       text: 'Linear premultiplied rgba16float in and out, WGSL both naga and the browser accept, no extensions. A native host and a browser host draw the same frame.'
     }
@@ -132,6 +137,7 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
     <li><span>0 / 2</span><span>wisp_input0 · texture_2d&lt;f32&gt;, first pass input</span></li>
     <li><span>0 / 3</span><span>wisp_input1 · texture_2d&lt;f32&gt;, second pass input, or 1×1 transparent</span></li>
     <li><span>1 / 0</span><span>params · uniform Params, declared by the plugin to match the manifest</span></li>
+    <li><span>1 / 1</span><span>wisp_signals · uniform Signals, one f32 per MIDI 2.0 controller or note the plugin declares</span></li>
     <li><span>ENTRY</span><span>@fragment fn fs_main(@location(0) uv: vec2f) -&gt; @location(0) vec4f</span></li>
     <li><span>COLOUR</span><span>linear, premultiplied RGBA, rgba16float, Rec. 709 primaries, HDR allowed</span></li>
   </ul>

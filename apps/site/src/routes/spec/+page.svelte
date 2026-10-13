@@ -24,17 +24,24 @@
         'Module assembly (prelude plus plugin file), the five host bindings, the fragment entry point, the colour space (linear, premultiplied RGBA, rgba16float, Rec. 709) and the portability rules.'
     },
     {
-      tag: '04 / PRELUDE',
+      tag: '04 / SIGNALS',
+      href: blob + 'signals.md',
+      file: 'signals.md',
+      summary:
+        'MIDI 2.0 controllers and notes a plugin reads each frame as 0..1 floats at group 1, binding 1. The host maps audio followers, OSC and hardware onto them; the plugin never sees events.'
+    },
+    {
+      tag: '05 / PRELUDE',
       href: blob + 'prelude.wgsl',
       file: 'prelude.wgsl',
       summary:
         'The WGSL the host prepends to every plugin shader module: WispGlobals, the sampler, the two input textures and the fullscreen-triangle vertex stage wisp_vs. Plugins must not redeclare anything in it.'
     },
     {
-      tag: '05 / EXAMPLES',
+      tag: '06 / EXAMPLES',
       href: tree + 'examples',
       file: 'examples/',
-      summary: 'Cross Dissolve (transition, one pass) and Gaussian Blur (effect, two passes with override constants). Both pass naga and validate against the schema.'
+      summary: 'Cross Dissolve (transition), Gaussian Blur (two passes with override constants) and Reactive Grade (a colour grade driven by signals). All pass naga and validate against the schema.'
     }
   ];
 </script>
@@ -61,6 +68,7 @@
     <li><span>KINDS</span><span>effect (1 input) · transition (2 inputs + progress 0..1)</span></li>
     <li><span>SPACE</span><span>linear, premultiplied RGBA, rgba16float</span></li>
     <li><span>PASSES</span><span>pipeline-overridable constants (override), set per pass in the manifest</span></li>
+    <li><span>SIGNALS</span><span>MIDI 2.0 controllers and notes, one 0..1 float per signal per frame; the host maps audio, OSC and hardware onto them</span></li>
     <li><span>HOSTS</span><span>identical on native wgpu and browser WebGPU</span></li>
   </ul>
 </section>

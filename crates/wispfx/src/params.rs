@@ -50,6 +50,48 @@ pub fn layout(manifest: &Manifest) -> Layout {
     Layout { fields, byte_size }
 }
 
+/// Signals are one `f32` each, in manifest order (`spec/signals.md`).
+pub fn signals_layout(manifest: &Manifest) -> Layout {
+    let fields: Vec<Field> = manifest
+        .signals
+        .iter()
+        .enumerate()
+        .map(|(i, s)| Field { id: s.id.clone(), ty: ParamType::Float, wgsl: "f32", offset: (i * 4) as u32, size: 4 })
+        .collect();
+    let byte_size = if fields.is_empty() { 0 } else { round_up(fields.len() as u32 * 4, 16) };
+    Layout { fields, byte_size }
+}
+
+/// Resolve every signal to a value in 0..1: manifest `default` overridden by `overrides` (id → text).
+pub fn resolve_signals(manifest: &Manifest, overrides: &BTreeMap<String, String>) -> Result<Vec<f32>> {
+    for id in overrides.keys() {
+        if !manifest.signals.iter().any(|s| &s.id == id) {
+            bail!("unknown signal '{}' (declared: {:?})", id, manifest.signals.iter().map(|s| s.id.as_str()).collect::<Vec<_>>());
+        }
+    }
+    manifest
+        .signals
+        .iter()
+        .map(|s| {
+            let v = match overrides.get(&s.id) {
+                Some(text) => text.trim().parse::<f32>().map_err(|e| anyhow!("signal '{}': {}", s.id, e))?,
+                None => s.default.unwrap_or(0.0) as f32,
+            };
+            Ok(v.clamp(0.0, 1.0))
+        })
+        .collect()
+}
+
+/// Encode signal values into the uniform buffer bytes for `layout`.
+pub fn encode_signals(layout: &Layout, values: &[f32]) -> Vec<u8> {
+    let mut buf = vec![0u8; layout.byte_size as usize];
+    for (field, v) in layout.fields.iter().zip(values) {
+        let o = field.offset as usize;
+        buf[o..o + 4].copy_from_slice(&v.to_le_bytes());
+    }
+    buf
+}
+
 /// A concrete param value, already typed.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "t", content = "v", rename_all = "lowercase")]
