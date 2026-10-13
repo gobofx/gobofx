@@ -38,7 +38,7 @@
   type Diagnostic = { level: 'error' | 'warning'; file?: string; line?: number; message: string };
   type Report = { ok: boolean; diagnostics: Diagnostic[] };
 
-  type SignalSource = 'manual' | 'rms' | 'bass' | 'mid' | 'high' | 'midi';
+  type SignalSource = 'manual' | 'rms' | 'bass' | 'mid' | 'high' | 'onset' | 'midi';
 
   // ── state ───────────────────────────────────────────────────────────
   let canvasEl = $state<HTMLCanvasElement>();
@@ -51,7 +51,7 @@
   let bootError = $state('');
   let adapter = $state('');
 
-  let pluginSlug = $state(examples[0]?.slug ?? '');
+  let pluginSlug = $state(examples.find((e) => e.slug === 'reactive-grade')?.slug ?? examples[0]?.slug ?? '');
   let manifest = $state<Manifest | null>(null);
   let report = $state<Report | null>(null);
   let loadedName = $state('');
@@ -74,6 +74,25 @@
   let midiState = $state<'off' | 'on' | 'none'>('off');
   let midiLast = $state('');
   const envelopes = new Map<string, Envelope>();
+
+  // Kick onset: a gate that fires when the bass band crosses a threshold on a rising edge.
+  let onsetPrev = 0;
+  let onsetUntil = 0;
+  function onsetGate(now: number): number {
+    const lvl = follower.level('bass');
+    const rising = lvl > 0.55 && onsetPrev <= 0.55;
+    onsetPrev = lvl;
+    if (rising) onsetUntil = now + 90;
+    return now < onsetUntil ? 1 : 0;
+  }
+
+  /** Default host-side routing from the manifest hint, so examples react out of the box. */
+  function defaultSource(s: Signal): SignalSource {
+    const h = (s.hint ?? '').toLowerCase();
+    if (h.includes('kick') || h.includes('onset') || h.includes('beat')) return 'onset';
+    if (h.includes('audio')) return h.includes('mid') ? 'mid' : h.includes('high') ? 'high' : h.includes('level') ? 'rms' : 'bass';
+    return 'manual';
+  }
 
   const kind = $derived(manifest?.kind ?? 'effect');
   const params = $derived(manifest?.params ?? []);
@@ -129,6 +148,7 @@
             let raw: number;
             if (src === 'manual') raw = signalManual[s.id] ?? s.default ?? 0;
             else if (src === 'midi') raw = midi.value(s);
+            else if (src === 'onset') raw = onsetGate(now);
             else raw = follower.level(src as Band);
             let env = envelopes.get(s.id);
             if (!env) {
@@ -180,7 +200,7 @@
       const ss: Record<string, SignalSource> = {};
       for (const s of parsed?.signals ?? []) {
         sm[s.id] = s.default ?? 0;
-        ss[s.id] = signalSource[s.id] ?? 'manual';
+        ss[s.id] = signalSource[s.id] ?? defaultSource(s);
       }
       signalManual = sm;
       signalSource = ss;
@@ -472,6 +492,7 @@
               <option value="mid">audio · mid 160–2k Hz</option>
               <option value="high">audio · high 2–8 kHz</option>
               <option value="rms">audio · level</option>
+              <option value="onset">audio · kick onset (gate)</option>
               <option value="midi">MIDI</option>
             </select>
             {#if (signalSource[s.id] ?? 'manual') === 'manual'}
