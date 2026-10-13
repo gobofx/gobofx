@@ -106,8 +106,13 @@ pub enum Value {
 
 /// The manifest `default` for a param, or the type's zero when absent.
 pub fn default_value(p: &Param) -> Result<Value> {
+    value_from_json(p, p.default.as_ref())
+}
+
+/// A param value from JSON (`default` in the manifest, or a host's `{ id: value }` map).
+/// `None` or an unusable value yields the type's zero / the manifest default rules.
+pub fn value_from_json(p: &Param, d: Option<&serde_json::Value>) -> Result<Value> {
     use serde_json::Value as J;
-    let d = p.default.as_ref();
     let num = |v: Option<&J>| -> Option<f64> { v.and_then(|v| v.as_f64()) };
     Ok(match p.ty {
         ParamType::Float => Value::Float(num(d).unwrap_or(0.0) as f32),

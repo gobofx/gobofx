@@ -230,6 +230,7 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
     let signal_values = params::resolve_signals(m, &signal_overrides)?;
 
     let host = Host::new()?;
+    let compiled = pollster::block_on(host.compile(&plugin))?;
     let mut frames = Vec::new();
     let result: Result<()> = (|| {
         match args.steps {
@@ -237,14 +238,14 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
                 std::fs::create_dir_all(&args.out_dir)?;
                 for i in 0..n {
                     let progress = if n == 1 { args.progress } else { i as f32 / (n - 1) as f32 };
-                    let img = host.render(&plugin, &inputs, size, Globals { time: args.time, progress }, &values, &signal_values)?;
+                    let img = host.render_image(&compiled, &inputs, size, Globals { time: args.time, progress }, &values, &signal_values)?;
                     let path = args.out_dir.join(format!("frame_{i:03}.png"));
                     img.save_png(&path)?;
                     frames.push(FrameOut { progress, time: args.time, path: path.display().to_string() });
                 }
             }
             _ => {
-                let img = host.render(&plugin, &inputs, size, Globals { time: args.time, progress: args.progress }, &values, &signal_values)?;
+                let img = host.render_image(&compiled, &inputs, size, Globals { time: args.time, progress: args.progress }, &values, &signal_values)?;
                 img.save_png(&args.output)?;
                 frames.push(FrameOut { progress: args.progress, time: args.time, path: args.output.display().to_string() });
             }

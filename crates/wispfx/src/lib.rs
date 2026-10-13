@@ -14,6 +14,8 @@ pub mod manifest;
 pub mod params;
 pub mod render;
 pub mod validate;
+#[cfg(target_arch = "wasm32")]
+pub mod web;
 
 /// The host prelude, verbatim from `spec/prelude.wgsl`.
 pub const PRELUDE: &str = include_str!("../../../spec/prelude.wgsl");

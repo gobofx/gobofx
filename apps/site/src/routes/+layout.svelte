@@ -6,6 +6,7 @@
 
   const repo = 'https://github.com/taluvi-dev/wispfx';
   const onSpec = $derived(page.url.pathname.startsWith('/spec'));
+  const onPlay = $derived(page.url.pathname.startsWith('/play'));
 </script>
 
 <div class="page">
@@ -16,6 +17,7 @@
     </a>
     <div class="navLinks">
       <a href="/spec" class:active={onSpec}>spec</a>
+      <a href="/play" class:active={onPlay}>play</a>
       <a href="{repo}/blob/main/CATALOG.md" target="_blank" rel="noreferrer noopener">catalog</a>
       <a href={repo} target="_blank" rel="noreferrer noopener">GitHub</a>
     </div>

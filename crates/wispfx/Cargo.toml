@@ -1,6 +1,6 @@
 [package]
 name = "wispfx"
-description = "WispFX reference implementation: manifest parsing, validation, module assembly, and a headless wgpu renderer with a CLI for testing plugins."
+description = "WispFX reference implementation: manifest parsing, validation, module assembly, a wgpu host that runs natively and in the browser (wasm), and a CLI for testing plugins."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,19 +8,36 @@ repository.workspace = true
 
 [lib]
 path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
 
 [[bin]]
 name = "wispfx"
 path = "src/main.rs"
+required-features = ["cli"]
+
+[features]
+default = ["cli"]
+# Native command-line tool: PNG in/out, blocking GPU readback.
+cli = ["dep:clap", "dep:pollster", "dep:image"]
 
 [dependencies]
 anyhow = "1"
 bytemuck = { version = "1", features = ["derive"] }
-clap = { version = "4", features = ["derive"] }
 half = "2"
-image = { version = "0.25", default-features = false, features = ["png"] }
 naga = { version = "25", features = ["wgsl-in"] }
-pollster = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+clap = { version = "4", features = ["derive"], optional = true }
+pollster = { version = "0.4", optional = true }
+image = { version = "0.25", default-features = false, features = ["png"], optional = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 wgpu = { version = "25", default-features = false, features = ["wgsl", "metal", "dx12", "vulkan"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wgpu = { version = "25", default-features = false, features = ["wgsl", "webgpu"] }
+# Pinned as a family: the generated bindings must match the installed wasm-bindgen CLI (0.2.113).
+wasm-bindgen = "=0.2.113"
+wasm-bindgen-futures = "=0.4.63"
+js-sys = "=0.3.90"
+web-sys = { version = "=0.3.90", features = ["HtmlCanvasElement", "HtmlVideoElement", "console"] }
