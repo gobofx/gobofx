@@ -76,6 +76,7 @@ in `wrangler.jsonc` to attach.
 - The site describes the standard; the normative text lives in `spec/`.
   When the two disagree, `spec/` wins and the site gets fixed.
 - Dark theme by default. No third-party trackers.
-- Plinken is the first host implementation, not the owner of the format:
-  keep host-specific behaviour (project documents, catalogs, billing) out of
-  this repo.
+- This project is independent of any host application. Do not mention,
+  link or describe specific hosts, their products or their internals anywhere
+  in this repo; keep host-specific behaviour (project documents, catalogs,
+  billing) out of it.

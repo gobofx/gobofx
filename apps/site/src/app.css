@@ -1,7 +1,6 @@
 :root {
   color-scheme: dark;
 
-  /* Same neutral base as plinken.org — sibling project. */
   --bg: #191919;
   --bg-deep: #000;
   --bg-elev: #1f1f1f;
@@ -12,7 +11,7 @@
   --text-muted: #c2c2c2;
   --text-dim: #5a5a5a;
 
-  /* plinken.org is lavender + purple (audio). WispFX is amber + coral (visual). */
+  /* amber + coral: light, projection */
   --accent: #f2a65a;        /* amber */
   --accent-deep: #d9823a;   /* burnt amber */
   --accent-coral: #ff6b8b;  /* coral */
@@ -101,7 +100,7 @@ pre code {
   color: var(--text);
 }
 
-/* ─── shared page chrome (mirrors plinken.org) ─────── */
+/* ─── shared page chrome ─────────────────────────── */
 .page {
   max-width: 72rem;
   margin: 0 auto;
@@ -222,7 +221,7 @@ pre code {
   line-height: 1.6;
 }
 
-/* dashed key/value list, as plinken.org's STACK */
+/* dashed key/value list */
 .stack {
   list-style: none;
   padding: 0;

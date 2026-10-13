@@ -16,7 +16,7 @@
     </a>
     <div class="navLinks">
       <a href="/spec" class:active={onSpec}>spec</a>
-      <a href="https://plinken.org" target="_blank" rel="noreferrer noopener">plinken.org</a>
+      <a href="{repo}/blob/main/CATALOG.md" target="_blank" rel="noreferrer noopener">catalog</a>
       <a href={repo} target="_blank" rel="noreferrer noopener">GitHub</a>
     </div>
   </nav>
@@ -30,9 +30,7 @@
     <div class="footSep">·</div>
     <div>MIT OR Apache-2.0</div>
     <div class="footSep">·</div>
-    <div>audio sibling: <a href="https://plinken.org" target="_blank" rel="noreferrer noopener">plinken.org</a></div>
-    <div class="footSep">·</div>
-    <div>first host: <a href="https://plinken.com" target="_blank" rel="noreferrer noopener">plinken.com</a></div>
+    <div><a href={repo} target="_blank" rel="noreferrer noopener">github.com/taluvi-dev/wispfx</a></div>
     <div class="footSep">·</div>
     <div>{new Date().getFullYear()}</div>
   </footer>

@@ -7,6 +7,8 @@ Open standard for portable video effects and transitions: a JSON manifest plus W
 | Folder | Contents |
 | --- | --- |
 | [`spec/`](spec/) | Specification, schema, host prelude and reference examples |
+| [`CATALOG.md`](CATALOG.md) | Reference catalogue: the effects and transitions a complete plugin library should cover |
+| [`crates/wispfx/`](crates/wispfx/) | Reference crate and the `wispfx` CLI: validate and render plugins headlessly |
 | [`apps/site/`](apps/site/) | Source for wispfx.org (SvelteKit on a Cloudflare Worker) |
 
 ## License

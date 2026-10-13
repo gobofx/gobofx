@@ -77,10 +77,9 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
   <div class="teaser">PORTABLE VIDEO EFFECTS &amp; TRANSITIONS</div>
 
   <p class="lede">
-    The visual sibling of <a href="https://plinken.org" target="_blank" rel="noreferrer noopener">plinken.org</a>.
     A WispFX plugin is a JSON manifest plus WGSL shaders, and it renders identically in native
     <code>wgpu</code> hosts and in the browser through WebGPU. Write an effect or a transition once,
-    run it in any host that speaks the standard.
+    run it in any host that speaks the standard, and test it headlessly with the <code>wispfx</code> CLI.
   </p>
 
   <div class="actions">
@@ -144,8 +143,8 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
     <li><span>SHADERS</span><span>WGSL · naga and browser WebGPU, no extensions</span></li>
     <li><span>NATIVE</span><span>wgpu</span></li>
     <li><span>BROWSER</span><span>WebGPU</span></li>
-    <li><span>REFERENCE</span><span>Rust crate: parse, validate, assemble · planned</span></li>
-    <li><span>FIRST HOST</span><span>Plinken · browser compositor and native runner</span></li>
+    <li><span>REFERENCE</span><span>Rust crate: parse, validate, assemble, render · <code>wispfx check</code> and <code>wispfx render</code></span></li>
+    <li><span>CATALOG</span><span>reference list of effects and transitions to cover · CATALOG.md</span></li>
     <li><span>LICENSE</span><span>MIT OR Apache-2.0 · DCO sign-off</span></li>
   </ul>
 </section>
@@ -185,7 +184,7 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
     margin-bottom: 3.5rem;
   }
 
-  /* ─── dissolving frames: the visual counterpart of plinken.org's audio bars ─── */
+  /* ─── dissolving frames ─────────────────────────── */
   .frames {
     display: flex;
     gap: 4px;
