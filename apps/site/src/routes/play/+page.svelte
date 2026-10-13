@@ -59,7 +59,7 @@
   let dirHandle: FileSystemDirectoryHandle | null = null;
 
   let playing = $state(false);
-  let sound = $state(false);
+  let sound = $state(true);
   let autoProgress = $state(true);
   let progress = $state(0.5);
   let fps = $state(0);
