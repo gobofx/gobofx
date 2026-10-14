@@ -9,14 +9,50 @@ export type SignalBinding = {
   channel?: number; // 1..16, absent = any
 };
 
+/** Computer keyboard as a stand-in controller: one octave from A (= note 36, C1) up to K (= 48). */
+export const KEY_NOTES: Record<string, number> = {
+  a: 36, w: 37, s: 38, e: 39, d: 40, f: 41, t: 42, g: 43, y: 44, h: 45, u: 46, j: 47, k: 48
+};
+
 export class MidiInput {
   /** cc value by "channel:cc" (channel 0..15), 0..1 */
   private cc = new Map<string, number>();
-  /** held notes by "channel:note" → velocity 0..1 */
+  /** held notes by "channel:note" → velocity 0..1; the computer keyboard uses channel "kbd" */
   private notes = new Map<string, number>();
   available = false;
   inputs: string[] = [];
   lastEvent = '';
+
+  /** Let the computer keyboard play notes while no text field has focus. Returns a detach function. */
+  attachKeyboard(target: Window): () => void {
+    const typing = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      return !!el && (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+    };
+    const down = (e: KeyboardEvent) => {
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || typing(e)) return;
+      const note = KEY_NOTES[e.key.toLowerCase()];
+      if (note === undefined) return;
+      this.notes.set(`kbd:${note}`, 1);
+      this.lastEvent = `key ${e.key.toUpperCase()} → note on ${note}`;
+    };
+    const up = (e: KeyboardEvent) => {
+      const note = KEY_NOTES[e.key.toLowerCase()];
+      if (note === undefined) return;
+      this.notes.delete(`kbd:${note}`);
+    };
+    const blur = () => {
+      for (const k of [...this.notes.keys()]) if (k.startsWith('kbd:')) this.notes.delete(k);
+    };
+    target.addEventListener('keydown', down);
+    target.addEventListener('keyup', up);
+    target.addEventListener('blur', blur);
+    return () => {
+      target.removeEventListener('keydown', down);
+      target.removeEventListener('keyup', up);
+      target.removeEventListener('blur', blur);
+    };
+  }
 
   async connect(): Promise<boolean> {
     if (!('requestMIDIAccess' in navigator)) return false;
@@ -64,7 +100,7 @@ export class MidiInput {
       return v;
     }
     if (b.note !== undefined) {
-      for (const ch of channels) {
+      for (const ch of [...channels, 'kbd']) {
         const vel = this.notes.get(`${ch}:${b.note}`);
         if (vel !== undefined) return b.mode === 'velocity' ? vel : 1;
       }

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { examples, type ExamplePlugin } from '$lib/play/examples';
   import { AudioFollower, Envelope, LoopClip, type Band } from '$lib/play/follower';
-  import { MidiInput } from '$lib/play/midi';
+  import { MidiInput, KEY_NOTES } from '$lib/play/midi';
 
   type WebHost = {
     adapter_name(): string;
@@ -204,8 +204,20 @@
       raf = requestAnimationFrame(tick);
     })();
 
-    return () => cancelAnimationFrame(raf);
+    const detachKeys = midi.attachKeyboard(window);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      detachKeys();
+    };
   });
+
+  /** Which computer key plays a note-bound signal, if any. */
+  function keyFor(s: Signal): string | null {
+    if (s.note === undefined) return null;
+    const k = Object.entries(KEY_NOTES).find(([, n]) => n === s.note)?.[0];
+    return k ? k.toUpperCase() : null;
+  }
 
   // ── plugin loading ──────────────────────────────────────────────────
   async function install(manifestText: string, shaders: Record<string, string>, name: string) {
@@ -567,6 +579,12 @@
           <button class="btn ghost small" onclick={connectMidi} disabled={midiState === 'on'}>→ CONNECT MIDI</button>
           <span class="mono dim">{midiState === 'on' ? (midi.inputs.length ? midi.inputs.join(', ') : 'no inputs') : midiState === 'none' ? 'Web MIDI unavailable' : ''}{midiLast ? ` · ${midiLast}` : ''}</span>
         </div>
+        <p class="dim small">
+          No controller? The computer keyboard plays notes 36–48: A W S E D F T G Y H U J K, one octave up from C1.
+          {#each signals.filter((s) => (signalSource[s.id] ?? 'manual') === 'midi' && keyFor(s)) as s (s.id)}
+            Press <span class="mono">{keyFor(s)}</span> for {s.label ?? s.id} (note {s.note}).
+          {/each}
+        </p>
       {/if}
     </div>
   </div>
