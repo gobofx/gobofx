@@ -4,7 +4,7 @@
   "title": "GoboFX manifest v0.1",
   "type": "object",
   "required": [
-    "wisp",
+    "gobofx",
     "id",
     "name",
     "kind",
@@ -13,7 +13,7 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "wisp": {
+    "gobofx": {
       "const": "0.1"
     },
     "id": {

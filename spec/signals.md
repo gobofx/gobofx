@@ -65,7 +65,7 @@ The plugin declares the struct, one `f32` per signal in manifest order, at
 
 ```wgsl
 struct Signals { bass: f32, hit: f32, warmth: f32 }
-@group(1) @binding(1) var<uniform> wisp_signals: Signals;
+@group(1) @binding(1) var<uniform> gobofx_signals: Signals;
 ```
 
 Layout follows WGSL uniform rules (every field 4 bytes, struct padded to a

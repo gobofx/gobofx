@@ -25,7 +25,7 @@ use crate::validate;
 const IMPORT_BODY: &str = r#"
 @fragment
 fn fs_import(@location(0) uv: vec2f) -> @location(0) vec4f {
-    let c = textureSampleLevel(wisp_input0, wisp_sampler, uv, 0.0);
+    let c = textureSampleLevel(gobofx_input0, gobofx_sampler, uv, 0.0);
     return vec4f(c.rgb * c.a, c.a);
 }
 "#;
@@ -39,7 +39,7 @@ fn srgb(c: vec3f) -> vec3f {
 }
 @fragment
 fn fs_blit(@location(0) uv: vec2f) -> @location(0) vec4f {
-    let p = textureSampleLevel(wisp_input0, wisp_sampler, uv, 0.0);
+    let p = textureSampleLevel(gobofx_input0, gobofx_sampler, uv, 0.0);
     let a = clamp(p.a, 0.0, 1.0);
     let straight = select(vec3f(0.0), clamp(p.rgb / max(a, 1e-6), vec3f(0.0), vec3f(1.0)), a > 0.0);
     return vec4f(srgb(straight) * a, a);

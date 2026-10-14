@@ -8,7 +8,7 @@
       href: blob + 'manifest.md',
       file: 'manifest.md',
       summary:
-        'Top-level fields (wisp, id, name, kind, category, version, license), the params table with its WGSL mapping, and the passes table: shader, entry, constants, inputs and output. Reserved input names source, from and to.'
+        'Top-level fields (gobofx, id, name, kind, category, version, license), the params table with its WGSL mapping, and the passes table: shader, entry, constants, inputs and output. Reserved input names source, from and to.'
     },
     {
       tag: '02 / SCHEMA',
@@ -35,10 +35,17 @@
       href: blob + 'prelude.wgsl',
       file: 'prelude.wgsl',
       summary:
-        'The WGSL the host prepends to every plugin shader module: WispGlobals, the sampler, the two input textures and the fullscreen-triangle vertex stage wisp_vs. Plugins must not redeclare anything in it.'
+        'The WGSL the host prepends to every plugin shader module: GobofxGlobals, the sampler, the two input textures and the fullscreen-triangle vertex stage gobofx_vs. Plugins must not redeclare anything in it.'
     },
     {
-      tag: '06 / EXAMPLES',
+      tag: '06 / PACKAGE',
+      href: blob + 'package.md',
+      file: 'package.md',
+      summary:
+        'The .gobofx distribution format: a ZIP of the plugin folder under a strict profile. manifest.json first and stored, deflate or stored only, canonical relative names, no Zip64 or encryption. Any license, open or commercial.'
+    },
+    {
+      tag: '07 / EXAMPLES',
       href: tree + 'examples',
       file: 'examples/',
       summary: 'Cross Dissolve (transition), Gaussian Blur (two passes with override constants) and Reactive Grade (a colour grade driven by signals). All pass naga and validate against the schema.'
@@ -48,7 +55,7 @@
 
 <svelte:head>
   <title>GOBOFX.ORG — specification</title>
-  <meta name="description" content="The GoboFX specification: manifest, JSON schema, shader ABI, host prelude and reference plugins." />
+  <meta name="description" content="The GoboFX specification: manifest, JSON schema, shader ABI, signals, host prelude, package format and reference plugins." />
 </svelte:head>
 
 <section class="hero">

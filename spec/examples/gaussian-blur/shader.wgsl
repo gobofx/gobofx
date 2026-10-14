@@ -16,12 +16,12 @@ struct Params {
 fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
     let r = clamp(params.radius, 0.0, MAX_RADIUS);
     if (r < 0.5) {
-        return textureSampleLevel(wisp_input0, wisp_sampler, uv, 0.0);
+        return textureSampleLevel(gobofx_input0, gobofx_sampler, uv, 0.0);
     }
 
     let sigma = r / 3.0;
     let inv_two_sigma2 = 1.0 / (2.0 * sigma * sigma);
-    let dir = vec2f(DIR_X, DIR_Y) * wisp_globals.texel;
+    let dir = vec2f(DIR_X, DIR_Y) * gobofx_globals.texel;
     let n = i32(ceil(r));
 
     var acc = vec4f(0.0);
@@ -29,7 +29,7 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
     for (var i = -n; i <= n; i++) {
         let x = f32(i);
         let w = exp(-x * x * inv_two_sigma2);
-        acc += textureSampleLevel(wisp_input0, wisp_sampler, uv + dir * x, 0.0) * w;
+        acc += textureSampleLevel(gobofx_input0, gobofx_sampler, uv + dir * x, 0.0) * w;
         wsum += w;
     }
     return acc / wsum;

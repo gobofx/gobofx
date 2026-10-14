@@ -8,9 +8,9 @@ struct Params {
 
 @fragment
 fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
-    let a = textureSampleLevel(wisp_input0, wisp_sampler, uv, 0.0);
-    let b = textureSampleLevel(wisp_input1, wisp_sampler, uv, 0.0);
-    let p = clamp(wisp_globals.progress, 0.0, 1.0);
+    let a = textureSampleLevel(gobofx_input0, gobofx_sampler, uv, 0.0);
+    let b = textureSampleLevel(gobofx_input1, gobofx_sampler, uv, 0.0);
+    let p = clamp(gobofx_globals.progress, 0.0, 1.0);
     let t = mix(p, smoothstep(0.0, 1.0, p), params.ease);
     return mix(a, b, t); // premultiplied: a plain mix is correct
 }

@@ -145,7 +145,7 @@ pub struct Pass {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Manifest {
-    pub wisp: String,
+    pub gobofx: String,
     pub id: String,
     pub name: String,
     pub kind: Kind,

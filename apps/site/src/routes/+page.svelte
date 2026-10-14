@@ -4,7 +4,7 @@
 
   // Verbatim from spec/examples/cross-dissolve — keep in sync.
   const manifest = `{
-  "wisp": "0.1",
+  "gobofx": "0.1",
   "id": "org.gobofx.cross-dissolve",
   "name": "Cross Dissolve",
   "kind": "transition",
@@ -28,9 +28,9 @@
 
 @fragment
 fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
-    let a = textureSampleLevel(wisp_input0, wisp_sampler, uv, 0.0);
-    let b = textureSampleLevel(wisp_input1, wisp_sampler, uv, 0.0);
-    let p = clamp(wisp_globals.progress, 0.0, 1.0);
+    let a = textureSampleLevel(gobofx_input0, gobofx_sampler, uv, 0.0);
+    let b = textureSampleLevel(gobofx_input1, gobofx_sampler, uv, 0.0);
+    let p = clamp(gobofx_globals.progress, 0.0, 1.0);
     let t = mix(p, smoothstep(0.0, 1.0, p), params.ease);
     return mix(a, b, t); // premultiplied: a plain mix is correct
 }`;
@@ -132,12 +132,12 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
 <section class="section">
   <div class="sectionHeader">HOST BINDINGS</div>
   <ul class="stack">
-    <li><span>0 / 0</span><span>wisp_sampler · sampler, linear filter, clamp to edge</span></li>
-    <li><span>0 / 1</span><span>wisp_globals · uniform WispGlobals: resolution, texel, time, progress</span></li>
-    <li><span>0 / 2</span><span>wisp_input0 · texture_2d&lt;f32&gt;, first pass input</span></li>
-    <li><span>0 / 3</span><span>wisp_input1 · texture_2d&lt;f32&gt;, second pass input, or 1×1 transparent</span></li>
+    <li><span>0 / 0</span><span>gobofx_sampler · sampler, linear filter, clamp to edge</span></li>
+    <li><span>0 / 1</span><span>gobofx_globals · uniform GobofxGlobals: resolution, texel, time, progress</span></li>
+    <li><span>0 / 2</span><span>gobofx_input0 · texture_2d&lt;f32&gt;, first pass input</span></li>
+    <li><span>0 / 3</span><span>gobofx_input1 · texture_2d&lt;f32&gt;, second pass input, or 1×1 transparent</span></li>
     <li><span>1 / 0</span><span>params · uniform Params, declared by the plugin to match the manifest</span></li>
-    <li><span>1 / 1</span><span>wisp_signals · uniform Signals, one f32 per MIDI 2.0 controller or note the plugin declares</span></li>
+    <li><span>1 / 1</span><span>gobofx_signals · uniform Signals, one f32 per MIDI 2.0 controller or note the plugin declares</span></li>
     <li><span>ENTRY</span><span>@fragment fn fs_main(@location(0) uv: vec2f) -&gt; @location(0) vec4f</span></li>
     <li><span>COLOUR</span><span>linear, premultiplied RGBA, rgba16float, Rec. 709 primaries, HDR allowed</span></li>
   </ul>

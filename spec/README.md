@@ -8,12 +8,13 @@ Status: **draft 0.1, unstable** — anything may change before 1.0.
 | [`manifest.schema.json`](manifest.schema.json) | JSON Schema for the manifest |
 | [`shader-abi.md`](shader-abi.md) | WGSL interface: bindings, entry point, color space |
 | [`signals.md`](signals.md) | Signals: MIDI 2.0 controllers and notes the plugin reads each frame; the host maps audio, OSC and hardware onto them |
+| [`package.md`](package.md) | Package format: the `.gobofx` ZIP profile a plugin folder is distributed as |
 | [`prelude.wgsl`](prelude.wgsl) | Host prelude prepended to every plugin shader |
 | [`examples/`](examples/) | Reference plugins: Cross Dissolve (transition), Gaussian Blur (2-pass effect), Reactive Grade (effect with signals) |
 
 ## Core decisions (v0.1)
 
-- One plugin = a JSON manifest + one or more WGSL shaders.
+- One plugin = a JSON manifest + one or more WGSL shaders, in a folder; distributed as a `.gobofx` ZIP (strict profile).
 - Two kinds: `effect` (1 input) and `transition` (2 inputs + `progress` 0..1).
 - Working space: linear, premultiplied RGBA, `rgba16float`.
 - Multi-pass via pipeline-overridable constants (`override`), set per pass in the manifest.

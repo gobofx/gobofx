@@ -3,19 +3,19 @@
 ## Module assembly
 
 The host builds each pass's shader module as `prelude.wgsl` + the plugin's `.wgsl` file.
-The prelude declares all host bindings and the vertex stage (`wisp_vs`); plugins write only fragment code.
+The prelude declares all host bindings and the vertex stage (`gobofx_vs`); plugins write only fragment code.
 The host creates pipeline layouts explicitly, so unused bindings stay valid.
 
 ## Bindings
 
 | Group | Binding | Name | Type |
 | --- | --- | --- | --- |
-| 0 | 0 | `wisp_sampler` | `sampler` — linear, clamp-to-edge |
-| 0 | 1 | `wisp_globals` | `uniform WispGlobals` — resolution, texel, time, progress |
-| 0 | 2 | `wisp_input0` | `texture_2d<f32>` — first pass input |
-| 0 | 3 | `wisp_input1` | `texture_2d<f32>` — second pass input, or 1×1 transparent |
+| 0 | 0 | `gobofx_sampler` | `sampler` — linear, clamp-to-edge |
+| 0 | 1 | `gobofx_globals` | `uniform GobofxGlobals` — resolution, texel, time, progress |
+| 0 | 2 | `gobofx_input0` | `texture_2d<f32>` — first pass input |
+| 0 | 3 | `gobofx_input1` | `texture_2d<f32>` — second pass input, or 1×1 transparent |
 | 1 | 0 | `params` | `uniform Params` — declared by the plugin, matches the manifest `params` |
-| 1 | 1 | `wisp_signals` | `uniform Signals` — declared by the plugin, one `f32` per manifest signal ([`signals.md`](signals.md)) |
+| 1 | 1 | `gobofx_signals` | `uniform Signals` — declared by the plugin, one `f32` per manifest signal ([`signals.md`](signals.md)) |
 
 ## Fragment entry
 

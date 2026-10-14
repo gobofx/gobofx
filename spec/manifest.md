@@ -7,7 +7,7 @@ Schema: [`manifest.schema.json`](manifest.schema.json).
 
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
-| `wisp` | string | yes | Spec version the plugin targets, e.g. `"0.1"` |
+| `gobofx` | string | yes | Spec version the plugin targets, e.g. `"0.1"` |
 | `id` | string | yes | Reverse-DNS unique id, e.g. `org.gobofx.cross-dissolve` |
 | `name` | string | yes | Display name |
 | `kind` | `"effect"` \| `"transition"` | yes | Effect: 1 input. Transition: 2 inputs + `progress` |
@@ -48,7 +48,7 @@ turns audio followers, OSC or hardware into controller values and uploads one `f
 | `shader` | WGSL file, relative to the manifest |
 | `entry` | Fragment entry point |
 | `constants` | Values for `override` declarations, e.g. pass direction |
-| `inputs` | 1–2 named images, bound to `wisp_input0` / `wisp_input1` |
+| `inputs` | 1–2 named images, bound to `gobofx_input0` / `gobofx_input1` |
 | `output` | Name of the image this pass writes; the last pass must write `out` |
 
 Reserved input names: `source` (effects), `from` and `to` (transitions).

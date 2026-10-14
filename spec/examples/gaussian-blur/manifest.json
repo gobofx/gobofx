@@ -1,5 +1,5 @@
 {
-  "wisp": "0.1",
+  "gobofx": "0.1",
   "id": "org.gobofx.gaussian-blur",
   "name": "Gaussian Blur",
   "kind": "effect",

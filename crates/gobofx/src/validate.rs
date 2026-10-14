@@ -44,7 +44,7 @@ pub struct PassInfo {
     pub output: String,
     /// Whether the assembled module declares the `params` uniform (group 1, binding 0).
     pub uses_params: bool,
-    /// Whether the assembled module declares the `wisp_signals` uniform (group 1, binding 1).
+    /// Whether the assembled module declares the `gobofx_signals` uniform (group 1, binding 1).
     pub uses_signals: bool,
 }
 
@@ -69,10 +69,10 @@ impl Report {
 
 /// Prelude bindings a plugin must not redeclare (group, binding, name).
 const PRELUDE_BINDINGS: &[(u32, u32, &str)] = &[
-    (0, 0, "wisp_sampler"),
-    (0, 1, "wisp_globals"),
-    (0, 2, "wisp_input0"),
-    (0, 3, "wisp_input1"),
+    (0, 0, "gobofx_sampler"),
+    (0, 1, "gobofx_globals"),
+    (0, 2, "gobofx_input0"),
+    (0, 3, "gobofx_input1"),
 ];
 
 fn is_valid_id(s: &str) -> bool {
@@ -115,7 +115,7 @@ pub fn module_uses_params(module: &Module) -> bool {
     uses_binding(module, 1, 0)
 }
 
-/// Does the assembled module declare the plugin `wisp_signals` uniform at group 1, binding 1?
+/// Does the assembled module declare the plugin `gobofx_signals` uniform at group 1, binding 1?
 pub fn module_uses_signals(module: &Module) -> bool {
     uses_binding(module, 1, 1)
 }
@@ -137,8 +137,8 @@ pub fn validate(plugin: &Plugin) -> Report {
     };
 
     // ── manifest ──────────────────────────────────────────────────────
-    if m.wisp != crate::SPEC_VERSION {
-        err(&mut d, None, format!("wisp must be \"{}\", got \"{}\"", crate::SPEC_VERSION, m.wisp));
+    if m.gobofx != crate::SPEC_VERSION {
+        err(&mut d, None, format!("gobofx must be \"{}\", got \"{}\"", crate::SPEC_VERSION, m.gobofx));
     }
     if !is_valid_id(&m.id) {
         err(&mut d, None, format!("id \"{}\" is not reverse-DNS (^[a-z0-9]+(\\.[a-z0-9-]+)+$)", m.id));
@@ -361,8 +361,8 @@ fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, sig
     for e in &module.entry_points {
         match e.stage {
             ShaderStage::Compute => diag(d, Level::Error, i, &pass.shader, format!("compute entry point \"{}\" is not allowed in v0.1", e.name)),
-            ShaderStage::Vertex if e.name != "wisp_vs" => {
-                diag(d, Level::Error, i, &pass.shader, format!("plugin declares vertex entry point \"{}\"; the host provides wisp_vs", e.name))
+            ShaderStage::Vertex if e.name != "gobofx_vs" => {
+                diag(d, Level::Error, i, &pass.shader, format!("plugin declares vertex entry point \"{}\"; the host provides gobofx_vs", e.name))
             }
             _ => {}
         }
@@ -398,7 +398,7 @@ fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, sig
             }
             signals_global = Some(g);
         } else {
-            diag(d, Level::Error, i, &pass.shader, format!("\"{}\" declares @group({}) @binding({}); plugins may only declare @group(1) @binding(0) params and @group(1) @binding(1) wisp_signals", name, b.group, b.binding));
+            diag(d, Level::Error, i, &pass.shader, format!("\"{}\" declares @group({}) @binding({}); plugins may only declare @group(1) @binding(0) params and @group(1) @binding(1) gobofx_signals", name, b.group, b.binding));
         }
     }
 
@@ -465,17 +465,17 @@ fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, sig
                     pass: Some(i),
                     file: Some(pass.shader.clone()),
                     line: None,
-                    message: format!("{} declares no wisp_signals uniform; manifest signals are ignored by this pass", pass.shader),
+                    message: format!("{} declares no gobofx_signals uniform; manifest signals are ignored by this pass", pass.shader),
                 });
             }
         }
         Some(g) => {
             let TypeInner::Struct { members, .. } = &module.types[g.ty].inner else {
-                diag(d, Level::Error, i, &pass.shader, "wisp_signals must be a struct".into());
+                diag(d, Level::Error, i, &pass.shader, "gobofx_signals must be a struct".into());
                 return;
             };
             if signals.fields.is_empty() {
-                diag(d, Level::Error, i, &pass.shader, "shader declares wisp_signals but the manifest has no signals".into());
+                diag(d, Level::Error, i, &pass.shader, "shader declares gobofx_signals but the manifest has no signals".into());
                 return;
             }
             if members.len() != signals.fields.len() {

@@ -2,7 +2,7 @@
 //!
 //! Everything here is target-agnostic and follows `spec/shader-abi.md` exactly:
 //! working space linear premultiplied rgba16float, explicit bind group layouts so
-//! unused bindings stay valid, a fullscreen triangle from the prelude's `wisp_vs`.
+//! unused bindings stay valid, a fullscreen triangle from the prelude's `gobofx_vs`.
 //! The native CLI adds PNG in/out and a blocking readback behind the `cli` feature;
 //! the browser host in `web.rs` adds a canvas surface and video import.
 
@@ -50,7 +50,7 @@ pub struct Host {
     pub sampler: wgpu::Sampler,
     pub bgl0: wgpu::BindGroupLayout,
     pub bgl1: wgpu::BindGroupLayout,
-    /// 1×1 transparent, bound as `wisp_input1` when a pass has one input.
+    /// 1×1 transparent, bound as `gobofx_input1` when a pass has one input.
     pub blank: wgpu::TextureView,
 }
 
@@ -78,7 +78,7 @@ impl Host {
             .map_err(|e| anyhow!("device: {e}"))?;
 
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
-            label: Some("wisp_sampler"),
+            label: Some("gobofx_sampler"),
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -110,7 +110,7 @@ impl Host {
         };
         // Explicit layout with every prelude binding, so an unused one stays valid (shader-abi.md).
         let bgl0 = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("wisp group 0"),
+            label: Some("gobofx group 0"),
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
@@ -123,15 +123,15 @@ impl Host {
                 tex2d(3),
             ],
         });
-        // Group 1 always carries both plugin uniforms (params at 0, wisp_signals at 1); a plugin
+        // Group 1 always carries both plugin uniforms (params at 0, gobofx_signals at 1); a plugin
         // that declares only one still gets a valid, zero-filled buffer at the other binding.
         let bgl1 = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("wisp group 1 (params, wisp_signals)"),
+            label: Some("gobofx group 1 (params, gobofx_signals)"),
             entries: &[uniform(0, wgpu::ShaderStages::FRAGMENT, None), uniform(1, wgpu::ShaderStages::FRAGMENT, None)],
         });
 
         let blank_tex = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("wisp blank 1x1"),
+            label: Some("gobofx blank 1x1"),
             size: wgpu::Extent3d { width: 1, height: 1, depth_or_array_layers: 1 },
             mip_level_count: 1,
             sample_count: 1,
@@ -183,11 +183,11 @@ impl Host {
         buf
     }
 
-    /// The 32-byte `WispGlobals` block for an output of `width`×`height`.
+    /// The 32-byte `GobofxGlobals` block for an output of `width`×`height`.
     pub fn globals_buffer(&self, width: u32, height: u32, g: Globals) -> wgpu::Buffer {
         let data: [f32; 8] =
             [width as f32, height as f32, 1.0 / width as f32, 1.0 / height as f32, g.time, g.progress, 0.0, 0.0];
-        self.uniform_buffer("wisp_globals", bytemuck::cast_slice(&data))
+        self.uniform_buffer("gobofx_globals", bytemuck::cast_slice(&data))
     }
 
     /// A working-space render target.
@@ -206,7 +206,7 @@ impl Host {
 
     pub fn bind_group0(&self, globals: &wgpu::Buffer, in0: &wgpu::TextureView, in1: &wgpu::TextureView) -> wgpu::BindGroup {
         self.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("wisp group 0"),
+            label: Some("gobofx group 0"),
             layout: &self.bgl0,
             entries: &[
                 wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Sampler(&self.sampler) },
@@ -243,7 +243,7 @@ impl Host {
             layout: Some(&layout),
             vertex: wgpu::VertexState {
                 module: &module,
-                entry_point: Some("wisp_vs"),
+                entry_point: Some("gobofx_vs"),
                 buffers: &[],
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
@@ -349,9 +349,9 @@ impl Host {
         }
         let globals_buf = self.globals_buffer(width, height, globals);
         let params_buf = self.uniform_buffer("params", &params::encode(&compiled.params_layout, values));
-        let signals_buf = self.uniform_buffer("wisp_signals", &params::encode_signals(&compiled.signals_layout, signal_values));
+        let signals_buf = self.uniform_buffer("gobofx_signals", &params::encode_signals(&compiled.signals_layout, signal_values));
         let bg1 = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("wisp group 1"),
+            label: Some("gobofx group 1"),
             layout: &self.bgl1,
             entries: &[
                 wgpu::BindGroupEntry { binding: 0, resource: params_buf.as_entire_binding() },
