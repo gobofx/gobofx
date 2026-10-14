@@ -212,6 +212,13 @@
     };
   });
 
+  /** Route every signal to one source, or back to the manifest's defaults. */
+  function routeAll(to: SignalSource | 'default') {
+    const ss: Record<string, SignalSource> = {};
+    for (const s of signals) ss[s.id] = to === 'default' ? defaultSource(s) : to;
+    signalSource = ss;
+  }
+
   /** Which computer key plays a note-bound signal, if any. */
   function keyFor(s: Signal): string | null {
     if (s.note === undefined) return null;
@@ -487,8 +494,9 @@
         </div>
       </div>
       <p class="dim small">
-        Test clips are synthetic. Clip A carries a kick drum at 120 BPM. With Reactive Grade loaded, each kick becomes a MIDI note that
-        flashes and punches the picture, and the bass level becomes a controller that pumps the saturation. Watch the meters under SIGNALS.
+        Test clips are synthetic. Clip A carries a kick drum at 120 BPM. With Reactive Grade loaded, each kick becomes MIDI notes that
+        flash and punch the picture, and the bass level becomes a controller that pumps the saturation. Watch the meters under SIGNALS,
+        or route the signals to MIDI and play the picture yourself: C1 saturates, D1 flashes, E1 punches (keys A, S, D).
       </p>
     </div>
 
@@ -540,13 +548,26 @@
 
     <div class="panel">
       <div class="sectionHeader">SIGNALS</div>
+      {#if signals.length}
+        <div class="row">
+          <button class="btn ghost small" onclick={() => routeAll('midi')}>→ PLAY ALL ON MIDI / KEYS</button>
+          <button class="btn ghost small" onclick={() => routeAll('default')}>→ BACK TO AUDIO</button>
+        </div>
+      {/if}
       {#if signals.length === 0}
         <p class="dim small">This plugin declares no signals.</p>
       {:else}
         <p class="dim small">
-          Every plugin has a virtual MIDI 2.0 input. Each signal below is a controller or a note on it. The plugin never hears audio: the host
-          listens to clip A, turns the bass band into a controller value and each kick onset into a note, and uploads the result to the
-          shader as a 0..1 float every frame. Swap the source to a slider or your own MIDI device and the plugin does not know the difference.
+          <strong>How this works.</strong> Every plugin has a virtual MIDI 2.0 input, and each signal below is one controller or one note on
+          it. The plugin never hears audio or sees MIDI events. The host decides what feeds each note or controller and uploads the result to
+          the shader as a 0..1 float every frame. Right now the host is this page: it listens to clip A, turns the bass band into a
+          controller value and every kick into a note. Change a source to a slider, your MIDI device or the computer keyboard and the plugin
+          cannot tell the difference.
+        </p>
+        <p class="dim small">
+          <strong>Play the picture.</strong> Reactive Grade binds three notes: C1 saturates, D1 flashes, E1 punches in. Click
+          <span class="mono">PLAY ALL ON MIDI / KEYS</span>, then play C1, D1 and E1 on a MIDI keyboard, or press A, S and D on this
+          keyboard. Hold a key and the effect holds; release it and the note's release time fades it out.
         </p>
       {/if}
       {#each signals as s (s.id)}
@@ -580,7 +601,7 @@
           <span class="mono dim">{midiState === 'on' ? (midi.inputs.length ? midi.inputs.join(', ') : 'no inputs') : midiState === 'none' ? 'Web MIDI unavailable' : ''}{midiLast ? ` · ${midiLast}` : ''}</span>
         </div>
         <p class="dim small">
-          No controller? The computer keyboard plays notes 36–48: A W S E D F T G Y H U J K, one octave up from C1.
+          No controller? The computer keyboard plays notes 36–48 (C1 to C2): A W S E D F T G Y H U J K.
           {#each signals.filter((s) => (signalSource[s.id] ?? 'manual') === 'midi' && keyFor(s)) as s (s.id)}
             Press <span class="mono">{keyFor(s)}</span> for {s.label ?? s.id} (note {s.note}).
           {/each}
