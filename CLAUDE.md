@@ -56,7 +56,7 @@ pnpm --filter @gobofx/site run deploy         # build + wrangler deploy (only wh
 
 ## Deploying gobofx.org
 
-The site lives in the **Cf@etiamo.com** Cloudflare account. Because this repo
+The site lives in a dedicated Cloudflare account; its id is not in this repo. Because this repo
 is public, `wrangler.jsonc` carries no `account_id`; the deploying account is
 selected by `CLOUDFLARE_ACCOUNT_ID` from the gitignored `.env` at the repo
 root (template: `.env.example`). The wrangler login sees more than one
