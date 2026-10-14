@@ -48,7 +48,7 @@
       tag: '07 / EXAMPLES',
       href: tree + 'examples',
       file: 'examples/',
-      summary: 'Cross Dissolve (transition), Gaussian Blur (two passes with override constants) and Reactive Grade (a colour grade driven by signals). All pass naga and validate against the schema.'
+      summary: 'Cross Dissolve (transition), Gaussian Blur (two passes with override constants) and Reactive Grade (a colour grade where a kick note flashes and punches the picture and the bass controller pumps saturation). All pass naga and validate against the schema.'
     }
   ];
 </script>

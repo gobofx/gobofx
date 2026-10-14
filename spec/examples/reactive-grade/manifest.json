@@ -11,11 +11,12 @@
     { "id": "contrast", "label": "Contrast", "type": "float", "default": 1.0, "min": 0.0, "max": 2.0 },
     { "id": "temperature", "label": "Temperature", "type": "float", "default": 0.0, "min": -1.0, "max": 1.0 },
     { "id": "bass_to_saturation", "label": "Bass → Saturation", "type": "float", "default": 1.0, "min": -2.0, "max": 2.0 },
-    { "id": "hit_flash", "label": "Hit flash", "type": "float", "default": 0.3, "min": 0.0, "max": 1.0 }
+    { "id": "hit_flash", "label": "Hit flash", "type": "float", "default": 0.5, "min": 0.0, "max": 1.0 },
+    { "id": "hit_punch", "label": "Hit punch", "type": "float", "default": 0.06, "min": 0.0, "max": 0.25 }
   ],
   "signals": [
     { "id": "bass", "label": "Bass", "cc": 1, "hint": "audio follower, 40–160 Hz", "attack_ms": 10, "release_ms": 250 },
-    { "id": "hit", "label": "Hit", "note": 36, "mode": "gate", "hint": "kick drum", "release_ms": 120 }
+    { "id": "hit", "label": "Hit", "note": 36, "mode": "gate", "hint": "kick drum", "release_ms": 160 }
   ],
   "passes": [
     { "shader": "shader.wgsl", "entry": "fs_main", "inputs": ["source"], "output": "out" }

@@ -1,7 +1,7 @@
 // Reactive Grade — saturation, contrast and temperature, driven by signals.
 // `bass` (a controller the host feeds from an audio follower) adds saturation;
-// `hit` (a note gate) flashes the picture. Both arrive as 0..1 floats; the
-// plugin never sees MIDI events or audio.
+// `hit` (a note gate) flashes the picture and punches in a few percent. Both
+// arrive as 0..1 floats; the plugin never sees MIDI events or audio.
 
 struct Params {
     saturation: f32,
@@ -9,6 +9,7 @@ struct Params {
     temperature: f32,          // -1 cool … +1 warm
     bass_to_saturation: f32,   // how much `bass` adds to saturation
     hit_flash: f32,            // how bright a `hit` flashes
+    hit_punch: f32,            // how far a `hit` zooms in (fraction of the frame)
 }
 @group(1) @binding(0) var<uniform> params: Params;
 
@@ -22,7 +23,10 @@ const LUMA = vec3f(0.2126, 0.7152, 0.0722); // Rec. 709, linear
 
 @fragment
 fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
-    let p = textureSampleLevel(gobofx_input0, gobofx_sampler, uv, 0.0);
+    // Punch: zoom into the centre by `hit * hit_punch` while the note is on.
+    let zoom = 1.0 - gobofx_signals.hit * params.hit_punch;
+    let puv = (uv - 0.5) * zoom + 0.5;
+    let p = textureSampleLevel(gobofx_input0, gobofx_sampler, puv, 0.0);
     let a = p.a;
     // Grade straight (unpremultiplied) colour, then premultiply again.
     var c = select(vec3f(0.0), p.rgb / max(a, 1e-6), a > 0.0);

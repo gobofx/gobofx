@@ -84,13 +84,22 @@
   const envelopes = new Map<string, Envelope>();
 
   // Kick onset: a gate that fires when the bass band crosses a threshold on a rising edge.
+  // The bundled kick peaks near 0.6 on the follower and decays below 0.1 before the next one;
+  // a refractory window stops a slow decay from re-triggering.
+  const ONSET_THRESHOLD = 0.45;
+  const ONSET_HOLD_MS = 90; // how long the note stays on
+  const ONSET_REFRACTORY_MS = 150;
   let onsetPrev = 0;
   let onsetUntil = 0;
+  let onsetLastFire = -1e9;
   function onsetGate(now: number): number {
     const lvl = follower.level('bass');
-    const rising = lvl > 0.55 && onsetPrev <= 0.55;
+    const rising = lvl > ONSET_THRESHOLD && onsetPrev <= ONSET_THRESHOLD;
     onsetPrev = lvl;
-    if (rising) onsetUntil = now + 90;
+    if (rising && now - onsetLastFire > ONSET_REFRACTORY_MS) {
+      onsetLastFire = now;
+      onsetUntil = now + ONSET_HOLD_MS;
+    }
     return now < onsetUntil ? 1 : 0;
   }
 
@@ -465,7 +474,10 @@
           </div>
         </div>
       </div>
-      <p class="dim small">Test clips are synthetic. Clip A carries a kick-drum pattern for the audio follower.</p>
+      <p class="dim small">
+        Test clips are synthetic. Clip A carries a kick drum at 120 BPM. With Reactive Grade loaded, each kick becomes a MIDI note that
+        flashes and punches the picture, and the bass level becomes a controller that pumps the saturation. Watch the meters under SIGNALS.
+      </p>
     </div>
 
     <div class="panel">
@@ -520,7 +532,9 @@
         <p class="dim small">This plugin declares no signals.</p>
       {:else}
         <p class="dim small">
-          Each signal is a MIDI 2.0 controller or note on the plugin's input. Here the host side is a slider, an audio follower on clip A, or your MIDI device.
+          Every plugin has a virtual MIDI 2.0 input. Each signal below is a controller or a note on it. The plugin never hears audio: the host
+          listens to clip A, turns the bass band into a controller value and each kick onset into a note, and uploads the result to the
+          shader as a 0..1 float every frame. Swap the source to a slider or your own MIDI device and the plugin does not know the difference.
         </p>
       {/if}
       {#each signals as s (s.id)}

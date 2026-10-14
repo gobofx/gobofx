@@ -99,7 +99,7 @@ any effect with a shape mask and animate any param marked `animatable`.
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
 | Color Adjustments | Exposure, contrast, saturation, temperature, tint in one | Core | |
-| Reactive Grade | Saturation, contrast and temperature driven by audio and MIDI signals | Core | signals |
+| Reactive Grade | Saturation, contrast and temperature driven by audio and MIDI signals; a kick note flashes and punches in | Core | signals |
 | Hue/Saturation | Shift hue, saturation, value | Core | |
 | Color Wheels | Lift, gamma, gain wheels | Planned | |
 | Color Curves | Per-channel RGB curves | Planned | a curve param type |

@@ -76,14 +76,17 @@ export class AudioFollower {
     const hzPerBin = this.ctx.sampleRate / this.analyser.fftSize;
     const a = Math.max(0, Math.floor(lo / hzPerBin));
     const b = Math.min(this.freq.length - 1, Math.ceil(hi / hzPerBin));
-    let acc = 0;
+    // Mean power across the band, then dB. Averaging the per-bin dB values instead would let the
+    // empty bins drag a full-scale 55 Hz kick down to ~0.4 and nothing would ever cross a gate.
+    let power = 0;
     let n = 0;
     for (let i = a; i <= b; i++) {
-      acc += this.freq[i];
+      const mag = Math.pow(10, this.freq[i] / 20);
+      power += mag * mag;
       n++;
     }
     if (n === 0) return 0;
-    const db = acc / n; // typically -100..0
+    const db = 10 * Math.log10(Math.max(power / n, 1e-24));
     return Math.min(1, Math.max(0, (db + 60) / 60)); // -60 dB → 0, 0 dB → 1
   }
 }
