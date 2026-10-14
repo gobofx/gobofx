@@ -1,5 +1,11 @@
-// Audio follower: turns a <video>'s audio into 0..1 levels the page maps onto signals.
+// Audio follower: turns audio into 0..1 levels the page maps onto signals.
 // This is the host side of spec/signals.md — the plugin only ever sees the number.
+//
+// Two audio paths feed the analyser:
+//  - LoopClip: the bundled test clip, decoded once and looped by an AudioBufferSourceNode.
+//    That loop is sample-accurate; a <video loop> is not (it seeks to 0 and flushes the decoder,
+//    so every wrap slips by a few samples to a frame). The clip is also the transport clock.
+//  - a media element, for clips the user loads; those are not pre-decoded.
 
 export type Band = 'rms' | 'bass' | 'mid' | 'high';
 
@@ -12,25 +18,43 @@ const BANDS: Record<Exclude<Band, 'rms'>, [number, number]> = {
 export class AudioFollower {
   private ctx: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
-  private source: MediaElementAudioSourceNode | null = null;
+  private gain: GainNode | null = null;
   private freq = new Float32Array(0);
   private time = new Float32Array(0);
-  private attached: HTMLMediaElement | null = null;
+  private elements = new Map<HTMLMediaElement, MediaElementAudioSourceNode>();
 
-  /** Attach to a media element (once per element; a media element can only have one source node). */
-  attach(el: HTMLMediaElement) {
-    if (this.attached === el) return;
-    if (this.attached) return; // one follower per element for the life of the page
+  /** The context is created lazily, inside the user gesture that starts playback. */
+  context(): AudioContext {
+    if (this.ctx) return this.ctx;
     this.ctx = new AudioContext();
     this.analyser = this.ctx.createAnalyser();
     this.analyser.fftSize = 2048;
     this.analyser.smoothingTimeConstant = 0.5;
-    this.source = this.ctx.createMediaElementSource(el);
-    this.source.connect(this.analyser);
-    this.analyser.connect(this.ctx.destination);
+    this.gain = this.ctx.createGain();
+    this.analyser.connect(this.gain);
+    this.gain.connect(this.ctx.destination);
     this.freq = new Float32Array(this.analyser.frequencyBinCount);
     this.time = new Float32Array(this.analyser.fftSize);
-    this.attached = el;
+    return this.ctx;
+  }
+
+  /** Route a node into the analyser (and on to the speakers through the sound gain). */
+  tap(node: AudioNode) {
+    this.context();
+    node.connect(this.analyser!);
+  }
+
+  /** Attach a media element. A media element can only ever have one source node, so this is cached. */
+  attach(el: HTMLMediaElement) {
+    if (this.elements.has(el)) return;
+    const src = this.context().createMediaElementSource(el);
+    this.elements.set(el, src);
+    this.tap(src);
+  }
+
+  /** Speakers on or off. The analyser keeps running either way so signals still follow. */
+  setSound(on: boolean) {
+    if (this.gain) this.gain.gain.value = on ? 1 : 0;
   }
 
   async resume() {
@@ -61,6 +85,77 @@ export class AudioFollower {
     if (n === 0) return 0;
     const db = acc / n; // typically -100..0
     return Math.min(1, Math.max(0, (db + 60) / 60)); // -60 dB → 0, 0 dB → 1
+  }
+}
+
+/**
+ * A decoded audio clip looped sample-accurately by Web Audio. Also the transport clock:
+ * `time()` is the position inside the loop, which the page uses as plugin time and to keep
+ * the (muted) video elements in step.
+ */
+export class LoopClip {
+  private buffer: AudioBuffer | null = null;
+  private node: AudioBufferSourceNode | null = null;
+  private loopStart = 0;
+  private loopLen = 0;
+  private startedAt = 0; // ctx time at which position 0 of the loop would have played
+  private paused = 0; // loop position while not playing
+  private url = '';
+
+  constructor(private follower: AudioFollower) {}
+
+  get playing() {
+    return this.node !== null;
+  }
+
+  get duration() {
+    return this.loopLen;
+  }
+
+  /**
+   * Decode `url` and loop its final `seconds`. Looping the tail, not the head, keeps the loop
+   * exact whether or not the browser trims AAC priming samples from the front of the decode.
+   */
+  async load(url: string, seconds: number) {
+    if (this.url === url && this.buffer) return;
+    const ctx = this.follower.context();
+    const bytes = await (await fetch(url)).arrayBuffer();
+    const buf = await ctx.decodeAudioData(bytes);
+    this.buffer = buf;
+    this.url = url;
+    this.loopLen = Math.min(seconds, buf.duration);
+    this.loopStart = buf.duration - this.loopLen;
+    this.paused = 0;
+  }
+
+  play(offset = this.paused) {
+    if (!this.buffer || this.node) return;
+    const ctx = this.follower.context();
+    const n = ctx.createBufferSource();
+    n.buffer = this.buffer;
+    n.loop = true;
+    n.loopStart = this.loopStart;
+    n.loopEnd = this.loopStart + this.loopLen;
+    this.follower.tap(n);
+    const pos = ((offset % this.loopLen) + this.loopLen) % this.loopLen;
+    n.start(0, this.loopStart + pos);
+    this.startedAt = ctx.currentTime - pos;
+    this.node = n;
+  }
+
+  pause() {
+    if (!this.node) return;
+    this.paused = this.time();
+    this.node.stop();
+    this.node.disconnect();
+    this.node = null;
+  }
+
+  /** Position inside the loop, in seconds. */
+  time(): number {
+    if (!this.node || this.loopLen === 0) return this.paused;
+    const t = this.follower.context().currentTime - this.startedAt;
+    return ((t % this.loopLen) + this.loopLen) % this.loopLen;
   }
 }
 

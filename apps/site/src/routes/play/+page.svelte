@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { examples, type ExamplePlugin } from '$lib/play/examples';
-  import { AudioFollower, Envelope, type Band } from '$lib/play/follower';
+  import { AudioFollower, Envelope, LoopClip, type Band } from '$lib/play/follower';
   import { MidiInput } from '$lib/play/midi';
 
   type WebHost = {
@@ -70,6 +70,12 @@
   let signalLive = $state<Record<string, number>>({});
 
   const follower = new AudioFollower();
+  // The bundled clip's audio, decoded once and looped by Web Audio. It is the transport clock:
+  // a <video loop> slips a few samples to a frame on every wrap, a buffer loop does not.
+  const clip = new LoopClip(follower);
+  const CLIP_SECONDS = 8;
+  let clipAudio = true; // false once the user loads their own clip A: then the element's audio is followed
+  const SYNC_TOLERANCE = 0.08; // seconds of picture drift before a video is pulled back onto the clock
   const midi = new MidiInput();
   let midiState = $state<'off' | 'on' | 'none'>('off');
   let midiLast = $state('');
@@ -137,8 +143,21 @@
           if (!ready) return; // first frames not decoded yet; nothing to render
           host.set_video(kind === 'effect' ? 'source' : 'from', a);
           if (kind === 'transition') host.set_video('to', b);
-          const dur = a.duration || 8;
-          const t = a.currentTime || 0;
+          let dur: number;
+          let t: number;
+          if (clipAudio && clip.playing) {
+            dur = clip.duration;
+            t = clip.time();
+            // Keep the muted pictures on the audio clock; a <video loop> drifts at every wrap.
+            for (const v of kind === 'transition' ? [a, b] : [a]) {
+              if (v.seeking || !v.duration) continue;
+              const vt = t % v.duration;
+              if (Math.abs(v.currentTime - vt) > SYNC_TOLERANCE) v.currentTime = vt;
+            }
+          } else {
+            dur = a.duration || CLIP_SECONDS;
+            t = a.currentTime || 0;
+          }
           const p = kind === 'transition' ? (autoProgress ? t / dur : progress) : t / dur;
           if (kind === 'transition' && autoProgress) progress = p;
 
@@ -288,14 +307,30 @@
     const a = videoA!;
     const b = videoB!;
     if (playing) {
+      clip.pause();
       a.pause();
       b.pause();
       playing = false;
       return;
     }
-    follower.attach(a);
+    follower.context();
     await follower.resume();
-    a.muted = !sound;
+    follower.setSound(sound);
+    if (clipAudio) {
+      try {
+        await clip.load(a.currentSrc || a.src, CLIP_SECONDS);
+      } catch (e) {
+        console.warn('bundled clip audio could not be decoded; following the video element instead', e);
+        clipAudio = false;
+      }
+    }
+    if (clipAudio) {
+      a.muted = true; // picture only; the sound comes from the loop clip
+      clip.play(); // from the start, or from where it was paused; the tick pulls the pictures onto it
+    } else {
+      follower.attach(a);
+      a.muted = false; // the element is the source; the follower's gain is the sound switch
+    }
     b.muted = true;
     await Promise.all([a.play(), b.play()]);
     playing = true;
@@ -303,7 +338,7 @@
 
   function toggleSound() {
     sound = !sound;
-    if (videoA) videoA.muted = !sound;
+    follower.setSound(sound);
   }
 
   async function connectMidi() {
@@ -315,6 +350,13 @@
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
     const el = slot === 'a' ? videoA! : videoB!;
+    if (slot === 'a') {
+      // A user clip is not pre-decoded: follow the element's own audio from here on.
+      clip.pause();
+      clipAudio = false;
+      follower.attach(el);
+      el.muted = false;
+    }
     el.src = URL.createObjectURL(file);
     el.load();
     if (playing) el.play();
