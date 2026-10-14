@@ -4,7 +4,7 @@
 
   let { children } = $props();
 
-  const repo = 'https://github.com/taluvi-dev/wispfx';
+  const repo = 'https://github.com/gobofx/gobofx';
   const onSpec = $derived(page.url.pathname.startsWith('/spec'));
   const onPlay = $derived(page.url.pathname.startsWith('/play'));
 </script>
@@ -32,7 +32,7 @@
     <div class="footSep">·</div>
     <div>MIT OR Apache-2.0</div>
     <div class="footSep">·</div>
-    <div><a href={repo} target="_blank" rel="noreferrer noopener">github.com/taluvi-dev/wispfx</a></div>
+    <div><a href={repo} target="_blank" rel="noreferrer noopener">github.com/gobofx/gobofx</a></div>
     <div class="footSep">·</div>
     <div>{new Date().getFullYear()}</div>
   </footer>

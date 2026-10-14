@@ -1,6 +1,6 @@
 <script lang="ts">
-  const blob = 'https://github.com/taluvi-dev/wispfx/blob/main/spec/';
-  const tree = 'https://github.com/taluvi-dev/wispfx/tree/main/spec/';
+  const blob = 'https://github.com/gobofx/gobofx/blob/main/spec/';
+  const tree = 'https://github.com/gobofx/gobofx/tree/main/spec/';
 
   const files = [
     {

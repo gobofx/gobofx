@@ -1,5 +1,5 @@
 <script lang="ts">
-  const repo = 'https://github.com/taluvi-dev/wispfx';
+  const repo = 'https://github.com/gobofx/gobofx';
   const frames = Array.from({ length: 14 }, (_, i) => i);
 
   // Verbatim from spec/examples/cross-dissolve — keep in sync.
