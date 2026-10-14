@@ -1,4 +1,4 @@
-//! `wispfx` — test tool for WispFX plugins. Made for people and for agents:
+//! `gobofx` — test tool for GoboFX plugins. Made for people and for agents:
 //! every command has a `--json` form, exit codes are meaningful, and `render`
 //! writes PNGs that can be looked at.
 //!
@@ -12,13 +12,13 @@ use anyhow::{anyhow, bail, Context, Result};
 use clap::{Args, Parser, Subcommand};
 use serde::Serialize;
 
-use wispfx::manifest::{Kind, Plugin};
-use wispfx::params;
-use wispfx::render::{Globals, Host, Image};
-use wispfx::validate::{self, Level};
+use gobofx::manifest::{Kind, Plugin};
+use gobofx::params;
+use gobofx::render::{Globals, Host, Image};
+use gobofx::validate::{self, Level};
 
 #[derive(Parser)]
-#[command(name = "wispfx", version, about = "Validate and render WispFX plugins headlessly.")]
+#[command(name = "gobofx", version, about = "Validate and render GoboFX plugins headlessly.")]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
@@ -139,7 +139,7 @@ fn run() -> Result<ExitCode> {
             let report = validate::validate(&plugin);
             #[derive(Serialize)]
             struct Info<'a> {
-                manifest: &'a wispfx::manifest::Manifest,
+                manifest: &'a gobofx::manifest::Manifest,
                 report: &'a validate::Report,
             }
             println!("{}", serde_json::to_string_pretty(&Info { manifest: &plugin.manifest, report: &report })?);

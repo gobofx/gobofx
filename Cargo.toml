@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/wispfx"]
+members = ["crates/gobofx"]
 
 [workspace.package]
 version = "0.1.0"

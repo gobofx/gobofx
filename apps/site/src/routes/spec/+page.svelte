@@ -14,7 +14,7 @@
       tag: '02 / SCHEMA',
       href: blob + 'manifest.schema.json',
       file: 'manifest.schema.json',
-      summary: 'Draft 2020-12 JSON Schema for manifest.json, published at wispfx.org/schema/0.1/manifest.json. Validate before shipping.'
+      summary: 'Draft 2020-12 JSON Schema for manifest.json, published at gobofx.org/schema/0.1/manifest.json. Validate before shipping.'
     },
     {
       tag: '03 / ABI',
@@ -47,8 +47,8 @@
 </script>
 
 <svelte:head>
-  <title>WISPFX.ORG — specification</title>
-  <meta name="description" content="The WispFX specification: manifest, JSON schema, shader ABI, host prelude and reference plugins." />
+  <title>GOBOFX.ORG — specification</title>
+  <meta name="description" content="The GoboFX specification: manifest, JSON schema, shader ABI, host prelude and reference plugins." />
 </svelte:head>
 
 <section class="hero">

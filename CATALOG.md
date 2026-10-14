@@ -1,7 +1,7 @@
-# WispFX reference catalogue
+# GoboFX reference catalogue
 
 Status: **target list, draft 0.1.** The effects and transitions a complete
-WispFX plugin library should cover. Rows are ticked as open-source reference
+GoboFX plugin library should cover. Rows are ticked as open-source reference
 plugins land under `plugins/`. A row in this list is a goal, not a promise of
 availability in any host.
 

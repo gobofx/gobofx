@@ -1,6 +1,6 @@
 {
   "wisp": "0.1",
-  "id": "org.wispfx.reactive-grade",
+  "id": "org.gobofx.reactive-grade",
   "name": "Reactive Grade",
   "kind": "effect",
   "category": "color",

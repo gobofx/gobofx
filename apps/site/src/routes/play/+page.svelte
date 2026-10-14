@@ -113,7 +113,7 @@
         return;
       }
       try {
-        const mod = await import('$lib/wasm/wispfx.js');
+        const mod = await import('$lib/wasm/gobofx.js');
         await mod.default();
         host = (await mod.create_host(canvasEl!)) as unknown as WebHost;
         adapter = host.adapter_name();
@@ -334,8 +334,8 @@
 </script>
 
 <svelte:head>
-  <title>WISPFX.ORG — play</title>
-  <meta name="description" content="Run a WispFX plugin in the browser on WebGPU: pick a reference plugin or open your own folder, play test clips, drive signals from audio or MIDI." />
+  <title>GOBOFX.ORG — play</title>
+  <meta name="description" content="Run a GoboFX plugin in the browser on WebGPU: pick a reference plugin or open your own folder, play test clips, drive signals from audio or MIDI." />
 </svelte:head>
 
 <section class="head">

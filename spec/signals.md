@@ -6,7 +6,7 @@ the shader; the host decides what feeds them. A colour grade whose saturation
 follows the bass, or whose contrast snaps on a drum hit, is the plugin author's
 design, written once and portable to every host.
 
-**Signals are MIDI 2.0 controllers.** Every WispFX plugin has one virtual MIDI
+**Signals are MIDI 2.0 controllers.** Every GoboFX plugin has one virtual MIDI
 2.0 input. A signal binds either a control change number or a note on that
 input. The plugin never sees audio, OSC or hardware; the host owns that
 translation. An audio envelope follower, an OSC address, a hardware fader and a

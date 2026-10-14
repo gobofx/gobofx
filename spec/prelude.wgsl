@@ -1,4 +1,4 @@
-// WispFX host prelude — v0.1 (draft)
+// GoboFX host prelude — v0.1 (draft)
 // Prepended by the host to every plugin shader module. Plugins must not
 // redeclare anything in this file.
 

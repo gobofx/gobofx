@@ -2,7 +2,7 @@
   // PUBLIC REPO — do not add account_id, secrets, or env values here.
   // Use `wrangler secret put <NAME>` or the Cloudflare dashboard for credentials.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "wispfx-site",
+  "name": "gobofx-site",
   "main": ".svelte-kit/cloudflare/_worker.js",
   "compatibility_date": "2026-05-13",
   "compatibility_flags": ["nodejs_compat"],
@@ -15,7 +15,7 @@
     "head_sampling_rate": 1
   },
   "routes": [
-    { "pattern": "wispfx.org", "custom_domain": true },
-    { "pattern": "www.wispfx.org", "custom_domain": true }
+    { "pattern": "gobofx.org", "custom_domain": true },
+    { "pattern": "www.gobofx.org", "custom_domain": true }
   ]
 }

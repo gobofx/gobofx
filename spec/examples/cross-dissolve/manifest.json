@@ -1,6 +1,6 @@
 {
   "wisp": "0.1",
-  "id": "org.wispfx.cross-dissolve",
+  "id": "org.gobofx.cross-dissolve",
   "name": "Cross Dissolve",
   "kind": "transition",
   "category": "dissolve",

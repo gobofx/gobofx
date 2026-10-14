@@ -1,24 +1,24 @@
-# wispfx — reference crate, test CLI and browser host
+# gobofx — reference crate, test CLI and browser host
 
-One crate, three targets: the `wispfx` CLI on macOS, Windows and Linux (Metal,
+One crate, three targets: the `gobofx` CLI on macOS, Windows and Linux (Metal,
 DX12, Vulkan), and the same host compiled to WebAssembly for the browser on
-WebGPU, which powers the play page at wispfx.org/play. Validation, module
+WebGPU, which powers the play page at gobofx.org/play. Validation, module
 assembly, parameter layout and the pass pipeline are identical on all of them.
 
-Validates and renders WispFX plugins headlessly, with no host application. Made
+Validates and renders GoboFX plugins headlessly, with no host application. Made
 for people and for agents: every command has a `--json` form, exit codes are
 meaningful (0 ok, 1 the plugin failed, 2 bad usage), and `render` writes PNGs.
 
 ```sh
-cargo build -p wispfx --release          # binary at target/release/wispfx
+cargo build -p gobofx --release          # binary at target/release/gobofx
 
-wispfx check  spec/examples/gaussian-blur            # manifest rules + naga, per pass
-wispfx check  spec/examples/gaussian-blur --json     # same, machine-readable
-wispfx info   spec/examples/gaussian-blur            # manifest, params layout, passes
+gobofx check  spec/examples/gaussian-blur            # manifest rules + naga, per pass
+gobofx check  spec/examples/gaussian-blur --json     # same, machine-readable
+gobofx info   spec/examples/gaussian-blur            # manifest, params layout, passes
 
-wispfx render spec/examples/gaussian-blur  -i fixtures/a.png -p radius=12 -o blur.png
-wispfx render spec/examples/cross-dissolve -i fixtures/a.png -i fixtures/b.png --steps 9 --out-dir frames
-wispfx render spec/examples/reactive-grade  -i fixtures/a.png -s bass=1 -s hit=1 -o grade.png
+gobofx render spec/examples/gaussian-blur  -i fixtures/a.png -p radius=12 -o blur.png
+gobofx render spec/examples/cross-dissolve -i fixtures/a.png -i fixtures/b.png --steps 9 --out-dir frames
+gobofx render spec/examples/reactive-grade  -i fixtures/a.png -s bass=1 -s hit=1 -o grade.png
 ```
 
 - Effects take one `-i` (source); transitions take two (from, then to).

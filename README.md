@@ -1,15 +1,15 @@
-# WispFX
+# GoboFX
 
 Open standard for portable video effects and transitions: a JSON manifest plus WGSL shaders, running identically in native wgpu hosts and in the browser via WebGPU.
 
-**Status: draft 0.1 — unstable, expect breaking changes.** · https://wispfx.org
+**Status: draft 0.1 — unstable, expect breaking changes.** · https://gobofx.org
 
 | Folder | Contents |
 | --- | --- |
 | [`spec/`](spec/) | Specification, schema, host prelude and reference examples |
 | [`CATALOG.md`](CATALOG.md) | Reference catalogue: the effects and transitions a complete plugin library should cover |
-| [`crates/wispfx/`](crates/wispfx/) | Reference crate and the `wispfx` CLI: validate and render plugins headlessly |
-| [`apps/site/`](apps/site/) | Source for wispfx.org (SvelteKit on a Cloudflare Worker) |
+| [`crates/gobofx/`](crates/gobofx/) | Reference crate and the `gobofx` CLI: validate and render plugins headlessly |
+| [`apps/site/`](apps/site/) | Source for gobofx.org (SvelteKit on a Cloudflare Worker) |
 
 ## License
 

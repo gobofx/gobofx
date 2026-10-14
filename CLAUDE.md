@@ -1,16 +1,16 @@
-# wispfx
+# gobofx
 
 Open standard for portable video effects and transitions: a JSON manifest
 plus WGSL shaders, running identically in native wgpu hosts and in the
-browser via WebGPU. Home page: <https://wispfx.org>. Dual licensed MIT OR
+browser via WebGPU. Home page: <https://gobofx.org>. Dual licensed MIT OR
 Apache-2.0; contributions need a DCO sign-off (`git commit -s`).
 
 ## Repo layout
 
 ```
-wispfx/
+gobofx/
 ├── apps/
-│   └── site/        # wispfx.org — SvelteKit 5 (runes) on a Cloudflare Worker
+│   └── site/        # gobofx.org — SvelteKit 5 (runes) on a Cloudflare Worker
 ├── spec/            # the standard: manifest.md, manifest.schema.json, shader-abi.md,
 │   │                #   prelude.wgsl, examples/ (reference plugins, naga-validated)
 ├── crates/          # reference Rust crate (parse, validate, wrap, params layout) — later
@@ -50,11 +50,11 @@ pnpm install
 pnpm dev                                  # vite dev for the site
 pnpm build                                # vite build (adapter-cloudflare)
 pnpm check                                # svelte-check, must be clean
-pnpm --filter @wispfx/site preview        # wrangler dev on the built worker
-pnpm --filter @wispfx/site run deploy         # build + wrangler deploy (only when asked)
+pnpm --filter @gobofx/site preview        # wrangler dev on the built worker
+pnpm --filter @gobofx/site run deploy         # build + wrangler deploy (only when asked)
 ```
 
-## Deploying wispfx.org
+## Deploying gobofx.org
 
 The site lives in the **Cf@etiamo.com** Cloudflare account. Because this repo
 is public, `wrangler.jsonc` carries no `account_id`; the deploying account is
@@ -63,11 +63,11 @@ root (template: `.env.example`). The wrangler login sees more than one
 account, so without it a non-interactive deploy stops to ask.
 
 ```sh
-set -a && . ./.env && set +a && pnpm --filter @wispfx/site run deploy
+set -a && . ./.env && set +a && pnpm --filter @gobofx/site run deploy
 ```
 
 Deploy only from a clean, committed `main`, and only when Mat says so. The
-`wispfx.org` zone must exist in the same account for the custom-domain routes
+`gobofx.org` zone must exist in the same account for the custom-domain routes
 in `wrangler.jsonc` to attach.
 
 ## Conventions

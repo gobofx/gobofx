@@ -1,14 +1,14 @@
 {
-  "name": "wispfx",
+  "name": "gobofx",
   "version": "0.0.1",
   "private": true,
   "description": "Open standard for portable video effects and transitions: a JSON manifest plus WGSL shaders.",
   "license": "MIT OR Apache-2.0",
   "packageManager": "pnpm@10.17.1",
   "scripts": {
-    "dev": "pnpm --filter @wispfx/site dev",
-    "build": "pnpm --filter @wispfx/site build",
-    "check": "pnpm --filter @wispfx/site check",
-    "preview": "pnpm --filter @wispfx/site preview"
+    "dev": "pnpm --filter @gobofx/site dev",
+    "build": "pnpm --filter @gobofx/site build",
+    "check": "pnpm --filter @gobofx/site check",
+    "preview": "pnpm --filter @gobofx/site preview"
   }
 }

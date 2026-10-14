@@ -13,7 +13,7 @@
   <nav>
     <a class="logo" href="/">
       <span class="logoMark" aria-hidden="true">◧</span>
-      <span class="logoText">WISPFX<span class="logoTld">.ORG</span></span>
+      <span class="logoText">GOBOFX<span class="logoTld">.ORG</span></span>
     </a>
     <div class="navLinks">
       <a href="/spec" class:active={onSpec}>spec</a>
@@ -28,7 +28,7 @@
   </main>
 
   <footer>
-    <div>WISPFX.ORG</div>
+    <div>GOBOFX.ORG</div>
     <div class="footSep">·</div>
     <div>MIT OR Apache-2.0</div>
     <div class="footSep">·</div>

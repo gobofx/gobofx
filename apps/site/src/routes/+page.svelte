@@ -5,7 +5,7 @@
   // Verbatim from spec/examples/cross-dissolve — keep in sync.
   const manifest = `{
   "wisp": "0.1",
-  "id": "org.wispfx.cross-dissolve",
+  "id": "org.gobofx.cross-dissolve",
   "name": "Cross Dissolve",
   "kind": "transition",
   "category": "dissolve",
@@ -65,26 +65,26 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
 </script>
 
 <svelte:head>
-  <title>WISPFX.ORG — open standard for video effects and transitions</title>
+  <title>GOBOFX.ORG — open standard for video effects and transitions</title>
   <meta
     name="description"
-    content="WispFX is an open standard for portable video effects and transitions: a JSON manifest plus WGSL shaders, running identically in native wgpu hosts and in the browser via WebGPU." />
-  <meta property="og:title" content="WISPFX.ORG" />
+    content="GoboFX is an open standard for portable video effects and transitions: a JSON manifest plus WGSL shaders, running identically in native wgpu hosts and in the browser via WebGPU." />
+  <meta property="og:title" content="GOBOFX.ORG" />
   <meta property="og:description" content="Open standard for portable video effects and transitions: JSON manifest plus WGSL, native wgpu and browser WebGPU." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://wispfx.org/" />
+  <meta property="og:url" content="https://gobofx.org/" />
 </svelte:head>
 
 <section class="hero">
   <div class="badge">DRAFT 0.1 · OPEN STANDARD · UNSTABLE</div>
 
-  <h1 class="title">WISPFX<span class="titleTld">.ORG</span></h1>
+  <h1 class="title">GOBOFX<span class="titleTld">.ORG</span></h1>
   <div class="teaser">PORTABLE VIDEO EFFECTS &amp; TRANSITIONS</div>
 
   <p class="lede">
-    A WispFX plugin is a JSON manifest plus WGSL shaders, and it renders identically in native
+    A GoboFX plugin is a JSON manifest plus WGSL shaders, and it renders identically in native
     <code>wgpu</code> hosts and in the browser through WebGPU. Write an effect or a transition once,
-    run it in any host that speaks the standard, and test it headlessly with the <code>wispfx</code> CLI.
+    run it in any host that speaks the standard, and test it headlessly with the <code>gobofx</code> CLI.
   </p>
 
   <div class="actions">
@@ -149,7 +149,7 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
     <li><span>SHADERS</span><span>WGSL · naga and browser WebGPU, no extensions</span></li>
     <li><span>NATIVE</span><span>wgpu</span></li>
     <li><span>BROWSER</span><span>WebGPU</span></li>
-    <li><span>REFERENCE</span><span>Rust crate: parse, validate, assemble, render · <code>wispfx check</code> and <code>wispfx render</code></span></li>
+    <li><span>REFERENCE</span><span>Rust crate: parse, validate, assemble, render · <code>gobofx check</code> and <code>gobofx render</code></span></li>
     <li><span>CATALOG</span><span>reference list of effects and transitions to cover · CATALOG.md</span></li>
     <li><span>LICENSE</span><span>MIT OR Apache-2.0 · DCO sign-off</span></li>
   </ul>

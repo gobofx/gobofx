@@ -72,7 +72,7 @@ fn js(e: impl std::fmt::Display) -> JsValue {
 #[wasm_bindgen]
 pub async fn create_host(canvas: HtmlCanvasElement) -> Result<WebHost, JsValue> {
     std::panic::set_hook(Box::new(|info| {
-        web_sys::console::error_1(&format!("wispfx panic: {info}").into());
+        web_sys::console::error_1(&format!("gobofx panic: {info}").into());
     }));
     let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
         backends: wgpu::Backends::BROWSER_WEBGPU,
@@ -251,7 +251,7 @@ impl WebHost {
         }
         let size = (i.config.width, i.config.height);
         let host = &i.host;
-        let mut encoder = host.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("wispfx frame") });
+        let mut encoder = host.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("gobofx frame") });
         let out = host.run(compiled, &inputs, size, Globals { time, progress }, &values, &signal_values, wgpu::TextureUsages::empty(), &mut encoder)?;
 
         let frame = i.surface.get_current_texture().map_err(|e| anyhow!("surface: {e}"))?;

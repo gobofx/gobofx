@@ -1,6 +1,6 @@
 [package]
-name = "wispfx"
-description = "WispFX reference implementation: manifest parsing, validation, module assembly, a wgpu host that runs natively and in the browser (wasm), and a CLI for testing plugins."
+name = "gobofx"
+description = "GoboFX reference implementation: manifest parsing, validation, module assembly, a wgpu host that runs natively and in the browser (wasm), and a CLI for testing plugins."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -11,7 +11,7 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "wispfx"
+name = "gobofx"
 path = "src/main.rs"
 required-features = ["cli"]
 

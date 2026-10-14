@@ -1,6 +1,6 @@
 # Manifest — v0.1 (draft)
 
-Every WispFX plugin is a folder containing `manifest.json` and one or more `.wgsl` files.
+Every GoboFX plugin is a folder containing `manifest.json` and one or more `.wgsl` files.
 Schema: [`manifest.schema.json`](manifest.schema.json).
 
 ## Top-level fields
@@ -8,7 +8,7 @@ Schema: [`manifest.schema.json`](manifest.schema.json).
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `wisp` | string | yes | Spec version the plugin targets, e.g. `"0.1"` |
-| `id` | string | yes | Reverse-DNS unique id, e.g. `org.wispfx.cross-dissolve` |
+| `id` | string | yes | Reverse-DNS unique id, e.g. `org.gobofx.cross-dissolve` |
 | `name` | string | yes | Display name |
 | `kind` | `"effect"` \| `"transition"` | yes | Effect: 1 input. Transition: 2 inputs + `progress` |
 | `category` | string | no | Browser grouping: `dissolve`, `wipe`, `blur`, `color`, `distort`, `stylize`, … |

@@ -1,5 +1,5 @@
 {
-  "name": "@wispfx/site",
+  "name": "@gobofx/site",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "cf-typegen": "wrangler types",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "build:wasm": "cd ../.. && cargo build -p wispfx --lib --release --target wasm32-unknown-unknown --no-default-features && wasm-bindgen --target web --out-dir apps/site/src/lib/wasm --out-name wispfx target/wasm32-unknown-unknown/release/wispfx.wasm"
+    "build:wasm": "cd ../.. && cargo build -p gobofx --lib --release --target wasm32-unknown-unknown --no-default-features && wasm-bindgen --target web --out-dir apps/site/src/lib/wasm --out-name gobofx target/wasm32-unknown-unknown/release/gobofx.wasm"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250101.0",

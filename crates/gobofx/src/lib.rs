@@ -1,4 +1,4 @@
-//! WispFX reference implementation.
+//! GoboFX reference implementation.
 //!
 //! - [`manifest`]: `manifest.json` as typed data (strict: unknown fields are errors).
 //! - [`params`]: the `Params` uniform layout and value encoding.

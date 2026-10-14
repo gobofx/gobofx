@@ -40,7 +40,7 @@ pub struct Compiled {
     pub signals_layout: Layout,
 }
 
-/// A GPU device plus the fixed WispFX bind group layouts.
+/// A GPU device plus the fixed GoboFX bind group layouts.
 pub struct Host {
     pub adapter_name: String,
     pub backend: String,
@@ -68,7 +68,7 @@ impl Host {
         let info = adapter.get_info();
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
-                label: Some("wispfx"),
+                label: Some("gobofx"),
                 required_features: wgpu::Features::empty(),
                 required_limits: wgpu::Limits::default(),
                 memory_hints: wgpu::MemoryHints::default(),
@@ -498,7 +498,7 @@ mod native {
             let views: HashMap<String, wgpu::TextureView> =
                 textures.iter().map(|(n, t)| (n.clone(), t.create_view(&Default::default()))).collect();
 
-            let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("wispfx") });
+            let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("gobofx") });
             let out = self.run(compiled, &views, size, globals, values, signal_values, wgpu::TextureUsages::COPY_SRC, &mut encoder)?;
 
             let (width, height) = size;

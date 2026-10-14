@@ -1,4 +1,4 @@
-# WispFX Specification
+# GoboFX Specification
 
 Status: **draft 0.1, unstable** — anything may change before 1.0.
 
