@@ -162,6 +162,16 @@
           "required": [
             "note"
           ]
+        },
+        {
+          "required": [
+            "notes"
+          ]
+        },
+        {
+          "required": [
+            "control"
+          ]
         }
       ],
       "properties": {
@@ -182,10 +192,29 @@
           "minimum": 0,
           "maximum": 127
         },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Inclusive note range [lo, hi], lo < hi"
+        },
+        "control": {
+          "enum": [
+            "bend",
+            "pressure"
+          ]
+        },
         "mode": {
           "enum": [
             "gate",
-            "velocity"
+            "velocity",
+            "pitch",
+            "pressure"
           ]
         },
         "channel": {

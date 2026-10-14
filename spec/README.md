@@ -7,10 +7,10 @@ Status: **draft 0.1, unstable** — anything may change before 1.0.
 | [`manifest.md`](manifest.md) | Plugin manifest: kind, params, passes |
 | [`manifest.schema.json`](manifest.schema.json) | JSON Schema for the manifest |
 | [`shader-abi.md`](shader-abi.md) | WGSL interface: bindings, entry point, color space |
-| [`signals.md`](signals.md) | Signals: MIDI 2.0 controllers and notes the plugin reads each frame; the host maps audio, OSC and hardware onto them |
+| [`signals.md`](signals.md) | Signals: MIDI 2.0 controllers, notes, note ranges, pitch bend and pressure the plugin reads each frame; the host maps audio, OSC and hardware onto them |
 | [`package.md`](package.md) | Package format: the `.gobofx` ZIP profile a plugin folder is distributed as |
 | [`prelude.wgsl`](prelude.wgsl) | Host prelude prepended to every plugin shader |
-| [`examples/`](examples/) | Reference plugins: Cross Dissolve (transition), Gaussian Blur (2-pass effect), Reactive Grade (effect with signals) |
+| [`examples/`](examples/) | Reference plugins: Cross Dissolve (transition), Gaussian Blur (2-pass effect), Reactive Grade, Chromatic Hue and Kaleidoscope (effects played over MIDI signals) |
 
 ## Core decisions (v0.1)
 

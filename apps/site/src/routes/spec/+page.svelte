@@ -28,7 +28,7 @@
       href: blob + 'signals.md',
       file: 'signals.md',
       summary:
-        'MIDI 2.0 controllers and notes a plugin reads each frame as 0..1 floats at group 1, binding 1. The host maps audio followers, OSC and hardware onto them; the plugin never sees events.'
+        'MIDI 2.0 controllers, notes, note ranges (gate, velocity, latched pitch, per-note pressure), pitch bend and channel pressure, read each frame as 0..1 floats at group 1, binding 1. The host maps audio followers, OSC and hardware onto them; the plugin never sees events.'
     },
     {
       tag: '05 / PRELUDE',
@@ -48,7 +48,7 @@
       tag: '07 / EXAMPLES',
       href: tree + 'examples',
       file: 'examples/',
-      summary: 'Cross Dissolve (transition), Gaussian Blur (two passes with override constants) and Reactive Grade (a colour grade played like an instrument: notes C1, D1, E1 saturate, flash and punch, a bass controller pumps saturation). All pass naga and validate against the schema.'
+      summary: 'Cross Dissolve (transition), Gaussian Blur (two passes with override constants) and Reactive Grade (notes C1, D1, E1 saturate, flash and punch), Chromatic Hue (every key of an octave is a hue; pitch wheel and aftertouch) and Kaleidoscope (the key picks the segment count, mod wheel spins, pitch wheel zooms). All pass naga and validate against the schema.'
     }
   ];
 </script>

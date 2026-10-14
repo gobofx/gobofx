@@ -75,15 +75,30 @@ fn default_true() -> bool {
 }
 
 /// How a note-bound signal reads the note (`spec/signals.md`).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum NoteMode {
     Gate,
     Velocity,
+    /// Position of the most recently pressed note inside a `notes` range, latched after release.
+    Pitch,
+    /// Per-note pressure of the held bound notes.
+    Pressure,
 }
 
-/// A signal: a MIDI 2.0 control change or note on the plugin's virtual input,
-/// delivered to the shader as one `f32` in 0..1 per frame (`spec/signals.md`).
+/// A channel-wide controller that is not a control change number.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Control {
+    /// Pitch bend wheel; 0.5 at rest.
+    Bend,
+    /// Channel pressure (aftertouch).
+    Pressure,
+}
+
+/// A signal: a MIDI 2.0 control change, note, note range, pitch bend or pressure on the
+/// plugin's virtual input, delivered to the shader as one `f32` in 0..1 per frame
+/// (`spec/signals.md`).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Signal {
@@ -94,6 +109,11 @@ pub struct Signal {
     pub cc: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub note: Option<u32>,
+    /// Inclusive note range `[lo, hi]`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<[u32; 2]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub control: Option<Control>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mode: Option<NoteMode>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

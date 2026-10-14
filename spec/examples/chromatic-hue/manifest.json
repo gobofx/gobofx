@@ -1,0 +1,24 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.chromatic-hue",
+  "name": "Chromatic Hue",
+  "kind": "effect",
+  "category": "color",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    { "id": "degrees_per_key", "label": "Degrees per key", "type": "float", "default": 30.0, "min": 0.0, "max": 60.0, "unit": "deg" },
+    { "id": "bend_range", "label": "Bend range", "type": "float", "default": 30.0, "min": 0.0, "max": 180.0, "unit": "deg" },
+    { "id": "pressure_to_saturation", "label": "Pressure → Saturation", "type": "float", "default": 1.0, "min": 0.0, "max": 2.0 },
+    { "id": "hold", "label": "Hold when released", "type": "bool", "default": false }
+  ],
+  "signals": [
+    { "id": "key", "label": "Key", "notes": [36, 47], "mode": "pitch", "hint": "play C1–B1: each key is a hue" },
+    { "id": "held", "label": "Held", "notes": [36, 47], "mode": "velocity", "hint": "play C1–B1", "attack_ms": 5, "release_ms": 250 },
+    { "id": "bend", "label": "Bend", "control": "bend", "hint": "pitch wheel: fine hue" },
+    { "id": "pressure", "label": "Pressure", "control": "pressure", "hint": "aftertouch: saturation", "release_ms": 150 }
+  ],
+  "passes": [
+    { "shader": "shader.wgsl", "entry": "fs_main", "inputs": ["source"], "output": "out" }
+  ]
+}

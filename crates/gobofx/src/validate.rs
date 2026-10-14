@@ -10,7 +10,7 @@ use naga::{AddressSpace, ImageClass, Module, ScalarKind, ShaderStage, TypeInner,
 use serde::Serialize;
 
 use crate::assemble::{assemble, plugin_line};
-use crate::manifest::{Kind, ParamType, Plugin};
+use crate::manifest::{Kind, NoteMode, ParamType, Plugin};
 use crate::params::{self, Layout};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -178,6 +178,7 @@ pub fn validate(plugin: &Plugin) -> Report {
     let param_ids: BTreeSet<&str> = m.params.iter().map(|p| p.id.as_str()).collect();
     let mut sig_seen = BTreeSet::new();
     let mut cc_seen = BTreeSet::new();
+    let mut control_seen = BTreeSet::new();
     let mut note_seen = BTreeSet::new();
     for s in &m.signals {
         if !is_valid_param_id(&s.id) {
@@ -189,27 +190,44 @@ pub fn validate(plugin: &Plugin) -> Report {
         if param_ids.contains(s.id.as_str()) {
             err(&mut d, None, format!("signal id \"{}\" collides with a param of the same id", s.id));
         }
-        match (s.cc, s.note) {
-            (Some(_), Some(_)) => err(&mut d, None, format!("signal \"{}\" binds both cc and note; pick one", s.id)),
-            (None, None) => err(&mut d, None, format!("signal \"{}\" must bind a cc or a note", s.id)),
-            (Some(cc), None) => {
-                if cc > 127 {
-                    err(&mut d, None, format!("signal \"{}\": cc {} is out of range 0..127", s.id, cc));
-                }
-                if !cc_seen.insert((s.channel, cc)) {
-                    err(&mut d, None, format!("signal \"{}\": cc {} is already bound on this channel", s.id, cc));
-                }
-                if s.mode.is_some() {
-                    warn(&mut d, None, format!("signal \"{}\": mode only applies to note signals", s.id));
-                }
+        let bound = [s.cc.is_some(), s.note.is_some(), s.notes.is_some(), s.control.is_some()].iter().filter(|b| **b).count();
+        if bound != 1 {
+            err(&mut d, None, format!("signal \"{}\" must bind exactly one of cc, note, notes or control", s.id));
+        } else if let Some(cc) = s.cc {
+            if cc > 127 {
+                err(&mut d, None, format!("signal \"{}\": cc {} is out of range 0..127", s.id, cc));
             }
-            (None, Some(n)) => {
-                if n > 127 {
-                    err(&mut d, None, format!("signal \"{}\": note {} is out of range 0..127", s.id, n));
-                }
-                if !note_seen.insert((s.channel, n)) {
-                    err(&mut d, None, format!("signal \"{}\": note {} is already bound on this channel", s.id, n));
-                }
+            if !cc_seen.insert((s.channel, cc)) {
+                err(&mut d, None, format!("signal \"{}\": cc {} is already bound on this channel", s.id, cc));
+            }
+            if s.mode.is_some() {
+                warn(&mut d, None, format!("signal \"{}\": mode only applies to note signals", s.id));
+            }
+        } else if let Some(c) = s.control {
+            if !control_seen.insert((s.channel, c)) {
+                err(&mut d, None, format!("signal \"{}\": control {:?} is already bound on this channel", s.id, c));
+            }
+            if s.mode.is_some() {
+                warn(&mut d, None, format!("signal \"{}\": mode only applies to note signals", s.id));
+            }
+        } else {
+            let (lo, hi) = match (s.note, s.notes) {
+                (Some(n), _) => (n, n),
+                (None, Some([lo, hi])) => (lo, hi),
+                _ => unreachable!(),
+            };
+            if hi > 127 {
+                err(&mut d, None, format!("signal \"{}\": note {} is out of range 0..127", s.id, hi));
+            }
+            if s.notes.is_some() && lo >= hi {
+                err(&mut d, None, format!("signal \"{}\": notes range [{}, {}] must have lo < hi", s.id, lo, hi));
+            }
+            let mode = s.mode.unwrap_or(NoteMode::Gate);
+            if mode == NoteMode::Pitch && s.notes.is_none() {
+                err(&mut d, None, format!("signal \"{}\": mode \"pitch\" needs a notes range", s.id));
+            }
+            if !note_seen.insert((s.channel, lo, hi, mode)) {
+                err(&mut d, None, format!("signal \"{}\": the same notes, mode and channel are already bound", s.id));
             }
         }
         if let Some(ch) = s.channel {

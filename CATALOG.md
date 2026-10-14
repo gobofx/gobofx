@@ -100,6 +100,7 @@ any effect with a shape mask and animate any param marked `animatable`.
 |---|---|---|---|
 | Color Adjustments | Exposure, contrast, saturation, temperature, tint in one | Core | |
 | Reactive Grade | Saturation, contrast and temperature driven by audio and MIDI signals; notes C1, D1, E1 saturate, flash and punch | Core | signals |
+| Chromatic Hue | Every key of an octave is a hue; pitch wheel fine-tunes, aftertouch saturates | Core | signals: note range, bend, pressure |
 | Hue/Saturation | Shift hue, saturation, value | Core | |
 | Color Wheels | Lift, gamma, gain wheels | Planned | |
 | Color Curves | Per-channel RGB curves | Planned | a curve param type |
@@ -253,7 +254,7 @@ manifest.
 
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
-| Kaleidoscope | Radial mirror segments | Planned | |
+| Kaleidoscope | Radial mirror segments; the key picks the segment count, mod wheel spins, pitch wheel zooms | Core | signals: note range, bend |
 | Kaleidoscope Tile | Kaleidoscopic tiling | Candidate | |
 | Offset | Wraparound offset | Candidate | |
 | Parallelogram Tile | Skewed tiles | Candidate | |

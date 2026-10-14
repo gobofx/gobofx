@@ -1,4 +1,4 @@
-# Signals — v0.1 (draft, added 2026-10-13)
+# Signals — v0.1 (draft, added 2026-10-13, note ranges, pitch bend and pressure added 2026-10-14)
 
 A signal is a number the host delivers to the plugin every frame from something
 outside the picture. The plugin declares which signals it wants and reads them in
@@ -7,8 +7,8 @@ follows the bass, or whose contrast snaps on a drum hit, is the plugin author's
 design, written once and portable to every host.
 
 **Signals are MIDI 2.0 controllers.** Every GoboFX plugin has one virtual MIDI
-2.0 input. A signal binds either a control change number or a note on that
-input. The plugin never sees audio, OSC or hardware; the host owns that
+2.0 input. A signal binds a control change number, a note, a range of notes,
+the pitch bend wheel or channel pressure on that input. The plugin never sees audio, OSC or hardware; the host owns that
 translation. An audio envelope follower, an OSC address, a hardware fader and a
 keyframe lane all end up as the same thing: a controller value on the plugin's
 input. This is the same addressing WCLAP audio plugins use, so a host routes
@@ -25,7 +25,11 @@ both or neither.
   { "id": "bass", "label": "Bass",  "cc": 1,
     "hint": "audio follower, 40–160 Hz", "attack_ms": 10, "release_ms": 250 },
   { "id": "hit",  "label": "Hit",   "note": 36, "mode": "gate", "release_ms": 120 },
-  { "id": "warmth", "label": "Warmth", "cc": 74 }
+  { "id": "warmth", "label": "Warmth", "cc": 74 },
+  { "id": "key",   "label": "Key",    "notes": [36, 47], "mode": "pitch" },
+  { "id": "held",  "label": "Held",   "notes": [36, 47], "mode": "gate", "release_ms": 200 },
+  { "id": "sweep", "label": "Sweep",  "control": "bend" },
+  { "id": "press", "label": "Press",  "control": "pressure" }
 ]
 ```
 
@@ -33,16 +37,29 @@ both or neither.
 | --- | --- | --- | --- |
 | `id` | string | yes | `^[a-z_][a-z0-9_]*$`, unique among signals and params |
 | `label` | string | no | Display name |
-| `cc` | integer 0..127 | one of `cc` / `note` | Control change number on the plugin's MIDI 2.0 input |
-| `note` | integer 0..127 | one of `cc` / `note` | Note number on the plugin's MIDI 2.0 input |
-| `mode` | `gate` \| `velocity` | with `note` | `gate`: 1 while the note is held, else 0. `velocity`: note-on velocity while held, else 0. Default `gate` |
+| `cc` | integer 0..127 | exactly one of `cc` / `note` / `notes` / `control` | Control change number on the plugin's MIDI 2.0 input |
+| `note` | integer 0..127 | ″ | One note number |
+| `notes` | `[lo, hi]`, integers 0..127, `lo < hi` | ″ | An inclusive range of note numbers, treated as one key zone |
+| `control` | `bend` \| `pressure` | ″ | The pitch bend wheel, or channel pressure (aftertouch) |
+| `mode` | `gate` \| `velocity` \| `pitch` \| `pressure` | with `note` / `notes` | What the note binding delivers (below). Default `gate`. `pitch` needs `notes` |
 | `channel` | integer 1..16 | no | MIDI channel; absent means any channel |
 | `hint` | string | no | What the author expects to feed this signal, shown by the host as the suggested routing |
-| `default` | number 0..1 | no | Value used until the first event arrives, and by hosts with no MIDI input. Default 0 |
+| `default` | number 0..1 | no | Value used until the first event arrives, and by hosts with no MIDI input. Default 0, except 0.5 for `control: "bend"` |
 | `attack_ms`, `release_ms` | number | no | One-pole envelope the host applies before upload, in milliseconds. Default 0 (none) |
 
-A manifest may not bind the same `cc` or the same `note` twice on the same
-channel.
+Note modes, for `note` and `notes`:
+
+| `mode` | Value |
+| --- | --- |
+| `gate` | 1 while any bound note is held, else 0 |
+| `velocity` | Note-on velocity of the most recently pressed bound note while it is held, else 0 |
+| `pitch` | Position of the most recently pressed bound note inside the range: `(n − lo) / (hi − lo)`. Latched: it keeps its value after release, so a plugin can read "which key" separately from "is a key down" |
+| `pressure` | Per-note pressure of the held bound notes (the loudest), else 0 |
+
+A manifest may not bind the same `cc` twice, or the same `control` twice, on
+the same channel. Note bindings may overlap: binding one zone twice with
+different modes (`pitch` plus `gate`) is the normal way to read a keyboard.
+Two note bindings that are identical in notes, mode and channel are an error.
 
 ## Values
 
@@ -54,6 +71,15 @@ Every signal reaches the shader as one `f32` in the closed range 0..1:
 - A note in `velocity` mode carries MIDI 2.0's 16-bit velocity divided by
   `65535` while the note is held.
 - A note in `gate` mode carries 1 while held.
+- A note binding in `pitch` mode carries the note's position inside its range.
+- A note binding in `pressure` mode carries MIDI 2.0's 32-bit per-note pressure
+  divided by `2^32 − 1`. A host whose source only sends channel pressure MAY
+  substitute it while a bound note is held.
+- `control: "bend"` carries MIDI 2.0's 32-bit pitch bend divided by `2^32 − 1`,
+  so the wheel at rest reads 0.5, fully down 0, fully up 1. A MIDI 1.0 14-bit
+  bend is upscaled by the host.
+- `control: "pressure"` carries MIDI 2.0's 32-bit channel pressure divided by
+  `2^32 − 1`.
 
 The plugin reads values, never events. One value per rendered frame; signals are
 not audio-rate.
@@ -88,11 +114,13 @@ validates this the same way it validates `Params`.
   on the timeline at each frame, so a render matches the live preview frame
   for frame.
 - **Channels.** With `channel` absent the host merges all channels; with it
-  set, events on other channels are ignored.
+  set, events on other channels are ignored. Merging means: notes from every
+  channel count, a `cc` or `pressure` takes the highest channel's value, and
+  `bend` takes the channel that moved last.
 
 ## What signals are not
 
 Signals drive a look. They do not carry waveforms or spectra for drawing. A
 visualiser that draws the sound needs an audio texture input, which is a
-separate proposal. Per-note controllers and other MIDI 2.0 per-note data are
-not addressed in 0.1.
+separate proposal. MIDI 2.0 per-note controllers other than pressure, and
+per-note pitch bend, are not addressed in 0.1.

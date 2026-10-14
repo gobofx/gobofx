@@ -27,7 +27,9 @@
     label?: string;
     cc?: number;
     note?: number;
-    mode?: 'gate' | 'velocity';
+    notes?: [number, number];
+    control?: 'bend' | 'pressure';
+    mode?: 'gate' | 'velocity' | 'pitch' | 'pressure';
     channel?: number;
     hint?: string;
     default?: number;
@@ -108,7 +110,21 @@
     const h = (s.hint ?? '').toLowerCase();
     if (h.includes('kick') || h.includes('onset') || h.includes('beat')) return 'onset';
     if (h.includes('audio')) return h.includes('mid') ? 'mid' : h.includes('high') ? 'high' : h.includes('level') ? 'rms' : 'bass';
+    if (h.includes('play') || h.includes('wheel') || h.includes('aftertouch') || s.notes || s.control) return 'midi';
     return 'manual';
+  }
+
+  /** The value a signal rests at: 0, or 0.5 for the pitch bend wheel. */
+  const restValue = (s: Signal) => s.default ?? (s.control === 'bend' ? 0.5 : 0);
+
+  /** Short description of what a signal binds on the plugin's MIDI input. */
+  function bindingText(s: Signal): string {
+    if (s.cc !== undefined) return `cc ${s.cc}`;
+    if (s.control === 'bend') return 'pitch bend';
+    if (s.control === 'pressure') return 'channel pressure';
+    const mode = s.mode ?? 'gate';
+    if (s.notes) return `notes ${s.notes[0]}–${s.notes[1]} ${mode}`;
+    return `note ${s.note} ${mode}`;
   }
 
   const kind = $derived(manifest?.kind ?? 'effect');
@@ -176,7 +192,7 @@
           for (const s of signals) {
             const src = signalSource[s.id] ?? 'manual';
             let raw: number;
-            if (src === 'manual') raw = signalManual[s.id] ?? s.default ?? 0;
+            if (src === 'manual') raw = signalManual[s.id] ?? restValue(s);
             else if (src === 'midi') raw = midi.value(s);
             else if (src === 'onset') raw = onsetGate(now);
             else raw = follower.level(src as Band);
@@ -219,11 +235,17 @@
     signalSource = ss;
   }
 
-  /** Which computer key plays a note-bound signal, if any. */
+  /** Which computer keys play a signal, if any. */
   function keyFor(s: Signal): string | null {
-    if (s.note === undefined) return null;
-    const k = Object.entries(KEY_NOTES).find(([, n]) => n === s.note)?.[0];
-    return k ? k.toUpperCase() : null;
+    if (s.control === 'bend') return '← →';
+    if (s.control === 'pressure') return 'SHIFT';
+    const [lo, hi] = s.notes ?? (s.note !== undefined ? [s.note, s.note] : [-1, -1]);
+    if (lo < 0) return null;
+    const keys = Object.entries(KEY_NOTES)
+      .filter(([, n]) => n >= lo && n <= hi)
+      .map(([k]) => k.toUpperCase());
+    if (!keys.length) return null;
+    return keys.length > 3 ? `${keys[0]}…${keys[keys.length - 1]}` : keys.join(' ');
   }
 
   // ── plugin loading ──────────────────────────────────────────────────
@@ -248,7 +270,7 @@
       const sm: Record<string, number> = {};
       const ss: Record<string, SignalSource> = {};
       for (const s of parsed?.signals ?? []) {
-        sm[s.id] = s.default ?? 0;
+        sm[s.id] = restValue(s);
         ss[s.id] = signalSource[s.id] ?? defaultSource(s);
       }
       signalManual = sm;
@@ -565,16 +587,18 @@
           cannot tell the difference.
         </p>
         <p class="dim small">
-          <strong>Play the picture.</strong> Reactive Grade binds three notes: C1 saturates, D1 flashes, E1 punches in. Click
-          <span class="mono">PLAY ALL ON MIDI / KEYS</span>, then play C1, D1 and E1 on a MIDI keyboard, or press A, S and D on this
-          keyboard. Hold a key and the effect holds; release it and the note's release time fades it out.
+          <strong>Play the picture.</strong> Reactive Grade binds three notes: C1 saturates, D1 flashes, E1 punches in. Chromatic Hue
+          makes every key of the C1 octave a hue, with the pitch wheel for fine tuning and aftertouch for saturation. Kaleidoscope folds
+          the picture into as many segments as the key you play, the mod wheel spins it and the pitch wheel zooms. Click
+          <span class="mono">PLAY ALL ON MIDI / KEYS</span>, then play on a MIDI keyboard or on this one. Hold a key and the effect
+          holds; release it and the note's release time fades it out.
         </p>
       {/if}
       {#each signals as s (s.id)}
         <div class="control">
           <div class="controlHead">
             <span>{s.label ?? s.id}</span>
-            <span class="mono dim">{s.cc !== undefined ? `cc ${s.cc}` : `note ${s.note} ${s.mode ?? 'gate'}`}{s.hint ? ` · ${s.hint}` : ''}</span>
+            <span class="mono dim">{bindingText(s)}{s.hint ? ` · ${s.hint}` : ''}</span>
           </div>
           <div class="row">
             <select value={signalSource[s.id] ?? 'manual'} onchange={(e) => (signalSource = { ...signalSource, [s.id]: (e.target as HTMLSelectElement).value as SignalSource })}>
@@ -587,7 +611,7 @@
               <option value="midi">MIDI</option>
             </select>
             {#if (signalSource[s.id] ?? 'manual') === 'manual'}
-              <input type="range" min="0" max="1" step="0.001" value={signalManual[s.id] ?? 0} oninput={(e) => (signalManual = { ...signalManual, [s.id]: Number((e.target as HTMLInputElement).value) })} />
+              <input type="range" min="0" max="1" step="0.001" value={signalManual[s.id] ?? restValue(s)} oninput={(e) => (signalManual = { ...signalManual, [s.id]: Number((e.target as HTMLInputElement).value) })} />
             {:else}
               <div class="meter"><div class="meterFill" style="width: {Math.round((signalLive[s.id] ?? 0) * 100)}%"></div></div>
             {/if}
@@ -601,9 +625,10 @@
           <span class="mono dim">{midiState === 'on' ? (midi.inputs.length ? midi.inputs.join(', ') : 'no inputs') : midiState === 'none' ? 'Web MIDI unavailable' : ''}{midiLast ? ` · ${midiLast}` : ''}</span>
         </div>
         <p class="dim small">
-          No controller? The computer keyboard plays notes 36–48 (C1 to C2): A W S E D F T G Y H U J K.
+          No controller? The computer keyboard plays notes 36–48 (C1 to C2): A W S E D F T G Y H U J K. The arrow keys ← → are the pitch
+          bend wheel, Shift is aftertouch.
           {#each signals.filter((s) => (signalSource[s.id] ?? 'manual') === 'midi' && keyFor(s)) as s (s.id)}
-            Press <span class="mono">{keyFor(s)}</span> for {s.label ?? s.id} (note {s.note}).
+            <span class="mono">{keyFor(s)}</span> → {s.label ?? s.id}.
           {/each}
         </p>
       {/if}

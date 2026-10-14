@@ -1,0 +1,25 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.kaleidoscope",
+  "name": "Kaleidoscope",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    { "id": "min_segments", "label": "Segments at C1", "type": "int", "default": 2, "min": 1, "max": 24 },
+    { "id": "max_segments", "label": "Segments at B1", "type": "int", "default": 13, "min": 1, "max": 24 },
+    { "id": "zoom", "label": "Zoom", "type": "float", "default": 1.0, "min": 0.25, "max": 4.0 },
+    { "id": "bend_zoom", "label": "Bend → Zoom", "type": "float", "default": 1.0, "min": 0.0, "max": 3.0 },
+    { "id": "center", "label": "Center", "type": "point", "default": [0.5, 0.5] }
+  ],
+  "signals": [
+    { "id": "key", "label": "Key", "notes": [36, 47], "mode": "pitch", "hint": "play C1–B1: how many segments" },
+    { "id": "held", "label": "Held", "notes": [36, 47], "mode": "gate", "hint": "kick drum, or play C1–B1", "attack_ms": 5, "release_ms": 200 },
+    { "id": "spin", "label": "Spin", "cc": 1, "hint": "mod wheel, or audio bass", "release_ms": 100 },
+    { "id": "bend", "label": "Bend", "control": "bend", "hint": "pitch wheel: zoom", "release_ms": 60 }
+  ],
+  "passes": [
+    { "shader": "shader.wgsl", "entry": "fs_main", "inputs": ["source"], "output": "out" }
+  ]
+}
