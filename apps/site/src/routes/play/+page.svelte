@@ -74,6 +74,8 @@
   // a <video loop> slips a few samples to a frame on every wrap, a buffer loop does not.
   const clip = new LoopClip(follower);
   const CLIP_SECONDS = 8;
+  // Lossless: the AAC track in a.mp4 overshoots on its first kick (encoder first-frame artifact).
+  const CLIP_AUDIO = '/media/a.flac';
   let clipAudio = true; // false once the user loads their own clip A: then the element's audio is followed
   const SYNC_TOLERANCE = 0.08; // seconds of picture drift before a video is pulled back onto the clock
   const midi = new MidiInput();
@@ -318,7 +320,7 @@
     follower.setSound(sound);
     if (clipAudio) {
       try {
-        await clip.load(a.currentSrc || a.src, CLIP_SECONDS);
+        await clip.load(CLIP_AUDIO, CLIP_SECONDS);
       } catch (e) {
         console.warn('bundled clip audio could not be decoded; following the video element instead', e);
         clipAudio = false;
