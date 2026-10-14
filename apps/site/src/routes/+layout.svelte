@@ -35,6 +35,8 @@
     <div><a href={repo} target="_blank" rel="noreferrer noopener">github.com/gobofx/gobofx</a></div>
     <div class="footSep">·</div>
     <div>{new Date().getFullYear()}</div>
+    <div class="footSep">·</div>
+    <div class="version" title="built {__BUILD_DATE__}">v{__SITE_VERSION__} · {__GIT_SHA__}</div>
   </footer>
 </div>
 
