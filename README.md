@@ -7,6 +7,7 @@ Open standard for portable video effects and transitions: a JSON manifest plus W
 | Folder | Contents |
 | --- | --- |
 | [`spec/`](spec/) | Specification, schema, host prelude and reference examples |
+| [`plugins/`](plugins/) | The open-source plugin library, one folder per plugin (`org.gobofx.*`) |
 | [`CATALOG.md`](CATALOG.md) | Reference catalogue: the effects and transitions a complete plugin library should cover |
 | [`crates/gobofx/`](crates/gobofx/) | Reference crate and the `gobofx` CLI: validate and render plugins headlessly |
 | [`apps/site/`](apps/site/) | Source for gobofx.org (SvelteKit on a Cloudflare Worker) |

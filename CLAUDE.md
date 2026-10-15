@@ -12,8 +12,10 @@ gobofx/
 ├── apps/
 │   └── site/        # gobofx.org — SvelteKit 5 (runes) on a Cloudflare Worker
 ├── spec/            # the standard: manifest.md, manifest.schema.json, shader-abi.md,
-│   │                #   prelude.wgsl, examples/ (reference plugins, naga-validated)
-├── crates/          # reference Rust crate (parse, validate, wrap, params layout) — later
+│   │                #   prelude.wgsl, examples/ (conformance set: one minimal plugin per kind)
+├── plugins/         # the open-source plugin library — one folder per plugin, named by id
+│   │                #   (org.gobofx.*), the catalogue's Core/Planned waves; see plugins/README.md
+├── crates/          # reference Rust crate (parse, validate, wrap, params layout)
 ├── pnpm-workspace.yaml
 └── CLAUDE.md        # this file
 ```
