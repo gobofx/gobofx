@@ -53,7 +53,8 @@ any MUST and SHOULD report which rule failed.
 | --- | --- | --- |
 | `manifest.json` | yes | See [`manifest.md`](manifest.md) |
 | `*.wgsl` | yes (≥1) | Shaders referenced by `passes[].shader` |
-| `preview.png` / `preview.webp` | no | Thumbnail for the host's browser, ≤ 512×512 |
+| `icon.png` / `icon.webp` | no | Square icon, ≤ 256×256 (128×128 recommended), shown by hosts in lists, menus and on timeline items. Added 2026-10-15 |
+| `preview.png` / `preview.webp` | no | Thumbnail for the host's browser, ≤ 512×512, any aspect (16:9 recommended) |
 | `README.md` | no | Shown by the host as the plugin description |
 | `LICENSE` | no | Full license text; `manifest.license` carries the SPDX expression |
 | other files | no | Reserved for future asset types (textures). Hosts ignore unknown entries. |

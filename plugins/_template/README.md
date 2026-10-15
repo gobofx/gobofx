@@ -23,7 +23,9 @@ provides.
 4. Validate: `cargo run -p gobofx -- check plugins/<your.id>`
 5. Render a frame: `cargo run -p gobofx -- render plugins/<your.id> -i in.png`
    (two `-i` for a transition, none for a generator).
-6. Add `preview.png` (≤ 512×512) and write `README.md`; hosts show both.
+6. Replace `icon.png` (square, 128×128) and add `preview.png` (≤ 512×512,
+   16:9); write `README.md`. Hosts show all three: the icon in lists and on
+   timeline items, the preview in the browser, the README as the description.
 
 What the host provides is declared in [`spec/prelude.wgsl`](../../spec/prelude.wgsl)
 and prepended to your shader; never redeclare it. The full interface is in

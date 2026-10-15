@@ -14,7 +14,7 @@ use crate::manifest::Plugin;
 
 /// Entries the profile names besides `manifest.json` and the shaders. Packed
 /// when present in the folder, in this order.
-pub const OPTIONAL_FILES: &[&str] = &["preview.png", "preview.webp", "README.md", "LICENSE"];
+pub const OPTIONAL_FILES: &[&str] = &["icon.png", "icon.webp", "preview.png", "preview.webp", "README.md", "LICENSE"];
 
 /// Hard limit from the profile (total uncompressed size).
 pub const MAX_TOTAL_BYTES: u64 = 256 * 1024 * 1024;

@@ -15,6 +15,7 @@ plugins/
 └── org.gobofx.<name>/        # folder name == manifest.id
     ├── manifest.json
     ├── <name>.wgsl           # one or more shaders, referenced by passes[].shader
+    ├── icon.png              # square ≤ 256×256, lists / menus / timeline items
     ├── preview.png           # ≤ 512×512, shown by hosts in their browser
     ├── README.md             # shown by hosts as the plugin description
     └── dist/                 # gitignored: <id>-<version>.gobofx, written by `gobofx pack`
