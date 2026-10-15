@@ -41,6 +41,18 @@ enum Cmd {
     },
     /// Render the plugin to PNG on the GPU (validates first).
     Render(RenderArgs),
+    /// Pack a plugin folder into a `.gobofx` package (validates first).
+    /// Prints the package path; default `<dir>/dist/<id>-<version>.gobofx`.
+    Pack {
+        /// Plugin folder containing manifest.json
+        dir: PathBuf,
+        /// Output file (default: <dir>/dist/<id>-<version>.gobofx)
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+        /// Machine-readable summary
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Args)]
@@ -146,6 +158,36 @@ fn run() -> Result<ExitCode> {
             Ok(if report.ok { ExitCode::SUCCESS } else { ExitCode::from(1) })
         }
         Cmd::Render(args) => render(args),
+        Cmd::Pack { dir, out, json } => {
+            let plugin = Plugin::load(&dir)?;
+            let report = validate::validate(&plugin);
+            if !report.ok {
+                print_report(&report, &dir);
+                return Ok(ExitCode::from(1));
+            }
+            let entries = gobofx::pack::collect_entries(&plugin)?;
+            let bytes = gobofx::pack::write_zip(&entries)?;
+            let path = out.unwrap_or_else(|| dir.join("dist").join(gobofx::pack::package_file_name(&plugin)));
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent).with_context(|| format!("creating {}", parent.display()))?;
+            }
+            std::fs::write(&path, &bytes).with_context(|| format!("writing {}", path.display()))?;
+            if json {
+                #[derive(Serialize)]
+                struct Out<'a> { ok: bool, id: &'a str, version: &'a str, path: String, bytes: usize, entries: Vec<&'a str> }
+                println!("{}", serde_json::to_string_pretty(&Out {
+                    ok: true,
+                    id: &plugin.manifest.id,
+                    version: &plugin.manifest.version,
+                    path: path.display().to_string(),
+                    bytes: bytes.len(),
+                    entries: entries.iter().map(|e| e.name.as_str()).collect(),
+                })?);
+            } else {
+                println!("{}", path.display());
+            }
+            Ok(ExitCode::SUCCESS)
+        }
     }
 }
 
