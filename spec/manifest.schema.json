@@ -27,7 +27,8 @@
     "kind": {
       "enum": [
         "effect",
-        "transition"
+        "transition",
+        "generator"
       ]
     },
     "category": {

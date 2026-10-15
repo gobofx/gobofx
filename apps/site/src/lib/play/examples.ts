@@ -12,7 +12,7 @@ export type ExamplePlugin = {
   manifest: string;
   shaders: Record<string, string>;
   name: string;
-  kind: 'effect' | 'transition';
+  kind: 'effect' | 'transition' | 'generator';
 };
 
 const byFolder = new Map<string, ExamplePlugin>();
@@ -30,7 +30,7 @@ for (const [path, source] of Object.entries(files)) {
     try {
       const j = JSON.parse(source);
       entry.name = j.name ?? slug;
-      entry.kind = j.kind === 'transition' ? 'transition' : 'effect';
+      entry.kind = j.kind === 'transition' || j.kind === 'generator' ? j.kind : 'effect';
     } catch {
       /* reported by the validator when loaded */
     }

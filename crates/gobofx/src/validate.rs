@@ -257,8 +257,11 @@ pub fn validate(plugin: &Plugin) -> Report {
     let mut produced: Vec<&str> = Vec::new();
     let last = m.passes.len().saturating_sub(1);
     for (i, pass) in m.passes.iter().enumerate() {
-        if pass.inputs.is_empty() || pass.inputs.len() > 2 {
-            err(&mut d, Some(i), format!("pass {} must have 1 or 2 inputs, has {}", i, pass.inputs.len()));
+        if pass.inputs.len() > 2 {
+            err(&mut d, Some(i), format!("pass {} must have at most 2 inputs, has {}", i, pass.inputs.len()));
+        }
+        if pass.inputs.is_empty() && m.kind != Kind::Generator {
+            err(&mut d, Some(i), format!("pass {} must have 1 or 2 inputs, has 0 (only a generator pass reads no image)", i));
         }
         for name in &pass.inputs {
             let ok = reserved.contains(&name.as_str()) || produced.contains(&name.as_str());

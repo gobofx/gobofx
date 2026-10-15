@@ -5,6 +5,9 @@ Planned waves of [`CATALOG.md`](../CATALOG.md), one folder per plugin.
 `spec/examples/` is different: it is the conformance set, one minimal
 plugin per kind, and changes only when the spec changes.
 
+Start from [`_template/`](_template/): one complete, valid plugin per kind.
+Folders starting with `_` are never packed or listed.
+
 ## Layout
 
 ```
@@ -31,7 +34,7 @@ plugins/
 - **Every plugin validates** with the reference crate before it is merged:
   `cargo run -p gobofx -- validate plugins/<id>`.
 - **Kinds**: `effect` (one input, `source`), `transition` (`from` + `to` +
-  `progress`), `generator` (no input, proposed for spec 0.2).
+  `progress`), `generator` (no input).
 - **Category** is one of the catalogue's groups, as a lowercase slug.
 
 ## Hosts

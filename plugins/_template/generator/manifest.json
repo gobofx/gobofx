@@ -1,0 +1,22 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.template-generator",
+  "name": "Template Generator",
+  "kind": "generator",
+  "category": "shapes",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    { "id": "fill",       "label": "Fill",       "type": "color", "default": [1.0, 1.0, 1.0, 1.0] },
+    { "id": "background", "label": "Background", "type": "color", "default": [0.0, 0.0, 0.0, 0.0] },
+    { "id": "shape",      "label": "Shape",      "type": "choice", "default": 0, "options": ["circle", "square"] },
+    { "id": "center",     "label": "Center",     "type": "point", "default": [0.5, 0.5] },
+    { "id": "radius",     "label": "Radius",     "type": "float", "default": 0.25, "min": 0.0, "max": 1.0, "animatable": true }
+  ],
+  "signals": [
+    { "id": "beat", "label": "Beat", "note": 36, "mode": "gate", "hint": "kick drum, or play C1", "release_ms": 160 }
+  ],
+  "passes": [
+    { "shader": "shader.wgsl", "entry": "fs_main", "inputs": [], "output": "out" }
+  ]
+}

@@ -11,6 +11,9 @@ use serde::{Deserialize, Serialize};
 pub enum Kind {
     Effect,
     Transition,
+    /// No input image: the first pass has an empty `inputs` list and both
+    /// `gobofx_input0`/`gobofx_input1` are bound to the 1×1 transparent texture.
+    Generator,
 }
 
 impl Kind {
@@ -19,6 +22,7 @@ impl Kind {
         match self {
             Kind::Effect => &["source"],
             Kind::Transition => &["from", "to"],
+            Kind::Generator => &[],
         }
     }
 }

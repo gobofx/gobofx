@@ -47,8 +47,8 @@ enum Cmd {
 struct RenderArgs {
     /// Plugin folder containing manifest.json
     dir: PathBuf,
-    /// Input PNG. Effects take one (source); transitions take two (from, then to).
-    #[arg(short, long = "input", required = true)]
+    /// Input PNG. Effects take one (source); transitions take two (from, then to); generators take none.
+    #[arg(short, long = "input")]
     inputs: Vec<PathBuf>,
     /// Output PNG (single frame)
     #[arg(short, long, default_value = "out.png")]
@@ -204,10 +204,11 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
     for (name, path) in needed.iter().zip(&args.inputs) {
         inputs.insert(name.to_string(), Image::load_png(path)?);
     }
-    let first = inputs.get(match m.kind {
-        Kind::Effect => "source",
-        Kind::Transition => "from",
-    });
+    let first = match m.kind {
+        Kind::Effect => inputs.get("source"),
+        Kind::Transition => inputs.get("from"),
+        Kind::Generator => None,
+    };
     let size = match &args.size {
         Some(s) => {
             let (w, h) = s.split_once('x').ok_or_else(|| anyhow!("--size must be WxH"))?;

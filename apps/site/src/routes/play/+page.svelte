@@ -36,7 +36,7 @@
     attack_ms?: number;
     release_ms?: number;
   };
-  type Manifest = { id: string; name: string; kind: 'effect' | 'transition'; params?: Param[]; signals?: Signal[] };
+  type Manifest = { id: string; name: string; kind: 'effect' | 'transition' | 'generator'; params?: Param[]; signals?: Signal[] };
   type Diagnostic = { level: 'error' | 'warning'; file?: string; line?: number; message: string };
   type Report = { ok: boolean; diagnostics: Diagnostic[] };
 
@@ -166,9 +166,9 @@
         try {
           const a = videoA!;
           const b = videoB!;
-          const ready = a.readyState >= 2 && (kind !== 'transition' || b.readyState >= 2);
+          const ready = kind === 'generator' || (a.readyState >= 2 && (kind !== 'transition' || b.readyState >= 2));
           if (!ready) return; // first frames not decoded yet; nothing to render
-          host.set_video(kind === 'effect' ? 'source' : 'from', a);
+          if (kind !== 'generator') host.set_video(kind === 'effect' ? 'source' : 'from', a);
           if (kind === 'transition') host.set_video('to', b);
           let dur: number;
           let t: number;
@@ -500,7 +500,7 @@
     <div class="panel">
       <div class="sectionHeader">CLIPS</div>
       <div class="clips">
-        <div class="clip">
+        <div class="clip" class:unused={kind === 'generator'}>
           <video bind:this={videoA} src="/media/a.mp4" loop playsinline preload="auto" crossorigin="anonymous" muted></video>
           <div class="clipLabel">
             <span class="mono">{kind === 'transition' ? 'from' : 'source'}</span>

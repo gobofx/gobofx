@@ -1,0 +1,20 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.template-transition",
+  "name": "Template Transition",
+  "kind": "transition",
+  "category": "wipe",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    { "id": "direction", "label": "Direction", "type": "choice", "default": 0, "options": ["left to right", "right to left", "top to bottom", "bottom to top"] },
+    { "id": "softness",  "label": "Softness",  "type": "float",  "default": 0.05, "min": 0.0, "max": 0.5, "animatable": true },
+    { "id": "ease",      "label": "Ease",      "type": "float",  "default": 0.0,  "min": 0.0, "max": 1.0 }
+  ],
+  "signals": [
+    { "id": "wobble", "label": "Wobble", "cc": 1, "hint": "audio follower, or a fader", "release_ms": 120 }
+  ],
+  "passes": [
+    { "shader": "shader.wgsl", "entry": "fs_main", "inputs": ["from", "to"], "output": "out" }
+  ]
+}

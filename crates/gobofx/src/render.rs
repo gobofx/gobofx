@@ -362,7 +362,10 @@ impl Host {
         let mut views: HashMap<String, wgpu::TextureView> = inputs.clone();
         let mut out = None;
         for (i, pass) in compiled.passes.iter().enumerate() {
-            let in0 = views.get(&pass.inputs[0]).ok_or_else(|| anyhow!("pass {}: input \"{}\" is not available", i, pass.inputs[0]))?;
+            let in0 = match pass.inputs.first() {
+                Some(n) => views.get(n).ok_or_else(|| anyhow!("pass {}: input \"{}\" is not available", i, n))?,
+                None => &self.blank,
+            };
             let in1 = match pass.inputs.get(1) {
                 Some(n) => views.get(n).ok_or_else(|| anyhow!("pass {}: input \"{}\" is not available", i, n))?,
                 None => &self.blank,

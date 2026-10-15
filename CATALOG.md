@@ -7,9 +7,8 @@ availability in any host.
 
 ## How to read this
 
-- **Kind** is the manifest `kind`: `effect` or `transition` in spec 0.1. Rows
-  marked `generator` (no input image) need a kind the spec does not have yet;
-  they are listed so the gap is visible.
+- **Kind** is the manifest `kind`: `effect`, `transition` or `generator` (no
+  input image).
 - **Category** becomes the manifest `category` and the browser grouping a host
   shows.
 - **Priority** is the order we intend to build in. *Core* is the first wave.
@@ -294,10 +293,10 @@ spec questions.
 | Reframe | Highlight or punch-in reframing | Candidate | transform and automation in the host, not a shader |
 | Depth of Field | Adjust focus points and depth of field | Candidate | depth data from the source |
 
-## Generators (proposed kind)
+## Generators
 
-A generator takes no input image. Spec 0.1 has no such kind; these rows are
-the case for adding one.
+A generator takes no input image (`kind: "generator"`, added to spec 0.1 on
+2026-10-15).
 
 | Title | Short description | Priority |
 |---|---|---|

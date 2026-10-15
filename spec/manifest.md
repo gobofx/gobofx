@@ -10,7 +10,7 @@ Schema: [`manifest.schema.json`](manifest.schema.json).
 | `gobofx` | string | yes | Spec version the plugin targets, e.g. `"0.1"` |
 | `id` | string | yes | Reverse-DNS unique id, e.g. `org.gobofx.cross-dissolve` |
 | `name` | string | yes | Display name |
-| `kind` | `"effect"` \| `"transition"` | yes | Effect: 1 input. Transition: 2 inputs + `progress` |
+| `kind` | `"effect"` \| `"transition"` \| `"generator"` | yes | Effect: 1 input. Transition: 2 inputs + `progress`. Generator: no input (added 2026-10-15) |
 | `category` | string | no | Browser grouping: `dissolve`, `wipe`, `blur`, `color`, `distort`, `stylize`, … |
 | `version` | string | yes | Plugin semver |
 | `license` | string | no | SPDX expression |
@@ -48,8 +48,9 @@ turns audio followers, OSC or hardware into controller values and uploads one `f
 | `shader` | WGSL file, relative to the manifest |
 | `entry` | Fragment entry point |
 | `constants` | Values for `override` declarations, e.g. pass direction |
-| `inputs` | 1–2 named images, bound to `gobofx_input0` / `gobofx_input1` |
+| `inputs` | 0–2 named images, bound to `gobofx_input0` / `gobofx_input1`. Only a generator pass may list none |
 | `output` | Name of the image this pass writes; the last pass must write `out` |
 
-Reserved input names: `source` (effects), `from` and `to` (transitions).
+Reserved input names: `source` (effects), `from` and `to` (transitions). A generator has none;
+its first pass reads nothing and later passes read earlier outputs.
 Any other name refers to an earlier pass's `output`. Intermediate images are `rgba16float`, output-sized.

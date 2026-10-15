@@ -1,0 +1,24 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.template-effect",
+  "name": "Template Effect",
+  "kind": "effect",
+  "category": "color",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    { "id": "amount",  "label": "Amount",  "type": "float",  "default": 0.5, "min": 0.0, "max": 1.0, "animatable": true },
+    { "id": "levels",  "label": "Levels",  "type": "int",    "default": 64,  "min": 2,   "max": 64 },
+    { "id": "invert",  "label": "Invert",  "type": "bool",   "default": false },
+    { "id": "blend",   "label": "Blend",   "type": "choice", "default": 1, "options": ["normal", "multiply", "screen"] },
+    { "id": "tint",    "label": "Tint",    "type": "color",  "default": [1.0, 0.6, 0.2, 1.0] },
+    { "id": "center",  "label": "Center",  "type": "point",  "default": [0.5, 0.5] }
+  ],
+  "signals": [
+    { "id": "pulse", "label": "Pulse", "cc": 1, "hint": "audio follower, 40–160 Hz", "attack_ms": 10, "release_ms": 250 }
+  ],
+  "passes": [
+    { "shader": "shader.wgsl", "entry": "fs_grade",    "inputs": ["source"], "output": "graded" },
+    { "shader": "shader.wgsl", "entry": "fs_vignette", "inputs": ["graded"], "output": "out", "constants": { "VIGNETTE": 0.6 } }
+  ]
+}
