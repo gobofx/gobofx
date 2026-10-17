@@ -16,6 +16,7 @@ Schema: [`manifest.schema.json`](manifest.schema.json).
 | `license` | string | no | SPDX expression |
 | `params` | array | no | User-facing parameters (below) |
 | `signals` | array | no | MIDI 2.0 controllers and notes the plugin reads each frame — see [`signals.md`](signals.md) |
+| `assets` | array | no | Images shipped in the package a pass can read, e.g. a `.cube` LUT — see [`assets.md`](assets.md) (added 2026-10-17) |
 | `passes` | array | yes | Render passes, executed in order (below) |
 
 ## Params
@@ -31,8 +32,10 @@ A plugin with no params declares no group 1.
 | `choice` | `u32` | index into `options: [string]` |
 | `color` | `vec4f` | linear, premultiplied RGBA |
 | `point` | `vec2f` | normalized uv, (0,0) top-left; host shows an onscreen handle |
+| `asset` | — | an image the user picks (`kind`, optional `default` = a bundled asset id); **no struct field** — it is bound as a pass input by its id. See [`assets.md`](assets.md) |
 
-The host lays the struct out with WGSL uniform alignment rules and pads it to a multiple of 16 bytes.
+The host lays the struct out with WGSL uniform alignment rules and pads it to a multiple of 16 bytes
+(`asset` params are skipped: they are images, not values).
 `animatable: true` (default) lets the host keyframe the param; it uploads the evaluated value per frame.
 
 ## Signals
@@ -53,4 +56,12 @@ turns audio followers, OSC or hardware into controller values and uploads one `f
 
 Reserved input names: `source` (effects), `from` and `to` (transitions). A generator has none;
 its first pass reads nothing and later passes read earlier outputs.
-Any other name refers to an earlier pass's `output`. Intermediate images are `rgba16float`, output-sized.
+Any other name refers to an earlier pass's `output`, to a bundled asset (`assets[].id`) or to an
+`asset` param (its id), see [`assets.md`](assets.md). Intermediate images are `rgba16float`, output-sized;
+an asset keeps the size its kind defines.
+
+## Assets
+
+Images that are not frames: a `.cube` lookup table shipped in the package, or one the user picks
+through an `asset` param. They bind as ordinary pass inputs, so the shader ABI does not change.
+Full definition in [`assets.md`](assets.md).

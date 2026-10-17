@@ -38,14 +38,21 @@
         'The WGSL the host prepends to every plugin shader module: GobofxGlobals, the sampler, the two input textures and the fullscreen-triangle vertex stage gobofx_vs. Plugins must not redeclare anything in it.'
     },
     {
-      tag: '06 / PACKAGE',
+      tag: '06 / ASSETS',
+      href: blob + 'assets.md',
+      file: 'assets.md',
+      summary:
+        'Images that are not frames: .cube 3D lookup tables shipped in the package (assets[]) or picked by the user (the asset param type), bound as ordinary pass inputs as an rgba16float strip — N tiles of N×N — with a two-tap trilinear lookup. No new binding.'
+    },
+    {
+      tag: '07 / PACKAGE',
       href: blob + 'package.md',
       file: 'package.md',
       summary:
         'The .gobofx distribution format: a ZIP of the plugin folder under a strict profile. manifest.json first and stored, deflate or stored only, canonical relative names, no Zip64 or encryption. Any license, open or commercial.'
     },
     {
-      tag: '07 / EXAMPLES',
+      tag: '08 / EXAMPLES',
       href: tree + 'examples',
       file: 'examples/',
       summary: 'Cross Dissolve (transition), Gaussian Blur (two passes with override constants) and Reactive Grade (notes C1, D1, E1 saturate, flash and punch), Chromatic Hue (every key of an octave is a hue; pitch wheel and aftertouch) and Kaleidoscope (the key picks the segment count, mod wheel spins, pitch wheel zooms). All pass naga and validate against the schema.'

@@ -16,7 +16,9 @@ The host creates pipeline layouts explicitly, so unused bindings stay valid.
 | 0 | 3 | `gobofx_input1` | `texture_2d<f32>` — second pass input, or 1×1 transparent |
 
 A pass with no inputs (a generator's first pass) has both `gobofx_input0` and `gobofx_input1`
-bound to the 1×1 transparent texture; the bindings always exist.
+bound to the 1×1 transparent texture; the bindings always exist. An input may also be an asset
+([`assets.md`](assets.md)): a `.cube` LUT arrives as an `rgba16float` strip texture in the same
+binding, with the layout that document fixes. The ABI has no binding of its own for assets.
 | 1 | 0 | `params` | `uniform Params` — declared by the plugin, matches the manifest `params` |
 | 1 | 1 | `gobofx_signals` | `uniform Signals` — declared by the plugin, one `f32` per manifest signal ([`signals.md`](signals.md)) |
 

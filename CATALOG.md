@@ -105,7 +105,7 @@ any effect with a shape mask and animate any param marked `animatable`.
 | Color Wheels | Lift, gamma, gain wheels | Planned | |
 | Color Curves | Per-channel RGB curves | Planned | a curve param type |
 | Hue/Saturation Curves | Hue-vs-hue, hue-vs-sat, hue-vs-luma curves | Planned | a curve param type |
-| LUT | Apply a `.cube` lookup table | Core | a texture asset param type — not buildable on spec 0.1, so not in the library yet |
+| LUT | Apply a `.cube` lookup table | Core | `spec/assets.md` (lut3d assets + the `asset` param type, specified 2026-10-17); the crate, the hosts and the plugin follow |
 | Brightness | Linear brightness | Candidate | |
 | Contrast | Contrast around a pivot | Candidate | |
 | Gamma | Midtone gamma | Candidate | |

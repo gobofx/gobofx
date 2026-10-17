@@ -44,8 +44,8 @@ any MUST and SHOULD report which rule failed.
 - Entry names are unique after Unicode NFC normalization and case folding. Two names that collide
   on a case-insensitive filesystem make the package invalid.
 - No symlinks, no external file attributes that a host would honour (hosts ignore them).
-- Every `shader` path in the manifest MUST resolve to an entry in the package. The reverse is not
-  required: extra entries are allowed.
+- Every `shader` path and every `assets[].file` in the manifest MUST resolve to an entry in the
+  package. The reverse is not required: extra entries are allowed.
 
 ### Allowed content
 
@@ -57,6 +57,7 @@ any MUST and SHOULD report which rule failed.
 | `preview.png` / `preview.webp` | no | Thumbnail for the host's browser, ≤ 512×512, any aspect (16:9 recommended) |
 | `README.md` | no | Shown by the host as the plugin description |
 | `LICENSE` | no | Full license text; `manifest.license` carries the SPDX expression |
+| `*.cube` | no | 3D lookup tables referenced by `assets[].file` ([`assets.md`](assets.md)). Added 2026-10-17 |
 | other files | no | Reserved for future asset types (textures). Hosts ignore unknown entries. |
 
 A host MUST NOT execute, evaluate or render any entry it does not recognise. In particular a host
@@ -96,4 +97,5 @@ be combined with a plugin under any terms the author picks.
 3. Cross-check each local header against its central entry.
 4. Inflate `manifest.json`, validate against [`manifest.schema.json`](manifest.schema.json).
 5. Resolve every `passes[].shader`; inflate and validate each shader (naga) with the prelude.
-6. Sum uncompressed sizes against the limit.
+6. Resolve every `assets[].file`; parse each per its kind ([`assets.md`](assets.md) "Validation").
+7. Sum uncompressed sizes against the limit.
