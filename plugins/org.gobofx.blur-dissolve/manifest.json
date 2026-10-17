@@ -1,0 +1,87 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.blur-dissolve",
+  "name": "Blur Dissolve",
+  "kind": "transition",
+  "category": "blur",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 24.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "blur-dissolve.wgsl",
+      "entry": "fs_blur_from",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "from"
+      ],
+      "output": "from_h"
+    },
+    {
+      "shader": "blur-dissolve.wgsl",
+      "entry": "fs_blur_from",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "from_h"
+      ],
+      "output": "from_b"
+    },
+    {
+      "shader": "blur-dissolve.wgsl",
+      "entry": "fs_blur_to",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "to"
+      ],
+      "output": "to_h"
+    },
+    {
+      "shader": "blur-dissolve.wgsl",
+      "entry": "fs_blur_to",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "to_h"
+      ],
+      "output": "to_b"
+    },
+    {
+      "shader": "blur-dissolve.wgsl",
+      "entry": "fs_mix",
+      "inputs": [
+        "from_b",
+        "to_b"
+      ],
+      "output": "out"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.band-wipe",
+  "name": "Band Wipe",
+  "kind": "transition",
+  "category": "wipe",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "bands",
+      "label": "Bands",
+      "type": "int",
+      "default": 6,
+      "min": 2,
+      "max": 32
+    },
+    {
+      "id": "direction",
+      "label": "Direction",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "left to right",
+        "right to left",
+        "top to bottom",
+        "bottom to top"
+      ]
+    },
+    {
+      "id": "alternate",
+      "label": "Alternate",
+      "type": "bool",
+      "default": true
+    },
+    {
+      "id": "softness",
+      "label": "Softness",
+      "type": "float",
+      "default": 0.02,
+      "min": 0.0,
+      "max": 0.3
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "band-wipe.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

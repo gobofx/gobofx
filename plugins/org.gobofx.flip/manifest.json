@@ -1,0 +1,48 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.flip",
+  "name": "Flip",
+  "kind": "transition",
+  "category": "movement",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "axis",
+      "label": "Axis",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "vertical axis",
+        "horizontal axis"
+      ]
+    },
+    {
+      "id": "perspective",
+      "label": "Perspective",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "flip.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

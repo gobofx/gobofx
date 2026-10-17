@@ -1,0 +1,44 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.letter-x-wipe",
+  "name": "Letter X Wipe",
+  "kind": "transition",
+  "category": "wipe",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "invert",
+      "label": "Invert",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "id": "softness",
+      "label": "Softness",
+      "type": "float",
+      "default": 0.02,
+      "min": 0.0,
+      "max": 0.3
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "letter-x-wipe.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}
