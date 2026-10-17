@@ -1,0 +1,84 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.noise",
+  "name": "Noise",
+  "kind": "generator",
+  "category": "noise",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "style",
+      "label": "Style",
+      "type": "choice",
+      "default": 1,
+      "options": [
+        "value",
+        "perlin",
+        "cellular"
+      ]
+    },
+    {
+      "id": "scale",
+      "label": "Scale",
+      "type": "float",
+      "default": 6.0,
+      "min": 0.5,
+      "max": 64.0
+    },
+    {
+      "id": "octaves",
+      "label": "Octaves",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 6
+    },
+    {
+      "id": "speed",
+      "label": "Speed",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 4.0
+    },
+    {
+      "id": "contrast",
+      "label": "Contrast",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.2,
+      "max": 4.0
+    },
+    {
+      "id": "color_a",
+      "label": "Dark",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "color_b",
+      "label": "Light",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "noise.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}

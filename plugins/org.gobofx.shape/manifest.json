@@ -1,0 +1,131 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.shape",
+  "name": "Shape",
+  "kind": "generator",
+  "category": "shapes",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "shape",
+      "label": "Shape",
+      "type": "choice",
+      "default": 3,
+      "options": [
+        "rectangle",
+        "ellipse",
+        "polygon",
+        "star"
+      ]
+    },
+    {
+      "id": "fill",
+      "label": "Fill",
+      "type": "color",
+      "default": [
+        1.0,
+        0.6,
+        0.2,
+        1.0
+      ]
+    },
+    {
+      "id": "stroke",
+      "label": "Stroke",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "stroke_width",
+      "label": "Stroke Width",
+      "type": "float",
+      "default": 4.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "background",
+      "label": "Background",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "size",
+      "label": "Size",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.02,
+      "max": 2.0
+    },
+    {
+      "id": "aspect",
+      "label": "Aspect",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.1,
+      "max": 4.0
+    },
+    {
+      "id": "rotation",
+      "label": "Rotation",
+      "type": "float",
+      "default": 0.0,
+      "min": -180.0,
+      "max": 180.0,
+      "unit": "deg"
+    },
+    {
+      "id": "sides",
+      "label": "Sides",
+      "type": "int",
+      "default": 5,
+      "min": 3,
+      "max": 12
+    },
+    {
+      "id": "inner",
+      "label": "Inner Radius",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.1,
+      "max": 0.95
+    },
+    {
+      "id": "roundness",
+      "label": "Roundness",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "shape.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}

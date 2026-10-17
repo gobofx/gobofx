@@ -1,0 +1,75 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.checkerboard",
+  "name": "Checkerboard",
+  "kind": "generator",
+  "category": "pattern",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "color_a",
+      "label": "Color A",
+      "type": "color",
+      "default": [
+        0.9,
+        0.9,
+        0.9,
+        1.0
+      ]
+    },
+    {
+      "id": "color_b",
+      "label": "Color B",
+      "type": "color",
+      "default": [
+        0.15,
+        0.15,
+        0.15,
+        1.0
+      ]
+    },
+    {
+      "id": "columns",
+      "label": "Columns",
+      "type": "int",
+      "default": 8,
+      "min": 1,
+      "max": 64
+    },
+    {
+      "id": "rows",
+      "label": "Rows",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 64
+    },
+    {
+      "id": "rotation",
+      "label": "Rotation",
+      "type": "float",
+      "default": 0.0,
+      "min": -180.0,
+      "max": 180.0,
+      "unit": "deg"
+    },
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "checkerboard.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}

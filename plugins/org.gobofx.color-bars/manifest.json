@@ -1,0 +1,44 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.color-bars",
+  "name": "Color Bars",
+  "kind": "generator",
+  "category": "pattern",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "style",
+      "label": "Style",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "smpte",
+        "ebu",
+        "ramp"
+      ]
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 0.75,
+      "min": 0.5,
+      "max": 1.0
+    },
+    {
+      "id": "bottom",
+      "label": "Bottom Strip",
+      "type": "bool",
+      "default": true
+    }
+  ],
+  "passes": [
+    {
+      "shader": "color-bars.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}

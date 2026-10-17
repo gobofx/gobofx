@@ -1,0 +1,80 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.dots",
+  "name": "Dots",
+  "kind": "generator",
+  "category": "pattern",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "dot_color",
+      "label": "Dot",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "background",
+      "label": "Background",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": "columns",
+      "label": "Columns",
+      "type": "int",
+      "default": 12,
+      "min": 1,
+      "max": 64
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 0.3,
+      "min": 0.02,
+      "max": 0.7
+    },
+    {
+      "id": "stagger",
+      "label": "Stagger",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "id": "softness",
+      "label": "Softness",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "dots.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}
