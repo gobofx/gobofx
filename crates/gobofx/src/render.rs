@@ -388,7 +388,7 @@ impl Host {
 // ── Native image path (CLI) ───────────────────────────────────────────
 
 #[cfg(feature = "cli")]
-pub use native::Image;
+pub use native::{Frame, Image};
 
 #[cfg(feature = "cli")]
 mod native {
@@ -451,20 +451,6 @@ mod native {
         out
     }
 
-    /// linear premultiplied f16 bytes → sRGB straight alpha u8.
-    fn from_working_space(bytes: &[u8], width: u32, height: u32) -> Image {
-        let mut rgba8 = Vec::with_capacity((width * height * 4) as usize);
-        for px in bytes.chunks_exact(8).take((width * height) as usize) {
-            let f = |i: usize| f16::from_bits(u16::from_le_bytes([px[i * 2], px[i * 2 + 1]])).to_f32();
-            let a = f(3).clamp(0.0, 1.0);
-            for i in 0..3 {
-                let straight = if a > 0.0 { f(i) / a } else { 0.0 };
-                rgba8.push((linear_to_srgb(straight) * 255.0 + 0.5) as u8);
-            }
-            rgba8.push((a * 255.0 + 0.5) as u8);
-        }
-        Image { width, height, rgba8 }
-    }
 
     impl Host {
         fn upload(&self, img: &Image, label: &str) -> wgpu::Texture {
@@ -487,7 +473,7 @@ mod native {
             tex
         }
 
-        /// Run the plugin on PNG-style inputs and read the result back.
+        /// Run the plugin on PNG-style inputs and read the result back as a PNG-style image.
         pub fn render_image(
             &self,
             compiled: &Compiled,
@@ -497,6 +483,22 @@ mod native {
             values: &[Value],
             signal_values: &[f32],
         ) -> Result<Image> {
+            Ok(self.render_frame(compiled, inputs, size, globals, values, signal_values)?.to_image())
+        }
+
+        /// Run the plugin and read the working-space result back unconverted:
+        /// linear, premultiplied f32 (from the rgba16float target). This is what
+        /// `verify` inspects, because the PNG conversion clamps and would hide
+        /// NaN, negative or out-of-range values.
+        pub fn render_frame(
+            &self,
+            compiled: &Compiled,
+            inputs: &BTreeMap<String, Image>,
+            size: (u32, u32),
+            globals: Globals,
+            values: &[Value],
+            signal_values: &[f32],
+        ) -> Result<Frame> {
             let textures: Vec<(String, wgpu::Texture)> = inputs.iter().map(|(n, img)| (n.clone(), self.upload(img, n))).collect();
             let views: HashMap<String, wgpu::TextureView> =
                 textures.iter().map(|(n, t)| (n.clone(), t.create_view(&Default::default()))).collect();
@@ -538,7 +540,53 @@ mod native {
             }
             drop(data);
             readback.unmap();
-            Ok(from_working_space(&tight, width, height))
+            let rgba = tight
+                .chunks_exact(2)
+                .map(|b| f16::from_bits(u16::from_le_bytes([b[0], b[1]])).to_f32())
+                .collect();
+            Ok(Frame { width, height, rgba })
+        }
+    }
+
+    /// A rendered frame in the working space: linear, premultiplied, four f32 per pixel.
+    #[derive(Debug, Clone)]
+    pub struct Frame {
+        pub width: u32,
+        pub height: u32,
+        pub rgba: Vec<f32>,
+    }
+
+    impl Frame {
+        /// The frame as PNG-style sRGB straight-alpha 8-bit (clamped).
+        pub fn to_image(&self) -> Image {
+            let mut rgba8 = Vec::with_capacity(self.rgba.len());
+            for px in self.rgba.chunks_exact(4) {
+                let a = px[3].clamp(0.0, 1.0);
+                for c in &px[..3] {
+                    let straight = if a > 0.0 { c / a } else { 0.0 };
+                    rgba8.push((linear_to_srgb(straight) * 255.0 + 0.5) as u8);
+                }
+                rgba8.push((a * 255.0 + 0.5) as u8);
+            }
+            Image { width: self.width, height: self.height, rgba8 }
+        }
+
+        /// An input image in the same working space, for comparing against a render.
+        pub fn from_image(img: &Image) -> Frame {
+            let rgba = img
+                .rgba8
+                .chunks_exact(4)
+                .flat_map(|px| {
+                    let a = px[3] as f32 / 255.0;
+                    [
+                        srgb_to_linear(px[0] as f32 / 255.0) * a,
+                        srgb_to_linear(px[1] as f32 / 255.0) * a,
+                        srgb_to_linear(px[2] as f32 / 255.0) * a,
+                        a,
+                    ]
+                })
+                .collect();
+            Frame { width: img.width, height: img.height, rgba }
         }
     }
 }

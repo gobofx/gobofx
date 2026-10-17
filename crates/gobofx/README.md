@@ -18,7 +18,7 @@ gobofx info   spec/examples/gaussian-blur            # manifest, params layout, 
 
 gobofx render spec/examples/gaussian-blur  -i fixtures/a.png -p radius=12 -o blur.png
 gobofx render spec/examples/cross-dissolve -i fixtures/a.png -i fixtures/b.png --steps 9 --out-dir frames
-gobofx render spec/examples/reactive-grade  -i fixtures/a.png -s bass=1 -s hit=1 -o grade.png
+gobofx render spec/examples/reactive-grade  -i fixtures/a.png -s bass=1 -s flash=1 -o grade.png
 ```
 
 - Effects take one `-i` (source); transitions take two (from, then to).
@@ -38,6 +38,51 @@ gobofx render spec/examples/reactive-grade  -i fixtures/a.png -s bass=1 -s hit=1
 `fixtures/a.png` and `fixtures/b.png` are small test images (256×144) with
 distinct shapes, so a transition's direction and an effect's spatial behaviour
 are visible at a glance.
+
+## `gobofx verify` — the agent-driven check
+
+```sh
+source tools/gpu-env.sh                                   # Linux without a GPU: SwiftShader
+gobofx verify plugins/org.gobofx.wipe                     # one plugin
+gobofx verify plugins/org.gobofx.*/ --json                # the library; index.json + all.png
+gobofx verify plugins/org.gobofx.wipe --assets            # also write preview.png + icon.png
+tools/verify-all.sh                                       # build + verify everything
+```
+
+`verify` derives a case matrix from the manifest — defaults, a repeat, a later
+`time`, transition progress 0 / .25 / .5 / .75 / 1, every param at its min, max
+or each option (and once more over each signal level), every signal alone and
+against the others — renders each case to `<dir>/dist/verify/<case>.png`, and
+checks:
+
+| check | fails when |
+|---|---|
+| `validate`, `compile` | the manifest or a shader is rejected (naga, then the GPU) |
+| `finite`, `alpha-range` | a pixel is NaN/Inf or alpha leaves 0..1 (checked on the rgba16float target, before PNG clamping) |
+| `premultiplied` (warn) | colour exceeds alpha on partially transparent pixels |
+| `endpoint:0`, `endpoint:1` | a transition at progress 0 isn't `from`, at 1 isn't `to` (max 3/255) |
+| `progression` (warn) | the picture moves back towards `from` as progress grows |
+| `live:<param>` | changing the param leaves the render untouched (unused field, wrong `Params` order, inert default) |
+| `identity` | the `verify.json` identity params don't reproduce the source |
+| `not-blank` | the default render is fully transparent or one flat colour |
+| `deterministic` | rendering twice gives different bytes |
+| `perf` (warn) | 1280×720 takes over 250 ms on a hardware adapter |
+
+`report.json` holds every case and check; `sheet.png` is a labelled contact
+sheet of the inputs and every case, drawn so it can be read without a viewer
+that shows file names. Several plugins at once also write
+`dist/verify/index.json` and `all.png` (one status-coloured cell per plugin).
+Exit code 1 if any check fails.
+
+Optional `plugins/<id>/verify.json` (not packed): `{"source": "green" | "alpha"}`
+picks the keying or the transparent fixture for `source`; `"inert": [ids]`
+exempts params that cannot move the default render; `"identity": {id: text}`
+asks for an identity check under those params; `"flat": true` accepts a flat
+default render (a solid generator).
+
+No GPU on a Linux box? `source tools/gpu-env.sh` points the Vulkan loader at
+the SwiftShader that ships with Playwright's Chromium (or `$SWIFTSHADER_DIR`).
+Renders are bit-exact to the host's rules, just slow (a 720p blur ≈ 0.7 s).
 
 ## Browser build
 

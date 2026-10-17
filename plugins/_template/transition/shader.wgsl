@@ -37,6 +37,8 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
 
     // Edge travels from -s (all `from`) to 1+s (all `to`) so the soft band clears both ends.
     let edge = t * (1.0 + 2.0 * s) - s + wobble;
-    let keep_a = 1.0 - smoothstep(edge - s, edge + s, x);
+    // `from` stays where the edge has not passed yet: keep_a is 1 at p=0
+    // (edge sits at -s, left of every pixel) and 0 at p=1 (edge at 1+s).
+    let keep_a = smoothstep(edge - s, edge + s, x);
     return mix(b, a, keep_a); // premultiplied: a plain mix is correct
 }
