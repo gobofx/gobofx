@@ -1,0 +1,21 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.lut",
+  "name": "LUT",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    { "id": "lut", "label": "LUT", "type": "asset", "kind": "lut3d", "default": "warm", "animatable": false },
+    { "id": "intensity", "label": "Intensity", "type": "float", "default": 1.0, "min": 0.0, "max": 1.0, "animatable": true },
+    { "id": "input_space", "label": "Input Space", "type": "choice", "default": 0, "options": ["srgb", "linear"] }
+  ],
+  "assets": [
+    { "id": "warm", "kind": "lut3d", "file": "warm.cube", "label": "Warm Film" },
+    { "id": "identity", "kind": "lut3d", "file": "identity.cube", "label": "Identity" }
+  ],
+  "passes": [
+    { "shader": "lut.wgsl", "entry": "fs_main", "inputs": ["source", "lut"], "output": "out" }
+  ]
+}

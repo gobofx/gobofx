@@ -2,7 +2,7 @@
 
 Status: **target list, draft 0.1.** The effects and transitions a complete
 GoboFX plugin library should cover. Rows are ticked (✅ + id) as open-source
-reference plugins land under `plugins/` — 22 effects, 21 transitions and 10
+reference plugins land under `plugins/` — 23 effects, 21 transitions and 10
 generators so far. A row in this list is a goal, not a promise of
 availability in any host.
 
@@ -105,7 +105,7 @@ any effect with a shape mask and animate any param marked `animatable`.
 | Color Wheels | Lift, gamma, gain wheels | Planned | |
 | Color Curves | Per-channel RGB curves | Planned | a curve param type |
 | Hue/Saturation Curves | Hue-vs-hue, hue-vs-sat, hue-vs-luma curves | Planned | a curve param type |
-| LUT | Apply a `.cube` lookup table | Core | `spec/assets.md` (lut3d assets + the `asset` param type, specified 2026-10-17); the crate, the hosts and the plugin follow |
+| ✅ LUT | Apply a `.cube` lookup table — `org.gobofx.lut` | Core | `spec/assets.md` (lut3d assets + the `asset` param type) |
 | Brightness | Linear brightness | Candidate | |
 | Contrast | Contrast around a pivot | Candidate | |
 | Gamma | Midtone gamma | Candidate | |
