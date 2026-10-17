@@ -172,7 +172,70 @@ pub fn validate(plugin: &Plugin) -> Report {
         if let Err(e) = params::default_value(p) {
             err(&mut d, None, e.to_string());
         }
+        if p.ty == ParamType::Asset && p.kind.is_none() {
+            err(&mut d, None, format!("param \"{}\" is an asset but declares no kind", p.id));
+        }
+        if p.ty != ParamType::Asset && p.kind.is_some() {
+            warn(&mut d, None, format!("param \"{}\" has an asset kind but is not an asset", p.id));
+        }
+        if p.ty == ParamType::Asset && p.animatable && p.default.is_none() && p.options.is_none() {
+            // Nothing to say: `animatable` is simply ignored for assets.
+        }
     }
+
+    // ── assets (spec/assets.md) ───────────────────────────────────────
+    let mut asset_seen = BTreeSet::new();
+    for a in &m.assets {
+        if !is_valid_param_id(&a.id) {
+            err(&mut d, None, format!("asset id \"{}\" must match ^[a-z_][a-z0-9_]*$", a.id));
+        }
+        if !asset_seen.insert(a.id.as_str()) {
+            err(&mut d, None, format!("asset id \"{}\" is declared twice", a.id));
+        }
+        if m.params.iter().any(|p| p.id == a.id) || m.signals.iter().any(|s| s.id == a.id) {
+            err(&mut d, None, format!("asset id \"{}\" collides with a param or signal of the same id", a.id));
+        }
+        if a.file.starts_with('/') || a.file.split('/').any(|seg| seg == "..") || a.file.contains('\\') {
+            err(&mut d, None, format!("asset \"{}\": file \"{}\" must be a relative path without ..", a.id, a.file));
+        }
+        if !a.file.ends_with(&format!(".{}", a.kind.extension())) {
+            err(&mut d, None, format!("asset \"{}\": a {:?} file must end in .{}", a.id, a.kind, a.kind.extension()));
+        }
+        match plugin.assets.get(&a.file) {
+            None => err(&mut d, None, format!("asset \"{}\": file \"{}\" not found", a.id, a.file)),
+            Some(bytes) => match a.kind {
+                crate::manifest::AssetKind::Lut3d => {
+                    let text = String::from_utf8_lossy(bytes);
+                    if let Err(e) = crate::cube::parse_cube(&text) {
+                        err(&mut d, None, format!("asset \"{}\": {}: {}", a.id, a.file, e));
+                    }
+                }
+            },
+        }
+    }
+    if m.assets.len() > 16 {
+        err(&mut d, None, format!("at most 16 assets per package, found {}", m.assets.len()));
+    }
+    for p in m.params.iter().filter(|p| p.ty == ParamType::Asset) {
+        if let Some(serde_json::Value::String(def)) = &p.default {
+            match m.assets.iter().find(|a| &a.id == def) {
+                None => err(&mut d, None, format!("param \"{}\": default \"{}\" is not a bundled asset", p.id, def)),
+                Some(a) => {
+                    if Some(a.kind) != p.kind {
+                        err(&mut d, None, format!("param \"{}\": default asset \"{}\" is a {:?}, the param takes {:?}", p.id, def, a.kind, p.kind));
+                    }
+                }
+            }
+        } else if p.default.is_some() {
+            err(&mut d, None, format!("param \"{}\": an asset default must be the id of a bundled asset", p.id));
+        }
+    }
+    let asset_inputs: BTreeSet<&str> = m
+        .assets
+        .iter()
+        .map(|a| a.id.as_str())
+        .chain(m.params.iter().filter(|p| p.ty == ParamType::Asset).map(|p| p.id.as_str()))
+        .collect();
 
     // ── signals (spec/signals.md) ─────────────────────────────────────
     let param_ids: BTreeSet<&str> = m.params.iter().map(|p| p.id.as_str()).collect();
@@ -264,19 +327,19 @@ pub fn validate(plugin: &Plugin) -> Report {
             err(&mut d, Some(i), format!("pass {} must have 1 or 2 inputs, has 0 (only a generator pass reads no image)", i));
         }
         for name in &pass.inputs {
-            let ok = reserved.contains(&name.as_str()) || produced.contains(&name.as_str());
+            let ok = reserved.contains(&name.as_str()) || produced.contains(&name.as_str()) || asset_inputs.contains(name.as_str());
             if !ok {
                 let reason = if name == "out" {
                     "\"out\" is the final output and cannot be read".to_string()
                 } else if matches!(name.as_str(), "source" | "from" | "to") {
                     format!("\"{}\" is reserved for kind {:?}; this plugin is {:?}", name, if name == "source" { Kind::Effect } else { Kind::Transition }, m.kind)
                 } else {
-                    format!("\"{}\" is neither a reserved input ({}) nor the output of an earlier pass", name, reserved.join(", "))
+                    format!("\"{}\" is neither a reserved input ({}), the output of an earlier pass, nor an asset", name, reserved.join(", "))
                 };
                 err(&mut d, Some(i), format!("pass {} input {}", i, reason));
             }
         }
-        if produced.contains(&pass.output.as_str()) || reserved.contains(&pass.output.as_str()) {
+        if produced.contains(&pass.output.as_str()) || reserved.contains(&pass.output.as_str()) || asset_inputs.contains(pass.output.as_str()) {
             err(&mut d, Some(i), format!("pass {} output \"{}\" is already taken", i, pass.output));
         }
         if i == last && pass.output != "out" {
@@ -457,6 +520,7 @@ fn check_module(module: &Module, plugin: &Plugin, i: usize, layout: &Layout, sig
                     ParamType::Bool | ParamType::Choice => matches!(inner, TypeInner::Scalar(s) if s.kind == ScalarKind::Uint && s.width == 4),
                     ParamType::Color => matches!(inner, TypeInner::Vector { size: VectorSize::Quad, scalar } if scalar.kind == ScalarKind::Float),
                     ParamType::Point => matches!(inner, TypeInner::Vector { size: VectorSize::Bi, scalar } if scalar.kind == ScalarKind::Float),
+                    ParamType::Asset => false, // never in the layout
                 };
                 if !matches {
                     diag(d, Level::Error, i, &pass.shader, format!("Params.{} must be {} for manifest param \"{}\" ({:?})", mname, field.wgsl, field.id, field.ty));

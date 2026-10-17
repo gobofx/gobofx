@@ -81,6 +81,9 @@ struct RenderArgs {
     /// Signal value, `id=value` in 0..1 (a MIDI 2.0 controller or note level). Repeatable.
     #[arg(short = 's', long = "signal")]
     signals: Vec<String>,
+    /// Asset for an `asset` param, `id=path.cube` (what a host's picker would supply). Repeatable.
+    #[arg(short = 'a', long = "asset")]
+    assets: Vec<String>,
     /// Output size `WxH` (default: size of the first input)
     #[arg(long)]
     size: Option<String>,
@@ -249,7 +252,21 @@ fn print_report(report: &validate::Report, dir: &std::path::Path) {
 }
 
 fn render(args: RenderArgs) -> Result<ExitCode> {
-    let plugin = Plugin::load(&args.dir)?;
+    let mut plugin = Plugin::load(&args.dir)?;
+    // `-a id=file.cube`: install the file as a synthetic bundled asset and
+    // point the param at it, which is exactly what a host picker does.
+    let mut asset_overrides: Vec<(String, String)> = Vec::new();
+    for a in &args.assets {
+        let (k, path) = a.split_once('=').ok_or_else(|| anyhow!("--asset must be id=path, got '{a}'"))?;
+        let param = plugin.manifest.params.iter().find(|p| p.id == k.trim()).ok_or_else(|| anyhow!("unknown asset param '{}'", k.trim()))?;
+        let kind = param.kind.ok_or_else(|| anyhow!("param '{}' is not an asset param", k.trim()))?;
+        let bytes = std::fs::read(path.trim()).with_context(|| format!("reading {}", path.trim()))?;
+        let file = format!("__cli_{}.{}", k.trim(), kind.extension());
+        plugin.assets.insert(file.clone(), bytes);
+        let id = format!("cli_{}", k.trim());
+        plugin.manifest.assets.push(gobofx::manifest::Asset { id: id.clone(), kind, file, label: None });
+        asset_overrides.push((k.trim().to_string(), id));
+    }
     let report = validate::validate(&plugin);
     if !report.ok {
         print_report(&report, &args.dir);
@@ -289,6 +306,9 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
     for p in &args.params {
         let (k, v) = p.split_once('=').ok_or_else(|| anyhow!("--param must be id=value, got '{p}'"))?;
         overrides.insert(k.trim().to_string(), v.to_string());
+    }
+    for (k, id) in asset_overrides {
+        overrides.insert(k, id);
     }
     let values = params::resolve(m, &overrides)?;
     let mut signal_overrides = BTreeMap::new();

@@ -38,6 +38,10 @@ pub struct Compiled {
     pub passes: Vec<CompiledPass>,
     pub params_layout: Layout,
     pub signals_layout: Layout,
+    /// Bundled assets decoded and uploaded once: asset id → view (`spec/assets.md`).
+    pub assets: HashMap<String, wgpu::TextureView>,
+    /// `asset` params in manifest order: `(param id, index in the values list)`.
+    pub asset_params: Vec<(String, usize)>,
 }
 
 /// A GPU device plus the fixed GoboFX bind group layouts.
@@ -285,13 +289,55 @@ impl Host {
                 .map_err(|e| anyhow!("pass {} ({}): {}", i, pass.shader, e))?;
             passes.push(CompiledPass { pipeline, uses_group1, inputs: pass.inputs.clone(), output: pass.output.clone() });
         }
+        let mut assets = HashMap::new();
+        for a in &m.assets {
+            let bytes = plugin.assets.get(&a.file).ok_or_else(|| anyhow!("asset \"{}\": file \"{}\" missing", a.id, a.file))?;
+            let view = match a.kind {
+                crate::manifest::AssetKind::Lut3d => {
+                    let lut = crate::cube::parse_cube(&String::from_utf8_lossy(bytes)).map_err(|e| anyhow!("asset \"{}\": {}", a.id, e))?;
+                    self.upload_strip(&lut, &a.id)
+                }
+            };
+            assets.insert(a.id.clone(), view);
+        }
+        let asset_params = m
+            .params
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| p.ty == crate::manifest::ParamType::Asset)
+            .map(|(i, p)| (p.id.clone(), i))
+            .collect();
         Ok(Compiled {
             id: m.id.clone(),
             kind: m.kind,
             passes,
             params_layout: params::layout(m),
             signals_layout: params::signals_layout(m),
+            assets,
+            asset_params,
         })
+    }
+
+    /// Upload a `.cube` lattice as the strip texture the spec fixes (N tiles of N×N, rgba16float).
+    pub fn upload_strip(&self, lut: &crate::cube::Lut3d, label: &str) -> wgpu::TextureView {
+        let (w, h) = lut.strip_size();
+        let tex = self.device.create_texture(&wgpu::TextureDescriptor {
+            label: Some(label),
+            size: wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: WORKING_FORMAT,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+            view_formats: &[],
+        });
+        self.queue.write_texture(
+            tex.as_image_copy(),
+            &lut.strip_rgba16(),
+            wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(w * 8), rows_per_image: None },
+            wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+        );
+        tex.create_view(&Default::default())
     }
 
     /// Record a fullscreen draw of `pipeline` into `target`.
@@ -360,6 +406,21 @@ impl Host {
         });
 
         let mut views: HashMap<String, wgpu::TextureView> = inputs.clone();
+        // Bundled assets by id, then each `asset` param by its id: the chosen
+        // bundled asset, a host-supplied view already in `inputs`, or blank.
+        for (id, view) in &compiled.assets {
+            views.entry(id.clone()).or_insert_with(|| view.clone());
+        }
+        for (pid, index) in &compiled.asset_params {
+            if views.contains_key(pid) {
+                continue;
+            }
+            let chosen = match values.get(*index) {
+                Some(Value::Asset(Some(id))) => compiled.assets.get(id).cloned(),
+                _ => None,
+            };
+            views.insert(pid.clone(), chosen.unwrap_or_else(|| self.blank.clone()));
+        }
         let mut out = None;
         for (i, pass) in compiled.passes.iter().enumerate() {
             let in0 = match pass.inputs.first() {

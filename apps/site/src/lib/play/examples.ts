@@ -11,6 +11,8 @@ export type ExamplePlugin = {
   slug: string;
   manifest: string;
   shaders: Record<string, string>;
+  /** `.cube` lookup tables the examples ship (spec/assets.md), by file name. */
+  assets: Record<string, string>;
   name: string;
   kind: 'effect' | 'transition' | 'generator';
 };
@@ -22,7 +24,7 @@ for (const [path, source] of Object.entries(files)) {
   const [, slug, file] = m;
   let entry = byFolder.get(slug);
   if (!entry) {
-    entry = { slug, manifest: '', shaders: {}, name: slug, kind: 'effect' };
+    entry = { slug, manifest: '', shaders: {}, assets: {}, name: slug, kind: 'effect' };
     byFolder.set(slug, entry);
   }
   if (file === 'manifest.json') {
@@ -36,6 +38,8 @@ for (const [path, source] of Object.entries(files)) {
     }
   } else if (file.endsWith('.wgsl')) {
     entry.shaders[file] = source;
+  } else if (file.endsWith('.cube')) {
+    entry.assets[file] = source;
   }
 }
 

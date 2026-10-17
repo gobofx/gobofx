@@ -63,6 +63,11 @@ pub fn collect_entries(plugin: &Plugin) -> Result<Vec<Entry>> {
             names.push(pass.shader.clone());
         }
     }
+    for a in &plugin.manifest.assets {
+        if !names.contains(&a.file) {
+            names.push(a.file.clone());
+        }
+    }
     for f in OPTIONAL_FILES {
         if dir.join(f).is_file() && !names.iter().any(|n| n == f) {
             names.push((*f).to_string());

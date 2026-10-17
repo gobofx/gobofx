@@ -6,12 +6,14 @@
 //! - [`assemble`]: prelude + plugin shader, exactly as a host builds a module.
 //! - [`render`]: a headless wgpu host that runs a plugin to an image.
 //! - [`pack`]: writes a plugin folder as a `.gobofx` package (`spec/package.md`).
+//! - [`cube`]: `.cube` 3D lookup tables and the strip layout hosts upload (`spec/assets.md`).
 //! - [`verify`] (cli): renders a case matrix derived from the manifest and checks the contracts.
 //!
 //! The spec lives in `spec/` of the repository; this crate follows it and
 //! embeds `spec/prelude.wgsl` so hosts and the CLI agree byte for byte.
 
 pub mod assemble;
+pub mod cube;
 pub mod manifest;
 pub mod pack;
 pub mod params;
