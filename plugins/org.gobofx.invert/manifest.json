@@ -1,0 +1,42 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.invert",
+  "name": "Invert",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "channels",
+      "label": "Channels",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "rgb",
+        "red",
+        "green",
+        "blue",
+        "luma"
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "invert.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

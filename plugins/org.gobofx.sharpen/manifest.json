@@ -1,0 +1,63 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.sharpen",
+  "name": "Sharpen",
+  "kind": "effect",
+  "category": "sharpen",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 4.0
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 2.0,
+      "min": 0.5,
+      "max": 16.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "sharpen.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "sharpen.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "blurred"
+    },
+    {
+      "shader": "sharpen.wgsl",
+      "entry": "fs_combine",
+      "inputs": [
+        "source",
+        "blurred"
+      ],
+      "output": "out"
+    }
+  ]
+}

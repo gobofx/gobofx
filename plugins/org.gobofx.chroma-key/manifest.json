@@ -1,0 +1,62 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.chroma-key",
+  "name": "Chroma Keyer",
+  "kind": "effect",
+  "category": "masks",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "key_color",
+      "label": "Key Color",
+      "type": "color",
+      "default": [
+        0.0,
+        0.44,
+        0.05,
+        1.0
+      ]
+    },
+    {
+      "id": "tolerance",
+      "label": "Tolerance",
+      "type": "float",
+      "default": 0.2,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "softness",
+      "label": "Softness",
+      "type": "float",
+      "default": 0.15,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "spill",
+      "label": "Spill Suppression",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "show_matte",
+      "label": "Show Matte",
+      "type": "bool",
+      "default": false
+    }
+  ],
+  "passes": [
+    {
+      "shader": "chroma-key.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
