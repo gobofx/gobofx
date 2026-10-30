@@ -14,7 +14,11 @@
   "additionalProperties": false,
   "properties": {
     "gobofx": {
-      "const": "0.1"
+      "enum": [
+        "0.1",
+        "0.2"
+      ],
+      "description": "0.2 is a draft: it adds the wheel and curve param types (grading.md)"
     },
     "id": {
       "type": "string",
@@ -83,7 +87,9 @@
             "bool",
             "choice",
             "color",
-            "point"
+            "point",
+            "wheel",
+            "curve"
           ]
         },
         "default": {},
@@ -105,8 +111,55 @@
         "animatable": {
           "type": "boolean",
           "default": true
+        },
+        "range": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "wheel (v0.2 draft): bound on each balance component"
+        },
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "type": "string"
+          },
+          "description": "curve (v0.2 draft): one label per baked curve, in strip channel order"
+        },
+        "periodic": {
+          "type": "boolean",
+          "default": false,
+          "description": "curve (v0.2 draft): x wraps at 1 (hue axes)"
+        },
+        "samples": {
+          "type": "integer",
+          "minimum": 16,
+          "maximum": 4096,
+          "default": 256,
+          "description": "curve (v0.2 draft): strip width in texels"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "curve"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "channels"
+            ],
+            "properties": {
+              "animatable": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
     },
     "pass": {
       "type": "object",

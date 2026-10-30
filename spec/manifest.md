@@ -31,6 +31,8 @@ A plugin with no params declares no group 1.
 | `choice` | `u32` | index into `options: [string]` |
 | `color` | `vec4f` | linear, premultiplied RGBA |
 | `point` | `vec2f` | normalized uv, (0,0) top-left; host shows an onscreen handle |
+| `wheel` | `vec4f` | v0.2 draft: luma-neutral balance `xyz` + master `w`; `range` — see [`grading.md`](grading.md) |
+| `curve` | — | v0.2 draft: 1–4 curves baked into a strip, bound as a pass input — see [`grading.md`](grading.md) |
 
 The host lays the struct out with WGSL uniform alignment rules and pads it to a multiple of 16 bytes.
 `animatable: true` (default) lets the host keyframe the param; it uploads the evaluated value per frame.
@@ -53,4 +55,4 @@ turns audio followers, OSC or hardware into controller values and uploads one `f
 
 Reserved input names: `source` (effects), `from` and `to` (transitions). A generator has none;
 its first pass reads nothing and later passes read earlier outputs.
-Any other name refers to an earlier pass's `output`. Intermediate images are `rgba16float`, output-sized.
+Any other name refers to an earlier pass's `output`, or (v0.2 draft) to a `curve` param's `id`. Intermediate images are `rgba16float`, output-sized.

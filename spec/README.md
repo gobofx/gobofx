@@ -9,6 +9,7 @@ Status: **draft 0.1, unstable** — anything may change before 1.0.
 | [`shader-abi.md`](shader-abi.md) | WGSL interface: bindings, entry point, color space |
 | [`signals.md`](signals.md) | Signals: MIDI 2.0 controllers, notes, note ranges, pitch bend and pressure the plugin reads each frame; the host maps audio, OSC and hardware onto them |
 | [`package.md`](package.md) | Package format: the `.gobofx` ZIP profile a plugin folder is distributed as |
+| [`grading.md`](grading.md) | v0.2 draft: `wheel` and `curve` param types for color grading plugins |
 | [`prelude.wgsl`](prelude.wgsl) | Host prelude prepended to every plugin shader |
 | [`../plugins/_template/`](../plugins/_template/) | Starting points: one complete, valid plugin per kind, every interface piece shown |
 | [`examples/`](examples/) | Reference plugins: Cross Dissolve (transition), Gaussian Blur (2-pass effect), Reactive Grade, Chromatic Hue and Kaleidoscope (effects played over MIDI signals) |

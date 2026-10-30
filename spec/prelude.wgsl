@@ -19,6 +19,15 @@ struct GobofxGlobals {
 // and @binding(1) var<uniform> gobofx_signals: Signals (manifest `signals`), both declared
 // by the plugin itself and only when it has them.
 
+// v0.2 draft (grading.md): read a baked `curve` strip at x in 0..1. Samples
+// texel centres, so x = 0 and x = 1 land exactly on the first and last baked
+// samples. Periodic (hue) curves pass fract(x).
+fn gobofx_curve(strip: texture_2d<f32>, x: f32) -> vec4f {
+    let n = f32(textureDimensions(strip).x);
+    let u = clamp(x, 0.0, 1.0) * ((n - 1.0) / n) + 0.5 / n;
+    return textureSampleLevel(strip, gobofx_sampler, vec2f(u, 0.5), 0.0);
+}
+
 struct GobofxVertexOut {
     @builtin(position) position: vec4f,
     @location(0)       uv:       vec2f, // (0,0) = top-left
