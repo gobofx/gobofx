@@ -8,7 +8,7 @@
       href: blob + 'manifest.md',
       file: 'manifest.md',
       summary:
-        'Top-level fields (gobofx, id, name, kind, category, version, license), the params table with its WGSL mapping, and the passes table: shader, entry, constants, inputs and output. Reserved input names source, from and to.'
+        'Top-level fields (gobofx, id, name, kind, category, version, license), the params table with its WGSL mapping, presets (named param sets), and the passes table: shader, entry, constants, inputs and output. Reserved input names source, from and to.'
     },
     {
       tag: '02 / SCHEMA',

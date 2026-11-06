@@ -85,7 +85,8 @@ impl Tuning {
         if !path.is_file() {
             return Ok(Tuning::default());
         }
-        let text = std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
+        let text = std::fs::read_to_string(&path)
+            .with_context(|| format!("reading {}", path.display()))?;
         serde_json::from_str(&text).with_context(|| format!("parsing {}", path.display()))
     }
 }
@@ -133,6 +134,8 @@ pub enum Role {
     Signal(String),
     /// `verify.json` identity overrides: must equal the source.
     Identity,
+    /// A manifest preset applied over the defaults: must render (finite, in range), nothing more.
+    Preset(String),
     /// Full-size timed render.
     Perf,
 }
@@ -192,7 +195,11 @@ pub struct Options {
 fn fmt_f(v: f64) -> String {
     // Shortest text that round-trips through the CLI parser.
     let s = format!("{v}");
-    if s.contains('.') || s.contains('e') { s } else { format!("{s}.0") }
+    if s.contains('.') || s.contains('e') {
+        s
+    } else {
+        format!("{s}.0")
+    }
 }
 
 /// Values of `p` worth trying besides its default, as CLI text. Skips values
@@ -208,23 +215,39 @@ fn sweep_values(p: &Param, assets: &[crate::manifest::Asset]) -> Vec<(String, St
                 Some(Value::Int(i)) => i as f64,
                 _ => 0.0,
             };
-            let text = |v: f64| if is_int { format!("{}", v.round() as i64) } else { fmt_f(v) };
+            let text = |v: f64| {
+                if is_int {
+                    format!("{}", v.round() as i64)
+                } else {
+                    fmt_f(v)
+                }
+            };
             match (p.min, p.max) {
                 (Some(lo), Some(hi)) => {
-                    if lo != d { out.push(("min".into(), text(lo))); }
-                    if hi != d { out.push(("max".into(), text(hi))); }
+                    if lo != d {
+                        out.push(("min".into(), text(lo)));
+                    }
+                    if hi != d {
+                        out.push(("max".into(), text(hi)));
+                    }
                     // A periodic param (angle 0..360, rotation ±180, a speed
                     // that is whole cycles at t=1) can look identical at both
                     // ends; an off-centre interior value is never a period.
                     let mid = lo + (hi - lo) * 0.37;
-                    if !is_int && mid != d { out.push(("mid".into(), text(mid))); }
+                    if !is_int && mid != d {
+                        out.push(("mid".into(), text(mid)));
+                    }
                 }
                 (Some(lo), None) => {
-                    if lo != d { out.push(("min".into(), text(lo))); }
+                    if lo != d {
+                        out.push(("min".into(), text(lo)));
+                    }
                     out.push(("x2".into(), text(if d == 0.0 { 1.0 } else { d * 2.0 })));
                 }
                 (None, Some(hi)) => {
-                    if hi != d { out.push(("max".into(), text(hi))); }
+                    if hi != d {
+                        out.push(("max".into(), text(hi)));
+                    }
                     out.push(("zero".into(), text(0.0)));
                 }
                 (None, None) => {
@@ -239,7 +262,10 @@ fn sweep_values(p: &Param, assets: &[crate::manifest::Asset]) -> Vec<(String, St
             out.push((if d { "off" } else { "on" }.into(), (!d).to_string()));
         }
         ParamType::Choice => {
-            let d = match default { Some(Value::Choice(c)) => c, _ => 0 };
+            let d = match default {
+                Some(Value::Choice(c)) => c,
+                _ => 0,
+            };
             let opts = p.options.as_deref().unwrap_or(&[]);
             for (i, o) in opts.iter().enumerate() {
                 if i as u32 != d {
@@ -248,19 +274,36 @@ fn sweep_values(p: &Param, assets: &[crate::manifest::Asset]) -> Vec<(String, St
             }
         }
         ParamType::Color => {
-            let d = match default { Some(Value::Color(c)) => c, _ => [0.0, 0.0, 0.0, 1.0] };
-            let cand = if d == [0.0, 1.0, 0.0, 1.0] { ("magenta", "1,0,1,1") } else { ("green", "0,1,0,1") };
+            let d = match default {
+                Some(Value::Color(c)) => c,
+                _ => [0.0, 0.0, 0.0, 1.0],
+            };
+            let cand = if d == [0.0, 1.0, 0.0, 1.0] {
+                ("magenta", "1,0,1,1")
+            } else {
+                ("green", "0,1,0,1")
+            };
             out.push((cand.0.into(), cand.1.into()));
         }
         ParamType::Point => {
-            let d = match default { Some(Value::Point(c)) => c, _ => [0.0, 0.0] };
-            let cand = if d == [0.15, 0.2] { ("br", "0.85,0.8") } else { ("tl", "0.15,0.2") };
+            let d = match default {
+                Some(Value::Point(c)) => c,
+                _ => [0.0, 0.0],
+            };
+            let cand = if d == [0.15, 0.2] {
+                ("br", "0.85,0.8")
+            } else {
+                ("tl", "0.15,0.2")
+            };
             out.push((cand.0.into(), cand.1.into()));
         }
         ParamType::Asset => {
             // Every other bundled asset of the param's kind, and "none" (the
             // plugin must pass through when nothing is bound).
-            let d = match default { Some(Value::Asset(Some(id))) => Some(id), _ => None };
+            let d = match default {
+                Some(Value::Asset(Some(id))) => Some(id),
+                _ => None,
+            };
             for a in assets.iter().filter(|a| Some(a.kind) == p.kind) {
                 if d.as_deref() != Some(a.id.as_str()) {
                     out.push((a.id.clone(), a.id.clone()));
@@ -277,7 +320,11 @@ fn sweep_values(p: &Param, assets: &[crate::manifest::Asset]) -> Vec<(String, St
 /// The case list for a manifest. Pure, so it can be unit-tested without a GPU.
 pub fn cases(m: &Manifest, tuning: &Tuning, perf: bool) -> Vec<Case> {
     let (w, h) = CASE_SIZE;
-    let base_progress = if m.kind == Kind::Transition { SWEEP_PROGRESS } else { 0.5 };
+    let base_progress = if m.kind == Kind::Transition {
+        SWEEP_PROGRESS
+    } else {
+        0.5
+    };
     let mk = |name: &str, role: Role| Case {
         name: name.to_string(),
         params: BTreeMap::new(),
@@ -291,7 +338,12 @@ pub fn cases(m: &Manifest, tuning: &Tuning, perf: bool) -> Vec<Case> {
         path: None,
         ms: None,
     };
-    let all_at = |level: &str| -> BTreeMap<String, String> { m.signals.iter().map(|s| (s.id.clone(), level.to_string())).collect() };
+    let all_at = |level: &str| -> BTreeMap<String, String> {
+        m.signals
+            .iter()
+            .map(|s| (s.id.clone(), level.to_string()))
+            .collect()
+    };
     // Two signal levels: 1.0 (full) and 0.5 (half). Full alone misses things
     // like a `spin` that is a whole turn at 1.0, or a `key` that only picks the
     // top of a range; half alone misses a `bend` whose rest value is 0.5.
@@ -322,7 +374,10 @@ pub fn cases(m: &Manifest, tuning: &Tuning, perf: bool) -> Vec<Case> {
             out.push(c);
             if !m.signals.is_empty() {
                 for (name, level) in levels {
-                    let mut c = mk(&format!("p-{}-{}+{}", p.id, tag, level), Role::Param(p.id.clone()));
+                    let mut c = mk(
+                        &format!("p-{}-{}+{}", p.id, tag, level),
+                        Role::Param(p.id.clone()),
+                    );
                     c.params.insert(p.id.clone(), text.clone());
                     c.signals = all_at(level);
                     c.baseline = Some(name.to_string());
@@ -355,6 +410,15 @@ pub fn cases(m: &Manifest, tuning: &Tuning, perf: bool) -> Vec<Case> {
         c.params = tuning.identity.clone();
         out.push(c);
     }
+    // Every preset renders once: a preset that references a param wrongly is
+    // caught by validate, one whose values blow up the shader is caught here.
+    for q in &m.presets {
+        if let Ok(overrides) = crate::params::preset_overrides(m, &q.id) {
+            let mut c = mk(&format!("preset-{}", q.id), Role::Preset(q.id.clone()));
+            c.params = overrides;
+            out.push(c);
+        }
+    }
     if perf {
         let mut c = mk("perf", Role::Perf);
         c.width = PERF_SIZE.0;
@@ -368,8 +432,14 @@ pub fn cases(m: &Manifest, tuning: &Tuning, perf: bool) -> Vec<Case> {
 // ── Running ──────────────────────────────────────────────────────────
 
 fn load_fixture(bytes: &[u8]) -> Image {
-    let img = image::load_from_memory(bytes).expect("bundled fixture decodes").to_rgba8();
-    Image { width: img.width(), height: img.height(), rgba8: img.into_raw() }
+    let img = image::load_from_memory(bytes)
+        .expect("bundled fixture decodes")
+        .to_rgba8();
+    Image {
+        width: img.width(),
+        height: img.height(),
+        rgba8: img.into_raw(),
+    }
 }
 
 /// Inputs for a plugin of this kind, per the tuning.
@@ -381,7 +451,11 @@ pub fn inputs_for(kind: Kind, tuning: &Tuning) -> Result<BTreeMap<String, Image>
                 "a" => FIXTURE_A,
                 "green" => FIXTURE_GREEN,
                 "alpha" => FIXTURE_ALPHA,
-                other => return Err(anyhow!("verify.json: source must be a, green or alpha (got {other:?})")),
+                other => {
+                    return Err(anyhow!(
+                        "verify.json: source must be a, green or alpha (got {other:?})"
+                    ))
+                }
             };
             inputs.insert("source".into(), load_fixture(src));
         }
@@ -396,7 +470,11 @@ pub fn inputs_for(kind: Kind, tuning: &Tuning) -> Result<BTreeMap<String, Image>
 
 fn is_software(adapter: &str) -> bool {
     let a = adapter.to_lowercase();
-    a.contains("swiftshader") || a.contains("llvmpipe") || a.contains("lavapipe") || a.contains("warp") || a.contains("software")
+    a.contains("swiftshader")
+        || a.contains("llvmpipe")
+        || a.contains("lavapipe")
+        || a.contains("warp")
+        || a.contains("software")
 }
 
 struct Rendered {
@@ -404,11 +482,27 @@ struct Rendered {
     image: Image,
 }
 
-fn render_case(host: &Host, compiled: &Compiled, m: &Manifest, inputs: &BTreeMap<String, Image>, c: &Case) -> Result<(Rendered, f64)> {
+fn render_case(
+    host: &Host,
+    compiled: &Compiled,
+    m: &Manifest,
+    inputs: &BTreeMap<String, Image>,
+    c: &Case,
+) -> Result<(Rendered, f64)> {
     let values = params::resolve(m, &c.params)?;
     let signals = params::resolve_signals(m, &c.signals)?;
     let t0 = Instant::now();
-    let frame = host.render_frame(compiled, inputs, (c.width, c.height), Globals { time: c.time, progress: c.progress }, &values, &signals)?;
+    let frame = host.render_frame(
+        compiled,
+        inputs,
+        (c.width, c.height),
+        Globals {
+            time: c.time,
+            progress: c.progress,
+        },
+        &values,
+        &signals,
+    )?;
     let ms = t0.elapsed().as_secs_f64() * 1000.0;
     let image = frame.to_image();
     Ok((Rendered { frame, image }, ms))
@@ -419,7 +513,11 @@ pub fn mean_abs_diff(a: &[u8], b: &[u8]) -> f32 {
     if a.len() != b.len() || a.is_empty() {
         return f32::INFINITY;
     }
-    let sum: u64 = a.iter().zip(b).map(|(x, y)| (*x as i32 - *y as i32).unsigned_abs() as u64).sum();
+    let sum: u64 = a
+        .iter()
+        .zip(b)
+        .map(|(x, y)| (*x as i32 - *y as i32).unsigned_abs() as u64)
+        .sum();
     sum as f32 / a.len() as f32
 }
 
@@ -427,7 +525,11 @@ pub fn max_abs_diff(a: &[u8], b: &[u8]) -> u8 {
     if a.len() != b.len() {
         return u8::MAX;
     }
-    a.iter().zip(b).map(|(x, y)| (*x as i32 - *y as i32).unsigned_abs() as u8).max().unwrap_or(0)
+    a.iter()
+        .zip(b)
+        .map(|(x, y)| (*x as i32 - *y as i32).unsigned_abs() as u8)
+        .max()
+        .unwrap_or(0)
 }
 
 /// Working-space sanity: finite, alpha in range, colour not above alpha
@@ -453,12 +555,24 @@ fn frame_checks(name: &str, f: &Frame, checks: &mut Vec<Check>) {
     checks.push(Check {
         name: format!("finite:{name}"),
         status: if nan == 0 { Status::Pass } else { Status::Fail },
-        detail: if nan == 0 { "no NaN/Inf".into() } else { format!("{nan}/{total} pixels NaN or Inf") },
+        detail: if nan == 0 {
+            "no NaN/Inf".into()
+        } else {
+            format!("{nan}/{total} pixels NaN or Inf")
+        },
     });
     checks.push(Check {
         name: format!("alpha-range:{name}"),
-        status: if alpha_out == 0 { Status::Pass } else { Status::Fail },
-        detail: if alpha_out == 0 { "alpha within 0..1".into() } else { format!("{alpha_out}/{total} pixels with alpha outside 0..1") },
+        status: if alpha_out == 0 {
+            Status::Pass
+        } else {
+            Status::Fail
+        },
+        detail: if alpha_out == 0 {
+            "alpha within 0..1".into()
+        } else {
+            format!("{alpha_out}/{total} pixels with alpha outside 0..1")
+        },
     });
     checks.push(Check {
         name: format!("premultiplied:{name}"),
@@ -476,7 +590,10 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
     let plugin = Plugin::load(dir)?;
     let m = &plugin.manifest;
     let tuning = Tuning::load(dir)?;
-    let out_dir = opts.out_dir.clone().unwrap_or_else(|| dir.join("dist").join("verify"));
+    let out_dir = opts
+        .out_dir
+        .clone()
+        .unwrap_or_else(|| dir.join("dist").join("verify"));
     std::fs::create_dir_all(&out_dir).with_context(|| format!("creating {}", out_dir.display()))?;
 
     let mut checks = Vec::new();
@@ -492,7 +609,11 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         cases: Vec::new(),
         checks: Vec::new(),
         animated: None,
-        summary: Summary { pass: 0, warn: 0, fail: 0 },
+        summary: Summary {
+            pass: 0,
+            warn: 0,
+            fail: 0,
+        },
         sheet: None,
     };
 
@@ -510,11 +631,24 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
     checks.push(Check {
         name: "validate".into(),
         status: if v.ok { Status::Pass } else { Status::Fail },
-        detail: if v.ok { format!("{} pass(es), {} param(s), {} signal(s)", v.passes.len(), m.params.len(), m.signals.len()) } else { errors.join("; ") },
+        detail: if v.ok {
+            format!(
+                "{} pass(es), {} param(s), {} signal(s)",
+                v.passes.len(),
+                m.params.len(),
+                m.signals.len()
+            )
+        } else {
+            errors.join("; ")
+        },
     });
     for p in &m.params {
         if p.id.len() > 24 || p.label.as_deref().map(|l| l.len() > 24).unwrap_or(false) {
-            checks.push(Check { name: format!("naming:{}", p.id), status: Status::Warn, detail: "id/label longer than 24 chars; hosts truncate".into() });
+            checks.push(Check {
+                name: format!("naming:{}", p.id),
+                status: Status::Warn,
+                detail: "id/label longer than 24 chars; hosts truncate".into(),
+            });
         }
     }
     if !v.ok {
@@ -524,11 +658,23 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
     let compiled = match pollster::block_on(host.compile(&plugin)) {
         Ok(c) => c,
         Err(e) => {
-            checks.push(Check { name: "compile".into(), status: Status::Fail, detail: format!("{e:#}") });
+            checks.push(Check {
+                name: "compile".into(),
+                status: Status::Fail,
+                detail: format!("{e:#}"),
+            });
             return Ok(finish(report, checks, None));
         }
     };
-    checks.push(Check { name: "compile".into(), status: Status::Pass, detail: format!("{} pipeline(s) on {}", compiled.passes.len(), host.adapter_name) });
+    checks.push(Check {
+        name: "compile".into(),
+        status: Status::Pass,
+        detail: format!(
+            "{} pipeline(s) on {}",
+            compiled.passes.len(),
+            host.adapter_name
+        ),
+    });
 
     let inputs = inputs_for(m.kind, &tuning)?;
     let mut list = cases(m, &tuning, !opts.no_perf);
@@ -546,14 +692,21 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
                 renders.push(Some(r));
             }
             Err(e) => {
-                checks.push(Check { name: format!("render:{}", c.name), status: Status::Fail, detail: format!("{e:#}") });
+                checks.push(Check {
+                    name: format!("render:{}", c.name),
+                    status: Status::Fail,
+                    detail: format!("{e:#}"),
+                });
                 renders.push(None);
             }
         }
     }
 
     let find = |role: &Role| -> Option<&Rendered> {
-        list.iter().zip(&renders).find(|(c, _)| &c.role == role).and_then(|(_, r)| r.as_ref())
+        list.iter()
+            .zip(&renders)
+            .find(|(c, _)| &c.role == role)
+            .and_then(|(_, r)| r.as_ref())
     };
     let baseline = find(&Role::Baseline);
 
@@ -563,7 +716,14 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         checks.push(Check {
             name: "deterministic".into(),
             status: if same { Status::Pass } else { Status::Fail },
-            detail: if same { "repeat render is byte-identical".into() } else { format!("repeat differs (mean {:.2}/255)", mean_abs_diff(&b.image.rgba8, &r.image.rgba8)) },
+            detail: if same {
+                "repeat render is byte-identical".into()
+            } else {
+                format!(
+                    "repeat differs (mean {:.2}/255)",
+                    mean_abs_diff(&b.image.rgba8, &r.image.rgba8)
+                )
+            },
         });
     }
 
@@ -574,7 +734,11 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         checks.push(Check {
             name: "time".into(),
             status: Status::Pass,
-            detail: if diff > LIVE_MEAN_DIFF { format!("animates with time (mean {diff:.2}/255 at t={TIME_LATER})") } else { "static in time".into() },
+            detail: if diff > LIVE_MEAN_DIFF {
+                format!("animates with time (mean {diff:.2}/255 at t={TIME_LATER})")
+            } else {
+                "static in time".into()
+            },
         });
     }
 
@@ -584,25 +748,48 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         let all_transparent = px.iter().all(|p| p[3] == 0);
         let flat = px.windows(2).all(|w| w[0] == w[1]);
         let (status, detail) = if all_transparent {
-            (Status::Fail, "default render is fully transparent".to_string())
+            (
+                Status::Fail,
+                "default render is fully transparent".to_string(),
+            )
         } else if flat {
-            let st = if tuning.flat { Status::Pass } else if m.kind == Kind::Generator { Status::Warn } else { Status::Fail };
-            (st, format!("default render is one flat colour {:?}", &px[0]))
+            let st = if tuning.flat {
+                Status::Pass
+            } else if m.kind == Kind::Generator {
+                Status::Warn
+            } else {
+                Status::Fail
+            };
+            (
+                st,
+                format!("default render is one flat colour {:?}", &px[0]),
+            )
         } else {
             (Status::Pass, "default render has content".to_string())
         };
-        checks.push(Check { name: "not-blank".into(), status, detail });
+        checks.push(Check {
+            name: "not-blank".into(),
+            status,
+            detail,
+        });
     }
 
     // Transition endpoints.
     if m.kind == Kind::Transition {
-        for (p, input, label) in [(0.0f32, "from", "progress 0 == from"), (1.0, "to", "progress 1 == to")] {
+        for (p, input, label) in [
+            (0.0f32, "from", "progress 0 == from"),
+            (1.0, "to", "progress 1 == to"),
+        ] {
             if let Some(r) = find(&Role::Progress(p)) {
                 let want = &inputs[input].rgba8;
                 let d = max_abs_diff(&r.image.rgba8, want);
                 checks.push(Check {
                     name: format!("endpoint:{p:.0}"),
-                    status: if d <= ENDPOINT_MAX_DIFF { Status::Pass } else { Status::Fail },
+                    status: if d <= ENDPOINT_MAX_DIFF {
+                        Status::Pass
+                    } else {
+                        Status::Fail
+                    },
                     detail: format!("{label}: max diff {d}/255 (tolerance {ENDPOINT_MAX_DIFF})"),
                 });
             }
@@ -614,7 +801,9 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
             for p in [0.0f32, 0.25, 0.5, 0.75, 1.0] {
                 if let Some(r) = find(&Role::Progress(p)) {
                     let d = mean_abs_diff(&r.image.rgba8, &from.rgba8);
-                    if d + 0.5 < prev { monotone = false; }
+                    if d + 0.5 < prev {
+                        monotone = false;
+                    }
                     prev = prev.max(d);
                 }
             }
@@ -628,7 +817,10 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
 
     // Param and signal liveness.
     let by_name = |name: &str| -> Option<&Rendered> {
-        list.iter().zip(&renders).find(|(c, _)| c.name == name).and_then(|(_, r)| r.as_ref())
+        list.iter()
+            .zip(&renders)
+            .find(|(c, _)| c.name == name)
+            .and_then(|(_, r)| r.as_ref())
     };
     if let Some(b) = baseline {
         let mut per_param: BTreeMap<String, (f32, u8)> = BTreeMap::new();
@@ -646,18 +838,35 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
                 e.1 = e.1.max(mx);
             }
         }
-        for p in m.params.iter().map(|p| &p.id).chain(m.signals.iter().map(|s| &s.id)) {
-            let Some((d, mx)) = per_param.get(p) else { continue };
+        for p in m
+            .params
+            .iter()
+            .map(|p| &p.id)
+            .chain(m.signals.iter().map(|s| &s.id))
+        {
+            let Some((d, mx)) = per_param.get(p) else {
+                continue;
+            };
             let live = *d > LIVE_MEAN_DIFF || *mx > LIVE_MAX_DIFF;
             let inert = tuning.inert.iter().any(|i| i == p);
             let (status, detail) = if live {
-                (Status::Pass, format!("live (mean {d:.2}/255, max {mx}/255 from defaults)"))
+                (
+                    Status::Pass,
+                    format!("live (mean {d:.2}/255, max {mx}/255 from defaults)"),
+                )
             } else if inert {
-                (Status::Pass, "no effect on the default render (declared inert in verify.json)".into())
+                (
+                    Status::Pass,
+                    "no effect on the default render (declared inert in verify.json)".into(),
+                )
             } else {
                 (Status::Fail, format!("no visible effect on the default render (mean {d:.2}/255, max {mx}/255); unused field, wrong struct order, or an inert default?"))
             };
-            checks.push(Check { name: format!("live:{p}"), status, detail });
+            checks.push(Check {
+                name: format!("live:{p}"),
+                status,
+                detail,
+            });
         }
     }
 
@@ -678,7 +887,17 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
             checks.push(Check {
                 name: "perf".into(),
                 status: if slow { Status::Warn } else { Status::Pass },
-                detail: format!("{}x{} in {ms:.1} ms on {}{}", c.width, c.height, host.adapter_name, if report.software_gpu { " (software; not representative)" } else { "" }),
+                detail: format!(
+                    "{}x{} in {ms:.1} ms on {}{}",
+                    c.width,
+                    c.height,
+                    host.adapter_name,
+                    if report.software_gpu {
+                        " (software; not representative)"
+                    } else {
+                        ""
+                    }
+                ),
             });
         }
     }
@@ -702,18 +921,35 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         cells
     };
     let sheet_path = out_dir.join("sheet.png");
-    sheet::write_sheet(&sheet_path, &format!("{}@{} ({:?}) on {}", m.id, m.version, m.kind, host.adapter_name), &sheet_cells, CASE_SIZE, 4)?;
+    sheet::write_sheet(
+        &sheet_path,
+        &format!(
+            "{}@{} ({:?}) on {}",
+            m.id, m.version, m.kind, host.adapter_name
+        ),
+        &sheet_cells,
+        CASE_SIZE,
+        4,
+    )?;
     report.sheet = Some(sheet_path.display().to_string());
 
     if opts.assets {
-        let mut c = list.iter().find(|c| c.role == Role::Baseline).cloned().expect("baseline case exists");
+        let mut c = list
+            .iter()
+            .find(|c| c.role == Role::Baseline)
+            .cloned()
+            .expect("baseline case exists");
         c.width = PREVIEW_SIZE.0;
         c.height = PREVIEW_SIZE.1;
         c.progress = 0.5;
         let (r, _) = render_case(host, &compiled, m, &inputs, &c)?;
         r.image.save_png(&dir.join("preview.png"))?;
         sheet::icon_from(&r.image, ICON_SIZE).save_png(&dir.join("icon.png"))?;
-        checks.push(Check { name: "assets".into(), status: Status::Pass, detail: "wrote preview.png (512×288) and icon.png (128×128)".into() });
+        checks.push(Check {
+            name: "assets".into(),
+            status: Status::Pass,
+            detail: "wrote preview.png (512×288) and icon.png (128×128)".into(),
+        });
     }
 
     report.cases = list;
@@ -721,7 +957,11 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
 }
 
 fn finish(mut report: Report, checks: Vec<Check>, _: Option<()>) -> Report {
-    let mut s = Summary { pass: 0, warn: 0, fail: 0 };
+    let mut s = Summary {
+        pass: 0,
+        warn: 0,
+        fail: 0,
+    };
     for c in &checks {
         match c.status {
             Status::Pass => s.pass += 1,
@@ -738,7 +978,8 @@ fn finish(mut report: Report, checks: Vec<Check>, _: Option<()>) -> Report {
 /// Write `report.json` next to the cases.
 pub fn write_report(report: &Report) -> Result<PathBuf> {
     let path = Path::new(&report.out_dir).join("report.json");
-    std::fs::write(&path, serde_json::to_string_pretty(report)?).with_context(|| format!("writing {}", path.display()))?;
+    std::fs::write(&path, serde_json::to_string_pretty(report)?)
+        .with_context(|| format!("writing {}", path.display()))?;
     Ok(path)
 }
 
@@ -749,30 +990,101 @@ pub mod sheet {
 
     /// 5×7 glyphs for printable ASCII 32..=126, one byte per column, LSB = top row.
     const FONT: [[u8; 5]; 95] = [
-        [0x00,0x00,0x00,0x00,0x00],[0x00,0x00,0x5f,0x00,0x00],[0x00,0x07,0x00,0x07,0x00],[0x14,0x7f,0x14,0x7f,0x14],
-        [0x24,0x2a,0x7f,0x2a,0x12],[0x23,0x13,0x08,0x64,0x62],[0x36,0x49,0x55,0x22,0x50],[0x00,0x05,0x03,0x00,0x00],
-        [0x00,0x1c,0x22,0x41,0x00],[0x00,0x41,0x22,0x1c,0x00],[0x14,0x08,0x3e,0x08,0x14],[0x08,0x08,0x3e,0x08,0x08],
-        [0x00,0x50,0x30,0x00,0x00],[0x08,0x08,0x08,0x08,0x08],[0x00,0x60,0x60,0x00,0x00],[0x20,0x10,0x08,0x04,0x02],
-        [0x3e,0x51,0x49,0x45,0x3e],[0x00,0x42,0x7f,0x40,0x00],[0x42,0x61,0x51,0x49,0x46],[0x21,0x41,0x45,0x4b,0x31],
-        [0x18,0x14,0x12,0x7f,0x10],[0x27,0x45,0x45,0x45,0x39],[0x3c,0x4a,0x49,0x49,0x30],[0x01,0x71,0x09,0x05,0x03],
-        [0x36,0x49,0x49,0x49,0x36],[0x06,0x49,0x49,0x29,0x1e],[0x00,0x36,0x36,0x00,0x00],[0x00,0x56,0x36,0x00,0x00],
-        [0x08,0x14,0x22,0x41,0x00],[0x14,0x14,0x14,0x14,0x14],[0x00,0x41,0x22,0x14,0x08],[0x02,0x01,0x51,0x09,0x06],
-        [0x32,0x49,0x79,0x41,0x3e],[0x7e,0x11,0x11,0x11,0x7e],[0x7f,0x49,0x49,0x49,0x36],[0x3e,0x41,0x41,0x41,0x22],
-        [0x7f,0x41,0x41,0x22,0x1c],[0x7f,0x49,0x49,0x49,0x41],[0x7f,0x09,0x09,0x09,0x01],[0x3e,0x41,0x49,0x49,0x7a],
-        [0x7f,0x08,0x08,0x08,0x7f],[0x00,0x41,0x7f,0x41,0x00],[0x20,0x40,0x41,0x3f,0x01],[0x7f,0x08,0x14,0x22,0x41],
-        [0x7f,0x40,0x40,0x40,0x40],[0x7f,0x02,0x0c,0x02,0x7f],[0x7f,0x04,0x08,0x10,0x7f],[0x3e,0x41,0x41,0x41,0x3e],
-        [0x7f,0x09,0x09,0x09,0x06],[0x3e,0x41,0x51,0x21,0x5e],[0x7f,0x09,0x19,0x29,0x46],[0x46,0x49,0x49,0x49,0x31],
-        [0x01,0x01,0x7f,0x01,0x01],[0x3f,0x40,0x40,0x40,0x3f],[0x1f,0x20,0x40,0x20,0x1f],[0x3f,0x40,0x38,0x40,0x3f],
-        [0x63,0x14,0x08,0x14,0x63],[0x07,0x08,0x70,0x08,0x07],[0x61,0x51,0x49,0x45,0x43],[0x00,0x7f,0x41,0x41,0x00],
-        [0x02,0x04,0x08,0x10,0x20],[0x00,0x41,0x41,0x7f,0x00],[0x04,0x02,0x01,0x02,0x04],[0x40,0x40,0x40,0x40,0x40],
-        [0x00,0x01,0x02,0x04,0x00],[0x20,0x54,0x54,0x54,0x78],[0x7f,0x48,0x44,0x44,0x38],[0x38,0x44,0x44,0x44,0x20],
-        [0x38,0x44,0x44,0x48,0x7f],[0x38,0x54,0x54,0x54,0x18],[0x08,0x7e,0x09,0x01,0x02],[0x0c,0x52,0x52,0x52,0x3e],
-        [0x7f,0x08,0x04,0x04,0x78],[0x00,0x44,0x7d,0x40,0x00],[0x20,0x40,0x44,0x3d,0x00],[0x7f,0x10,0x28,0x44,0x00],
-        [0x00,0x41,0x7f,0x40,0x00],[0x7c,0x04,0x18,0x04,0x78],[0x7c,0x08,0x04,0x04,0x78],[0x38,0x44,0x44,0x44,0x38],
-        [0x7c,0x14,0x14,0x14,0x08],[0x08,0x14,0x14,0x18,0x7c],[0x7c,0x08,0x04,0x04,0x08],[0x48,0x54,0x54,0x54,0x20],
-        [0x04,0x3f,0x44,0x40,0x20],[0x3c,0x40,0x40,0x20,0x7c],[0x1c,0x20,0x40,0x20,0x1c],[0x3c,0x40,0x30,0x40,0x3c],
-        [0x44,0x28,0x10,0x28,0x44],[0x0c,0x50,0x50,0x50,0x3c],[0x44,0x64,0x54,0x4c,0x44],[0x00,0x08,0x36,0x41,0x00],
-        [0x00,0x00,0x7f,0x00,0x00],[0x00,0x41,0x36,0x08,0x00],[0x10,0x08,0x08,0x10,0x08],
+        [0x00, 0x00, 0x00, 0x00, 0x00],
+        [0x00, 0x00, 0x5f, 0x00, 0x00],
+        [0x00, 0x07, 0x00, 0x07, 0x00],
+        [0x14, 0x7f, 0x14, 0x7f, 0x14],
+        [0x24, 0x2a, 0x7f, 0x2a, 0x12],
+        [0x23, 0x13, 0x08, 0x64, 0x62],
+        [0x36, 0x49, 0x55, 0x22, 0x50],
+        [0x00, 0x05, 0x03, 0x00, 0x00],
+        [0x00, 0x1c, 0x22, 0x41, 0x00],
+        [0x00, 0x41, 0x22, 0x1c, 0x00],
+        [0x14, 0x08, 0x3e, 0x08, 0x14],
+        [0x08, 0x08, 0x3e, 0x08, 0x08],
+        [0x00, 0x50, 0x30, 0x00, 0x00],
+        [0x08, 0x08, 0x08, 0x08, 0x08],
+        [0x00, 0x60, 0x60, 0x00, 0x00],
+        [0x20, 0x10, 0x08, 0x04, 0x02],
+        [0x3e, 0x51, 0x49, 0x45, 0x3e],
+        [0x00, 0x42, 0x7f, 0x40, 0x00],
+        [0x42, 0x61, 0x51, 0x49, 0x46],
+        [0x21, 0x41, 0x45, 0x4b, 0x31],
+        [0x18, 0x14, 0x12, 0x7f, 0x10],
+        [0x27, 0x45, 0x45, 0x45, 0x39],
+        [0x3c, 0x4a, 0x49, 0x49, 0x30],
+        [0x01, 0x71, 0x09, 0x05, 0x03],
+        [0x36, 0x49, 0x49, 0x49, 0x36],
+        [0x06, 0x49, 0x49, 0x29, 0x1e],
+        [0x00, 0x36, 0x36, 0x00, 0x00],
+        [0x00, 0x56, 0x36, 0x00, 0x00],
+        [0x08, 0x14, 0x22, 0x41, 0x00],
+        [0x14, 0x14, 0x14, 0x14, 0x14],
+        [0x00, 0x41, 0x22, 0x14, 0x08],
+        [0x02, 0x01, 0x51, 0x09, 0x06],
+        [0x32, 0x49, 0x79, 0x41, 0x3e],
+        [0x7e, 0x11, 0x11, 0x11, 0x7e],
+        [0x7f, 0x49, 0x49, 0x49, 0x36],
+        [0x3e, 0x41, 0x41, 0x41, 0x22],
+        [0x7f, 0x41, 0x41, 0x22, 0x1c],
+        [0x7f, 0x49, 0x49, 0x49, 0x41],
+        [0x7f, 0x09, 0x09, 0x09, 0x01],
+        [0x3e, 0x41, 0x49, 0x49, 0x7a],
+        [0x7f, 0x08, 0x08, 0x08, 0x7f],
+        [0x00, 0x41, 0x7f, 0x41, 0x00],
+        [0x20, 0x40, 0x41, 0x3f, 0x01],
+        [0x7f, 0x08, 0x14, 0x22, 0x41],
+        [0x7f, 0x40, 0x40, 0x40, 0x40],
+        [0x7f, 0x02, 0x0c, 0x02, 0x7f],
+        [0x7f, 0x04, 0x08, 0x10, 0x7f],
+        [0x3e, 0x41, 0x41, 0x41, 0x3e],
+        [0x7f, 0x09, 0x09, 0x09, 0x06],
+        [0x3e, 0x41, 0x51, 0x21, 0x5e],
+        [0x7f, 0x09, 0x19, 0x29, 0x46],
+        [0x46, 0x49, 0x49, 0x49, 0x31],
+        [0x01, 0x01, 0x7f, 0x01, 0x01],
+        [0x3f, 0x40, 0x40, 0x40, 0x3f],
+        [0x1f, 0x20, 0x40, 0x20, 0x1f],
+        [0x3f, 0x40, 0x38, 0x40, 0x3f],
+        [0x63, 0x14, 0x08, 0x14, 0x63],
+        [0x07, 0x08, 0x70, 0x08, 0x07],
+        [0x61, 0x51, 0x49, 0x45, 0x43],
+        [0x00, 0x7f, 0x41, 0x41, 0x00],
+        [0x02, 0x04, 0x08, 0x10, 0x20],
+        [0x00, 0x41, 0x41, 0x7f, 0x00],
+        [0x04, 0x02, 0x01, 0x02, 0x04],
+        [0x40, 0x40, 0x40, 0x40, 0x40],
+        [0x00, 0x01, 0x02, 0x04, 0x00],
+        [0x20, 0x54, 0x54, 0x54, 0x78],
+        [0x7f, 0x48, 0x44, 0x44, 0x38],
+        [0x38, 0x44, 0x44, 0x44, 0x20],
+        [0x38, 0x44, 0x44, 0x48, 0x7f],
+        [0x38, 0x54, 0x54, 0x54, 0x18],
+        [0x08, 0x7e, 0x09, 0x01, 0x02],
+        [0x0c, 0x52, 0x52, 0x52, 0x3e],
+        [0x7f, 0x08, 0x04, 0x04, 0x78],
+        [0x00, 0x44, 0x7d, 0x40, 0x00],
+        [0x20, 0x40, 0x44, 0x3d, 0x00],
+        [0x7f, 0x10, 0x28, 0x44, 0x00],
+        [0x00, 0x41, 0x7f, 0x40, 0x00],
+        [0x7c, 0x04, 0x18, 0x04, 0x78],
+        [0x7c, 0x08, 0x04, 0x04, 0x78],
+        [0x38, 0x44, 0x44, 0x44, 0x38],
+        [0x7c, 0x14, 0x14, 0x14, 0x08],
+        [0x08, 0x14, 0x14, 0x18, 0x7c],
+        [0x7c, 0x08, 0x04, 0x04, 0x08],
+        [0x48, 0x54, 0x54, 0x54, 0x20],
+        [0x04, 0x3f, 0x44, 0x40, 0x20],
+        [0x3c, 0x40, 0x40, 0x20, 0x7c],
+        [0x1c, 0x20, 0x40, 0x20, 0x1c],
+        [0x3c, 0x40, 0x30, 0x40, 0x3c],
+        [0x44, 0x28, 0x10, 0x28, 0x44],
+        [0x0c, 0x50, 0x50, 0x50, 0x3c],
+        [0x44, 0x64, 0x54, 0x4c, 0x44],
+        [0x00, 0x08, 0x36, 0x41, 0x00],
+        [0x00, 0x00, 0x7f, 0x00, 0x00],
+        [0x00, 0x41, 0x36, 0x08, 0x00],
+        [0x10, 0x08, 0x08, 0x10, 0x08],
     ];
 
     pub struct Canvas {
@@ -787,7 +1099,11 @@ pub mod sheet {
             for _ in 0..width * height {
                 rgba8.extend_from_slice(&bg);
             }
-            Canvas { width, height, rgba8 }
+            Canvas {
+                width,
+                height,
+                rgba8,
+            }
         }
 
         pub fn put(&mut self, x: i64, y: i64, c: [u8; 4]) {
@@ -809,7 +1125,11 @@ pub mod sheet {
                         if bits >> row & 1 == 1 {
                             for dy in 0..scale {
                                 for dx in 0..scale {
-                                    self.put(cx + (col as u32 * scale + dx) as i64, y + (row * scale + dy) as i64, c);
+                                    self.put(
+                                        cx + (col as u32 * scale + dx) as i64,
+                                        y + (row * scale + dy) as i64,
+                                        c,
+                                    );
                                 }
                             }
                         }
@@ -831,10 +1151,18 @@ pub mod sheet {
                     let sy = ((dy as f32 / scale) as u32).min(img.height - 1);
                     let i = ((sy * img.width + sx) * 4) as usize;
                     let p = &img.rgba8[i..i + 4];
-                    let checker = if ((dx / 8) + (dy / 8)) % 2 == 0 { 96u8 } else { 128u8 };
+                    let checker = if ((dx / 8) + (dy / 8)) % 2 == 0 {
+                        96u8
+                    } else {
+                        128u8
+                    };
                     let a = p[3] as u32;
                     let blend = |c: u8| ((c as u32 * a + checker as u32 * (255 - a)) / 255) as u8;
-                    self.put(x + dx as i64, y + dy as i64, [blend(p[0]), blend(p[1]), blend(p[2]), 255]);
+                    self.put(
+                        x + dx as i64,
+                        y + dy as i64,
+                        [blend(p[0]), blend(p[1]), blend(p[2]), 255],
+                    );
                 }
             }
         }
@@ -851,8 +1179,14 @@ pub mod sheet {
         }
 
         pub fn save_png(&self, path: &Path) -> Result<()> {
-            image::save_buffer(path, &self.rgba8, self.width, self.height, image::ColorType::Rgba8)
-                .with_context(|| format!("writing {}", path.display()))
+            image::save_buffer(
+                path,
+                &self.rgba8,
+                self.width,
+                self.height,
+                image::ColorType::Rgba8,
+            )
+            .with_context(|| format!("writing {}", path.display()))
         }
     }
 
@@ -861,7 +1195,13 @@ pub mod sheet {
     pub const TITLE_H: u32 = 24;
 
     /// A grid of labelled cells, `cols` per row.
-    pub fn write_sheet(path: &Path, title: &str, cells: &[(String, Image)], cell: (u32, u32), cols: u32) -> Result<()> {
+    pub fn write_sheet(
+        path: &Path,
+        title: &str,
+        cells: &[(String, Image)],
+        cell: (u32, u32),
+        cols: u32,
+    ) -> Result<()> {
         let cols = cols.max(1);
         let rows = (cells.len() as u32).div_ceil(cols).max(1);
         let w = PAD + cols * (cell.0 + PAD);
@@ -877,13 +1217,25 @@ pub mod sheet {
             let short: String = label.chars().take(max_chars).collect();
             c.text(x, y + 2, &short, 2, [200, 200, 160, 255]);
             c.image(x, y + LABEL_H as i64, img, cell);
-            c.rect(x - 1, y + LABEL_H as i64 - 1, cell.0 + 2, cell.1 + 2, [60, 60, 70, 255]);
+            c.rect(
+                x - 1,
+                y + LABEL_H as i64 - 1,
+                cell.0 + 2,
+                cell.1 + 2,
+                [60, 60, 70, 255],
+            );
         }
         c.save_png(path)
     }
 
     /// Status-coloured overview: one labelled cell per plugin.
-    pub fn write_overview(path: &Path, title: &str, cells: &[(String, Status, Image)], cell: (u32, u32), cols: u32) -> Result<()> {
+    pub fn write_overview(
+        path: &Path,
+        title: &str,
+        cells: &[(String, Status, Image)],
+        cell: (u32, u32),
+        cols: u32,
+    ) -> Result<()> {
         let cols = cols.max(1);
         let rows = (cells.len() as u32).div_ceil(cols).max(1);
         let w = PAD + cols * (cell.0 + PAD);
@@ -904,8 +1256,20 @@ pub mod sheet {
             };
             c.text(x, y + 2, &short, 2, colour);
             c.image(x, y + LABEL_H as i64, img, cell);
-            c.rect(x - 2, y + LABEL_H as i64 - 2, cell.0 + 4, cell.1 + 4, colour);
-            c.rect(x - 1, y + LABEL_H as i64 - 1, cell.0 + 2, cell.1 + 2, colour);
+            c.rect(
+                x - 2,
+                y + LABEL_H as i64 - 2,
+                cell.0 + 4,
+                cell.1 + 4,
+                colour,
+            );
+            c.rect(
+                x - 1,
+                y + LABEL_H as i64 - 1,
+                cell.0 + 2,
+                cell.1 + 2,
+                colour,
+            );
         }
         c.save_png(path)
     }
@@ -915,10 +1279,16 @@ pub mod sheet {
         let side = img.width.min(img.height);
         let x0 = (img.width - side) / 2;
         let y0 = (img.height - side) / 2;
-        let buf = image::RgbaImage::from_raw(img.width, img.height, img.rgba8.clone()).expect("image buffer");
+        let buf = image::RgbaImage::from_raw(img.width, img.height, img.rgba8.clone())
+            .expect("image buffer");
         let cropped = image::imageops::crop_imm(&buf, x0, y0, side, side).to_image();
-        let resized = image::imageops::resize(&cropped, size, size, image::imageops::FilterType::Triangle);
-        Image { width: size, height: size, rgba8: resized.into_raw() }
+        let resized =
+            image::imageops::resize(&cropped, size, size, image::imageops::FilterType::Triangle);
+        Image {
+            width: size,
+            height: size,
+            rgba8: resized.into_raw(),
+        }
     }
 }
 
@@ -954,8 +1324,16 @@ mod tests {
         assert!(names.contains(&"progress-0.00"));
         assert!(names.contains(&"progress-1.00"));
         // choice: the two non-default options; float min skipped when equal to default
-        assert!(names.contains(&"p-direction-b") && names.contains(&"p-direction-c") && !names.contains(&"p-direction-a"));
-        assert!(names.contains(&"p-softness-min") && names.contains(&"p-softness-max") && names.contains(&"p-softness-mid"));
+        assert!(
+            names.contains(&"p-direction-b")
+                && names.contains(&"p-direction-c")
+                && !names.contains(&"p-direction-a")
+        );
+        assert!(
+            names.contains(&"p-softness-min")
+                && names.contains(&"p-softness-max")
+                && names.contains(&"p-softness-mid")
+        );
         assert!(!names.contains(&"p-ease-min") && names.contains(&"p-ease-max"));
         assert!(names.contains(&"p-flag-on"));
         // colour default is green, so the sweep picks magenta
@@ -963,20 +1341,54 @@ mod tests {
         assert_eq!(tint.params["tint"], "1,0,1,1");
         assert!(names.contains(&"p-center-tl"));
         assert!(names.contains(&"s-wobble"));
-        assert!(!names.contains(&"s-wobble-off"), "single signal has no -off variant");
+        assert!(
+            !names.contains(&"s-wobble-off"),
+            "single signal has no -off variant"
+        );
         let sig = cs.iter().find(|c| c.name == "p-softness-max+1").unwrap();
         assert!(sig.baseline.as_deref() == Some("signals-on") && sig.signals["wobble"] == "1");
-        assert!(names.contains(&"signals-on") && names.contains(&"signals-half") && names.contains(&"s-wobble-half"));
+        assert!(
+            names.contains(&"signals-on")
+                && names.contains(&"signals-half")
+                && names.contains(&"s-wobble-half")
+        );
         assert!(names.contains(&"perf"));
         // sweeps run at the off-centre progress, endpoints at their own
-        assert_eq!(cs.iter().find(|c| c.name == "p-ease-max").unwrap().progress, SWEEP_PROGRESS);
-        assert_eq!(cs.iter().find(|c| c.name == "progress-1.00").unwrap().progress, 1.0);
+        assert_eq!(
+            cs.iter().find(|c| c.name == "p-ease-max").unwrap().progress,
+            SWEEP_PROGRESS
+        );
+        assert_eq!(
+            cs.iter()
+                .find(|c| c.name == "progress-1.00")
+                .unwrap()
+                .progress,
+            1.0
+        );
         // no case is identical to the baseline by construction
         for c in &cs {
             if matches!(c.role, Role::Param(_)) {
                 assert!(!c.params.is_empty(), "{}", c.name);
             }
         }
+    }
+
+    #[test]
+    fn presets_render_as_their_own_cases() {
+        let text = TRANSITION.replacen(
+            "\"passes\"",
+            "\"presets\": [ { \"id\": \"snappy\", \"name\": \"Snappy\", \"params\": { \"ease\": 1, \"direction\": \"c\" } } ], \"passes\"",
+            1,
+        );
+        let m = manifest(&text);
+        let cs = cases(&m, &Tuning::default(), false);
+        let c = cs
+            .iter()
+            .find(|c| c.name == "preset-snappy")
+            .expect("preset case");
+        assert_eq!(c.params["ease"], "1");
+        assert_eq!(c.params["direction"], "c");
+        assert!(matches!(c.role, Role::Preset(_)));
     }
 
     #[test]
@@ -991,12 +1403,20 @@ mod tests {
 
     #[test]
     fn identity_case_only_for_effects() {
-        let m = manifest(&TRANSITION.replace("\"transition\"", "\"effect\"").replace("[\"from\", \"to\"]", "[\"source\"]"));
+        let m = manifest(
+            &TRANSITION
+                .replace("\"transition\"", "\"effect\"")
+                .replace("[\"from\", \"to\"]", "[\"source\"]"),
+        );
         let mut t = Tuning::default();
         t.identity.insert("softness".into(), "0".into());
-        assert!(cases(&m, &t, false).iter().any(|c| c.role == Role::Identity));
+        assert!(cases(&m, &t, false)
+            .iter()
+            .any(|c| c.role == Role::Identity));
         let m2 = manifest(TRANSITION);
-        assert!(!cases(&m2, &t, false).iter().any(|c| c.role == Role::Identity));
+        assert!(!cases(&m2, &t, false)
+            .iter()
+            .any(|c| c.role == Role::Identity));
     }
 
     #[test]
@@ -1017,7 +1437,11 @@ mod tests {
 
     #[test]
     fn icon_is_a_square_of_the_requested_size() {
-        let img = Image { width: 64, height: 32, rgba8: vec![200; 64 * 32 * 4] };
+        let img = Image {
+            width: 64,
+            height: 32,
+            rgba8: vec![200; 64 * 32 * 4],
+        };
         let icon = sheet::icon_from(&img, 16);
         assert_eq!((icon.width, icon.height), (16, 16));
         assert_eq!(icon.rgba8.len(), 16 * 16 * 4);

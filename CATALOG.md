@@ -124,21 +124,22 @@ any effect with a shape mask and animate any param marked `animatable`.
 ### Looks
 
 Looks are presets over one grade plugin (a LUT or a preset of Color
-Adjustments), not a shader each. Preset support is an open item for the
-manifest.
+Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
+§Presets, 2026-11-06). They land on `org.gobofx.color-adjustments` and
+`org.gobofx.lut` and a host shows them as one Looks rail.
 
 | Title | Short description | Priority |
 |---|---|---|
-| Bleach Bypass | Desaturated, high-contrast silver look | Candidate |
-| Warm Sun | Warm, sunny grade | Candidate |
-| Chrome | Punchy, saturated look | Candidate |
-| Cool | Blue-shifted grade | Candidate |
+| ✅ Bleach Bypass | Desaturated, high-contrast silver look — `org.gobofx.color-adjustments` preset `bleach_bypass` | Candidate |
+| ✅ Warm Sun | Warm, sunny grade — `org.gobofx.color-adjustments` preset `warm_sun` | Candidate |
+| ✅ Chrome | Punchy, saturated look — `org.gobofx.color-adjustments` preset `chrome` | Candidate |
+| ✅ Cool | Blue-shifted grade — `org.gobofx.color-adjustments` preset `cool` | Candidate |
 | Faded Film | Lifted blacks, faded print | Candidate |
 | Instant Camera | Instant-photo look | Candidate |
-| Mono | Black and white | Candidate |
-| Desert | Dry, dusty grade | Candidate |
-| Urban | Cool, high-contrast city look | Candidate |
-| Noir | High-contrast black and white | Candidate |
+| ✅ Mono | Black and white — `org.gobofx.color-adjustments` preset `mono` | Candidate |
+| ✅ Desert | Dry, dusty grade — `org.gobofx.color-adjustments` preset `desert` | Candidate |
+| ✅ Urban | Cool, high-contrast city look — `org.gobofx.color-adjustments` preset `urban` | Candidate |
+| ✅ Noir | High-contrast black and white — `org.gobofx.color-adjustments` preset `noir` | Candidate |
 | Cross Process | Cross-processed color shift | Candidate |
 | Vintage | Period film stock look | Candidate |
 | Soft Tonal | Soft black-and-white tonal | Candidate |

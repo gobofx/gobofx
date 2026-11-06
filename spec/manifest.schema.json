@@ -66,6 +66,14 @@
       "items": {
         "$ref": "#/$defs/asset"
       }
+    },
+    "presets": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/preset"
+      },
+      "description": "Named param sets the host lists beside the plugin (manifest.md \u00a7Presets)"
     }
   },
   "$defs": {
@@ -280,6 +288,33 @@
         "release_ms": {
           "type": "number",
           "minimum": 0
+        }
+      }
+    },
+    "preset": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "params"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "description": "Param id \u2192 value in the same JSON forms as a param `default`",
+          "additionalProperties": {}
         }
       }
     }

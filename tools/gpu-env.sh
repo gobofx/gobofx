@@ -27,7 +27,7 @@ gobofx_gpu_env() {
   candidates=()
   [ -n "${SWIFTSHADER_DIR:-}" ] && candidates+=("$SWIFTSHADER_DIR")
   local pw="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
-  for dir in "$pw"/chromium-*/chrome-linux "$pw"/chromium_headless_shell-*/chrome-linux /opt/pw-browsers/chromium-*/chrome-linux; do
+  for dir in "$pw"/chromium-*/chrome-linux "$pw"/chromium-*/chrome-linux64 "$pw"/chromium_headless_shell-*/chrome-linux /opt/pw-browsers/chromium-*/chrome-linux /opt/pw-browsers/chromium-*/chrome-linux64; do
     [ -d "$dir" ] && candidates+=("$dir")
   done
   for dir in "${candidates[@]}"; do

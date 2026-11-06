@@ -17,6 +17,7 @@ Schema: [`manifest.schema.json`](manifest.schema.json).
 | `params` | array | no | User-facing parameters (below) |
 | `signals` | array | no | MIDI 2.0 controllers and notes the plugin reads each frame — see [`signals.md`](signals.md) |
 | `assets` | array | no | Images shipped in the package a pass can read, e.g. a `.cube` LUT — see [`assets.md`](assets.md) (added 2026-10-17) |
+| `presets` | array | no | Named param sets the host lists beside the plugin — a look, a starting point (below; added 2026-11-06) |
 | `passes` | array | yes | Render passes, executed in order (below) |
 
 ## Params
@@ -59,6 +60,33 @@ its first pass reads nothing and later passes read earlier outputs.
 Any other name refers to an earlier pass's `output`, to a bundled asset (`assets[].id`) or to an
 `asset` param (its id), see [`assets.md`](assets.md). Intermediate images are `rgba16float`, output-sized;
 an asset keeps the size its kind defines.
+
+## Presets
+
+A preset is a named set of param values. The host lists a plugin's presets beside it (a Looks rail, a
+preset menu in the inspector) and applying one sets the named params; params the preset leaves out keep
+their manifest default. A preset is data, not a pass: it needs nothing from the shader and renders
+identically in every host.
+
+```json
+"presets": [
+  { "id": "bleach_bypass", "name": "Bleach Bypass",
+    "description": "Desaturated, high-contrast silver look",
+    "params": { "saturation": 0.35, "contrast": 1.45, "exposure": 0.2 } }
+]
+```
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `id` | string | yes | `^[a-z_][a-z0-9_]*$`, unique within the plugin; what a host stores when a user picks it |
+| `name` | string | yes | Display name |
+| `description` | string | no | One line for a tooltip or a browser card |
+| `params` | object | yes | Param id → value, in the same JSON forms as a param `default` (`float`/`int` number, `bool`, `choice` index or option name, `color` `[r,g,b,a]`, `point` `[x,y]`, `asset` a bundled asset id) |
+
+Rules the validator enforces: every key names a declared param, values are in range (`min`/`max`,
+option count, bundled asset ids), at most 64 presets. A preset that sets no params is a warning: it is
+the defaults. A host that keyframes a param on top of a preset keyframes the value; the preset is only
+the starting point.
 
 ## Assets
 

@@ -205,6 +205,20 @@ pub struct Pass {
     pub output: String,
 }
 
+/// A named set of param values the host offers beside the plugin (`spec/manifest.md` §Presets).
+/// Params a preset leaves out keep their manifest default.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Preset {
+    pub id: String,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    /// Param id → value, in the same JSON forms as a param `default`.
+    #[serde(default)]
+    pub params: BTreeMap<String, serde_json::Value>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Manifest {
@@ -224,6 +238,9 @@ pub struct Manifest {
     /// Images shipped in the package (`spec/assets.md`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub assets: Vec<Asset>,
+    /// Named param sets (looks, starting points) the host lists beside the plugin.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub presets: Vec<Preset>,
     pub passes: Vec<Pass>,
 }
 
@@ -266,6 +283,11 @@ impl Plugin {
                 assets.insert(a.file.clone(), bytes);
             }
         }
-        Ok(Plugin { dir, manifest, shaders, assets })
+        Ok(Plugin {
+            dir,
+            manifest,
+            shaders,
+            assets,
+        })
     }
 }

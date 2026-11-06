@@ -18,7 +18,11 @@ use gobofx::render::{Globals, Host, Image};
 use gobofx::validate::{self, Level};
 
 #[derive(Parser)]
-#[command(name = "gobofx", version, about = "Validate and render GoboFX plugins headlessly.")]
+#[command(
+    name = "gobofx",
+    version,
+    about = "Validate and render GoboFX plugins headlessly."
+)]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
@@ -78,6 +82,9 @@ struct RenderArgs {
     /// Param override, `id=value`. Repeatable. Colors `r,g,b,a`, points `x,y`, choices by index or name.
     #[arg(short = 'p', long = "param")]
     params: Vec<String>,
+    /// Apply a manifest preset by id before any --param override.
+    #[arg(long)]
+    preset: Option<String>,
     /// Signal value, `id=value` in 0..1 (a MIDI 2.0 controller or note level). Repeatable.
     #[arg(short = 's', long = "signal")]
     signals: Vec<String>,
@@ -172,7 +179,11 @@ fn run() -> Result<ExitCode> {
             } else {
                 print_report(&report, &dir);
             }
-            Ok(if report.ok { ExitCode::SUCCESS } else { ExitCode::from(1) })
+            Ok(if report.ok {
+                ExitCode::SUCCESS
+            } else {
+                ExitCode::from(1)
+            })
         }
         Cmd::Info { dir } => {
             let plugin = Plugin::load(&dir)?;
@@ -182,8 +193,18 @@ fn run() -> Result<ExitCode> {
                 manifest: &'a gobofx::manifest::Manifest,
                 report: &'a validate::Report,
             }
-            println!("{}", serde_json::to_string_pretty(&Info { manifest: &plugin.manifest, report: &report })?);
-            Ok(if report.ok { ExitCode::SUCCESS } else { ExitCode::from(1) })
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&Info {
+                    manifest: &plugin.manifest,
+                    report: &report
+                })?
+            );
+            Ok(if report.ok {
+                ExitCode::SUCCESS
+            } else {
+                ExitCode::from(1)
+            })
         }
         Cmd::Render(args) => render(args),
         Cmd::Verify(args) => verify(args),
@@ -196,22 +217,36 @@ fn run() -> Result<ExitCode> {
             }
             let entries = gobofx::pack::collect_entries(&plugin)?;
             let bytes = gobofx::pack::write_zip(&entries)?;
-            let path = out.unwrap_or_else(|| dir.join("dist").join(gobofx::pack::package_file_name(&plugin)));
+            let path = out.unwrap_or_else(|| {
+                dir.join("dist")
+                    .join(gobofx::pack::package_file_name(&plugin))
+            });
             if let Some(parent) = path.parent() {
-                std::fs::create_dir_all(parent).with_context(|| format!("creating {}", parent.display()))?;
+                std::fs::create_dir_all(parent)
+                    .with_context(|| format!("creating {}", parent.display()))?;
             }
             std::fs::write(&path, &bytes).with_context(|| format!("writing {}", path.display()))?;
             if json {
                 #[derive(Serialize)]
-                struct Out<'a> { ok: bool, id: &'a str, version: &'a str, path: String, bytes: usize, entries: Vec<&'a str> }
-                println!("{}", serde_json::to_string_pretty(&Out {
-                    ok: true,
-                    id: &plugin.manifest.id,
-                    version: &plugin.manifest.version,
-                    path: path.display().to_string(),
-                    bytes: bytes.len(),
-                    entries: entries.iter().map(|e| e.name.as_str()).collect(),
-                })?);
+                struct Out<'a> {
+                    ok: bool,
+                    id: &'a str,
+                    version: &'a str,
+                    path: String,
+                    bytes: usize,
+                    entries: Vec<&'a str>,
+                }
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&Out {
+                        ok: true,
+                        id: &plugin.manifest.id,
+                        version: &plugin.manifest.version,
+                        path: path.display().to_string(),
+                        bytes: bytes.len(),
+                        entries: entries.iter().map(|e| e.name.as_str()).collect(),
+                    })?
+                );
             } else {
                 println!("{}", path.display());
             }
@@ -230,7 +265,11 @@ fn print_report(report: &validate::Report, dir: &std::path::Path) {
         report.passes.len(),
         if report.passes.len() == 1 { "" } else { "es" },
         report.params.fields.len(),
-        if report.params.fields.len() == 1 { "" } else { "s" },
+        if report.params.fields.len() == 1 {
+            ""
+        } else {
+            "s"
+        },
     );
     for d in &report.diagnostics {
         let level = match d.level {
@@ -257,14 +296,29 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
     // point the param at it, which is exactly what a host picker does.
     let mut asset_overrides: Vec<(String, String)> = Vec::new();
     for a in &args.assets {
-        let (k, path) = a.split_once('=').ok_or_else(|| anyhow!("--asset must be id=path, got '{a}'"))?;
-        let param = plugin.manifest.params.iter().find(|p| p.id == k.trim()).ok_or_else(|| anyhow!("unknown asset param '{}'", k.trim()))?;
-        let kind = param.kind.ok_or_else(|| anyhow!("param '{}' is not an asset param", k.trim()))?;
-        let bytes = std::fs::read(path.trim()).with_context(|| format!("reading {}", path.trim()))?;
+        let (k, path) = a
+            .split_once('=')
+            .ok_or_else(|| anyhow!("--asset must be id=path, got '{a}'"))?;
+        let param = plugin
+            .manifest
+            .params
+            .iter()
+            .find(|p| p.id == k.trim())
+            .ok_or_else(|| anyhow!("unknown asset param '{}'", k.trim()))?;
+        let kind = param
+            .kind
+            .ok_or_else(|| anyhow!("param '{}' is not an asset param", k.trim()))?;
+        let bytes =
+            std::fs::read(path.trim()).with_context(|| format!("reading {}", path.trim()))?;
         let file = format!("__cli_{}.{}", k.trim(), kind.extension());
         plugin.assets.insert(file.clone(), bytes);
         let id = format!("cli_{}", k.trim());
-        plugin.manifest.assets.push(gobofx::manifest::Asset { id: id.clone(), kind, file, label: None });
+        plugin.manifest.assets.push(gobofx::manifest::Asset {
+            id: id.clone(),
+            kind,
+            file,
+            label: None,
+        });
         asset_overrides.push((k.trim().to_string(), id));
     }
     let report = validate::validate(&plugin);
@@ -296,15 +350,25 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
     };
     let size = match &args.size {
         Some(s) => {
-            let (w, h) = s.split_once('x').ok_or_else(|| anyhow!("--size must be WxH"))?;
-            (w.parse::<u32>().context("--size width")?, h.parse::<u32>().context("--size height")?)
+            let (w, h) = s
+                .split_once('x')
+                .ok_or_else(|| anyhow!("--size must be WxH"))?;
+            (
+                w.parse::<u32>().context("--size width")?,
+                h.parse::<u32>().context("--size height")?,
+            )
         }
         None => first.map(|i| (i.width, i.height)).unwrap_or((1280, 720)),
     };
 
     let mut overrides = BTreeMap::new();
+    if let Some(id) = &args.preset {
+        overrides = params::preset_overrides(m, id)?;
+    }
     for p in &args.params {
-        let (k, v) = p.split_once('=').ok_or_else(|| anyhow!("--param must be id=value, got '{p}'"))?;
+        let (k, v) = p
+            .split_once('=')
+            .ok_or_else(|| anyhow!("--param must be id=value, got '{p}'"))?;
         overrides.insert(k.trim().to_string(), v.to_string());
     }
     for (k, id) in asset_overrides {
@@ -313,7 +377,9 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
     let values = params::resolve(m, &overrides)?;
     let mut signal_overrides = BTreeMap::new();
     for s in &args.signals {
-        let (k, v) = s.split_once('=').ok_or_else(|| anyhow!("--signal must be id=value, got '{s}'"))?;
+        let (k, v) = s
+            .split_once('=')
+            .ok_or_else(|| anyhow!("--signal must be id=value, got '{s}'"))?;
         signal_overrides.insert(k.trim().to_string(), v.to_string());
     }
     let signal_values = params::resolve_signals(m, &signal_overrides)?;
@@ -326,17 +392,49 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
             Some(n) if n >= 1 => {
                 std::fs::create_dir_all(&args.out_dir)?;
                 for i in 0..n {
-                    let progress = if n == 1 { args.progress } else { i as f32 / (n - 1) as f32 };
-                    let img = host.render_image(&compiled, &inputs, size, Globals { time: args.time, progress }, &values, &signal_values)?;
+                    let progress = if n == 1 {
+                        args.progress
+                    } else {
+                        i as f32 / (n - 1) as f32
+                    };
+                    let img = host.render_image(
+                        &compiled,
+                        &inputs,
+                        size,
+                        Globals {
+                            time: args.time,
+                            progress,
+                        },
+                        &values,
+                        &signal_values,
+                    )?;
                     let path = args.out_dir.join(format!("frame_{i:03}.png"));
                     img.save_png(&path)?;
-                    frames.push(FrameOut { progress, time: args.time, path: path.display().to_string() });
+                    frames.push(FrameOut {
+                        progress,
+                        time: args.time,
+                        path: path.display().to_string(),
+                    });
                 }
             }
             _ => {
-                let img = host.render_image(&compiled, &inputs, size, Globals { time: args.time, progress: args.progress }, &values, &signal_values)?;
+                let img = host.render_image(
+                    &compiled,
+                    &inputs,
+                    size,
+                    Globals {
+                        time: args.time,
+                        progress: args.progress,
+                    },
+                    &values,
+                    &signal_values,
+                )?;
                 img.save_png(&args.output)?;
-                frames.push(FrameOut { progress: args.progress, time: args.time, path: args.output.display().to_string() });
+                frames.push(FrameOut {
+                    progress: args.progress,
+                    time: args.time,
+                    path: args.output.display().to_string(),
+                });
             }
         }
         Ok(())
@@ -344,7 +442,10 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
 
     if let Err(e) = result {
         if args.json {
-            println!("{}", serde_json::json!({ "ok": false, "id": m.id, "error": format!("{e:#}") }));
+            println!(
+                "{}",
+                serde_json::json!({ "ok": false, "id": m.id, "error": format!("{e:#}") })
+            );
         } else {
             eprintln!("render failed: {e:#}");
         }
@@ -359,13 +460,32 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
             backend: &host.backend,
             width: size.0,
             height: size.1,
-            params: m.params.iter().zip(&values).map(|(p, v)| ParamOut { id: &p.id, value: v }).collect(),
-            signals: m.signals.iter().zip(&signal_values).map(|(s, v)| SignalOut { id: &s.id, value: *v }).collect(),
+            params: m
+                .params
+                .iter()
+                .zip(&values)
+                .map(|(p, v)| ParamOut {
+                    id: &p.id,
+                    value: v,
+                })
+                .collect(),
+            signals: m
+                .signals
+                .iter()
+                .zip(&signal_values)
+                .map(|(s, v)| SignalOut {
+                    id: &s.id,
+                    value: *v,
+                })
+                .collect(),
             frames,
         };
         println!("{}", serde_json::to_string_pretty(&summary)?);
     } else {
-        println!("OK   {} on {} ({}) {}x{}", m.id, host.adapter_name, host.backend, size.0, size.1);
+        println!(
+            "OK   {} on {} ({}) {}x{}",
+            m.id, host.adapter_name, host.backend, size.0, size.1
+        );
         for (s, v) in m.signals.iter().zip(&signal_values) {
             println!("  signal {} = {:.3}", s.id, v);
         }
@@ -384,7 +504,15 @@ fn verify(args: VerifyArgs) -> Result<ExitCode> {
     let host = Host::new().context(
         "no GPU adapter; on a headless Linux box run `source tools/gpu-env.sh` first (SwiftShader), or set WGPU_BACKEND",
     )?;
-    let opts = v::Options { out_dir: if args.dirs.len() == 1 { args.out_dir.clone() } else { None }, assets: args.assets, no_perf: args.no_perf };
+    let opts = v::Options {
+        out_dir: if args.dirs.len() == 1 {
+            args.out_dir.clone()
+        } else {
+            None
+        },
+        assets: args.assets,
+        no_perf: args.no_perf,
+    };
 
     let mut reports = Vec::new();
     for dir in &args.dirs {
@@ -393,12 +521,32 @@ fn verify(args: VerifyArgs) -> Result<ExitCode> {
             Err(e) => {
                 // A plugin that cannot even be loaded still gets a row, so a batch run reports it.
                 eprintln!("{}: {e:#}", dir.display());
-                let id = dir.file_name().map(|f| f.to_string_lossy().to_string()).unwrap_or_default();
+                let id = dir
+                    .file_name()
+                    .map(|f| f.to_string_lossy().to_string())
+                    .unwrap_or_default();
                 let mut r = v::Report {
-                    ok: false, id, version: String::new(), kind: Kind::Effect, adapter: host.adapter_name.clone(),
-                    backend: host.backend.clone(), software_gpu: false, out_dir: dir.join("dist").join("verify").display().to_string(),
-                    cases: vec![], checks: vec![v::Check { name: "load".into(), status: Status::Fail, detail: format!("{e:#}") }],
-                    animated: None, summary: v::Summary { pass: 0, warn: 0, fail: 1 }, sheet: None,
+                    ok: false,
+                    id,
+                    version: String::new(),
+                    kind: Kind::Effect,
+                    adapter: host.adapter_name.clone(),
+                    backend: host.backend.clone(),
+                    software_gpu: false,
+                    out_dir: dir.join("dist").join("verify").display().to_string(),
+                    cases: vec![],
+                    checks: vec![v::Check {
+                        name: "load".into(),
+                        status: Status::Fail,
+                        detail: format!("{e:#}"),
+                    }],
+                    animated: None,
+                    summary: v::Summary {
+                        pass: 0,
+                        warn: 0,
+                        fail: 1,
+                    },
+                    sheet: None,
                 };
                 r.ok = false;
                 r
@@ -417,30 +565,70 @@ fn verify(args: VerifyArgs) -> Result<ExitCode> {
         if args.json {
             println!("{}", serde_json::to_string_pretty(&reports[0])?);
         }
-        return Ok(if reports[0].ok { ExitCode::SUCCESS } else { ExitCode::from(1) });
+        return Ok(if reports[0].ok {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::from(1)
+        });
     }
 
     // Batch: index + overview sheet.
     std::fs::create_dir_all(&args.summary_dir)?;
     let mut cells = Vec::new();
     for r in &reports {
-        let worst = r.checks.iter().map(|c| c.status).max().unwrap_or(Status::Pass);
+        let worst = r
+            .checks
+            .iter()
+            .map(|c| c.status)
+            .max()
+            .unwrap_or(Status::Pass);
         let img = r
             .cases
             .iter()
             .find(|c| c.role == v::Role::Baseline)
             .and_then(|c| c.path.as_ref())
             .and_then(|p| Image::load_png(std::path::Path::new(p)).ok())
-            .unwrap_or(Image { width: 4, height: 4, rgba8: vec![0; 64] });
-        let short = r.id.strip_prefix("org.gobofx.").unwrap_or(&r.id).to_string();
+            .unwrap_or(Image {
+                width: 4,
+                height: 4,
+                rgba8: vec![0; 64],
+            });
+        let short =
+            r.id.strip_prefix("org.gobofx.")
+                .unwrap_or(&r.id)
+                .to_string();
         cells.push((short, worst, img));
     }
     let all_png = args.summary_dir.join("all.png");
-    v::sheet::write_overview(&all_png, &format!("{} plugins on {}", reports.len(), host.adapter_name), &cells, v::CASE_SIZE, 5)?;
+    v::sheet::write_overview(
+        &all_png,
+        &format!("{} plugins on {}", reports.len(), host.adapter_name),
+        &cells,
+        v::CASE_SIZE,
+        5,
+    )?;
     #[derive(Serialize)]
-    struct Row<'a> { ok: bool, id: &'a str, version: &'a str, kind: Kind, fail: usize, warn: usize, pass: usize, report: String, sheet: Option<&'a str>, failed: Vec<&'a str> }
+    struct Row<'a> {
+        ok: bool,
+        id: &'a str,
+        version: &'a str,
+        kind: Kind,
+        fail: usize,
+        warn: usize,
+        pass: usize,
+        report: String,
+        sheet: Option<&'a str>,
+        failed: Vec<&'a str>,
+    }
     #[derive(Serialize)]
-    struct Index<'a> { ok: bool, adapter: &'a str, backend: &'a str, software_gpu: bool, overview: String, plugins: Vec<Row<'a>> }
+    struct Index<'a> {
+        ok: bool,
+        adapter: &'a str,
+        backend: &'a str,
+        software_gpu: bool,
+        overview: String,
+        plugins: Vec<Row<'a>>,
+    }
     let index = Index {
         ok: reports.iter().all(|r| r.ok),
         adapter: &host.adapter_name,
@@ -457,9 +645,17 @@ fn verify(args: VerifyArgs) -> Result<ExitCode> {
                 fail: r.summary.fail,
                 warn: r.summary.warn,
                 pass: r.summary.pass,
-                report: std::path::Path::new(&r.out_dir).join("report.json").display().to_string(),
+                report: std::path::Path::new(&r.out_dir)
+                    .join("report.json")
+                    .display()
+                    .to_string(),
                 sheet: r.sheet.as_deref(),
-                failed: r.checks.iter().filter(|c| c.status == Status::Fail).map(|c| c.name.as_str()).collect(),
+                failed: r
+                    .checks
+                    .iter()
+                    .filter(|c| c.status == Status::Fail)
+                    .map(|c| c.name.as_str())
+                    .collect(),
             })
             .collect(),
     };
@@ -478,7 +674,11 @@ fn verify(args: VerifyArgs) -> Result<ExitCode> {
             all_png.display()
         );
     }
-    Ok(if index.ok { ExitCode::SUCCESS } else { ExitCode::from(1) })
+    Ok(if index.ok {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(1)
+    })
 }
 
 fn print_verify(r: &gobofx::verify::Report) {
@@ -494,11 +694,22 @@ fn print_verify(r: &gobofx::verify::Report) {
         r.summary.pass,
         r.summary.warn,
         r.summary.fail,
-        r.animated.map(|a| if a { " · animated" } else { " · static" }).unwrap_or(""),
+        r.animated
+            .map(|a| if a { " · animated" } else { " · static" })
+            .unwrap_or(""),
     );
     for c in &r.checks {
         if c.status != Status::Pass {
-            println!("  {}: {}: {}", if c.status == Status::Fail { "fail" } else { "warn" }, c.name, c.detail);
+            println!(
+                "  {}: {}: {}",
+                if c.status == Status::Fail {
+                    "fail"
+                } else {
+                    "warn"
+                },
+                c.name,
+                c.detail
+            );
         }
     }
     if let Some(s) = &r.sheet {
