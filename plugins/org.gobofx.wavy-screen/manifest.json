@@ -1,0 +1,86 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.wavy-screen",
+  "name": "Wavy Screen",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "pitch",
+      "label": "Line Pitch",
+      "type": "float",
+      "default": 6.0,
+      "min": 2.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "amplitude",
+      "label": "Wave Amplitude",
+      "type": "float",
+      "default": 4.0,
+      "min": 0.0,
+      "max": 32.0,
+      "unit": "px"
+    },
+    {
+      "id": "frequency",
+      "label": "Wave Frequency",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.1,
+      "max": 10.0
+    },
+    {
+      "id": "angle",
+      "label": "Angle",
+      "type": "float",
+      "default": 0.0,
+      "min": -90.0,
+      "max": 90.0,
+      "unit": "deg"
+    },
+    {
+      "id": "ink",
+      "label": "Ink",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "paper",
+      "label": "Paper",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "wavy-screen.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.line-art",
+  "name": "Line Art",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.1,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "weight",
+      "label": "Line Weight",
+      "type": "float",
+      "default": 1.5,
+      "min": 1.0,
+      "max": 6.0,
+      "unit": "px"
+    },
+    {
+      "id": "ink",
+      "label": "Ink",
+      "type": "color",
+      "default": [
+        0.02,
+        0.02,
+        0.03,
+        1.0
+      ]
+    },
+    {
+      "id": "paper",
+      "label": "Paper",
+      "type": "color",
+      "default": [
+        0.92,
+        0.87,
+        0.75,
+        1.0
+      ]
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "line-art.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

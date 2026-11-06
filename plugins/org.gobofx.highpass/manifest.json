@@ -1,0 +1,63 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.highpass",
+  "name": "Highpass",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 8.0,
+      "min": 0.5,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "highpass.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "highpass.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "blurred"
+    },
+    {
+      "shader": "highpass.wgsl",
+      "entry": "fs_combine",
+      "inputs": [
+        "source",
+        "blurred"
+      ],
+      "output": "out"
+    }
+  ]
+}

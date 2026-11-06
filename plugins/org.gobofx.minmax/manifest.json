@@ -1,0 +1,67 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.minmax",
+  "name": "MinMax",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "mode",
+      "label": "Mode",
+      "type": "choice",
+      "default": 1,
+      "options": [
+        "Min",
+        "Max"
+      ]
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 3.0,
+      "min": 0.0,
+      "max": 8.0,
+      "unit": "px"
+    },
+    {
+      "id": "channels",
+      "label": "Channels",
+      "type": "choice",
+      "default": 2,
+      "options": [
+        "RGB",
+        "Alpha",
+        "Both"
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "minmax.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "minmax.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "out"
+    }
+  ]
+}
