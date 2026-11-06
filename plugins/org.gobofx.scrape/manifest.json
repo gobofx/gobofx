@@ -1,0 +1,49 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.scrape",
+  "name": "Scrape",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "edge",
+      "label": "Edge",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "left",
+        "right",
+        "top",
+        "bottom"
+      ]
+    },
+    {
+      "id": "position",
+      "label": "Position",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "scrape.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

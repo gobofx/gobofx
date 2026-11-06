@@ -1,0 +1,46 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.sliced-scale",
+  "name": "Sliced Scale",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "scale_x",
+      "label": "Scale X",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.1,
+      "max": 3.0
+    },
+    {
+      "id": "scale_y",
+      "label": "Scale Y",
+      "type": "float",
+      "default": 0.8,
+      "min": 0.1,
+      "max": 3.0
+    },
+    {
+      "id": "corner",
+      "label": "Corner Size",
+      "type": "float",
+      "default": 40.0,
+      "min": 0.0,
+      "max": 512.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "sliced-scale.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

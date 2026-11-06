@@ -1,0 +1,54 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.starburst",
+  "name": "Starburst",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "count",
+      "label": "Streaks",
+      "type": "int",
+      "default": 8,
+      "min": 2,
+      "max": 32
+    },
+    {
+      "id": "length",
+      "label": "Length",
+      "type": "float",
+      "default": 0.25,
+      "min": 0.02,
+      "max": 1.0
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "starburst.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
