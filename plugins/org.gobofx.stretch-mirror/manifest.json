@@ -1,0 +1,47 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.stretch-mirror",
+  "name": "Stretch Mirror",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "waves",
+      "label": "Waves",
+      "type": "float",
+      "default": 2.0,
+      "min": 0.25,
+      "max": 12.0
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "axis",
+      "label": "Axis",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "horizontal",
+        "vertical"
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "stretch-mirror.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

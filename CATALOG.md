@@ -174,23 +174,23 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
 | ✅ Droplet | Water-drop ripple rings — `org.gobofx.droplet` | Planned | |
-| Hex Lens | Compound-eye hexagonal lens | Candidate | |
-| Black Hole | Pixels pulled into a point | Candidate | |
+| ✅ Hex Lens | Compound-eye hexagonal lens — `org.gobofx.hex-lens` | Candidate | |
+| ✅ Black Hole | Pixels pulled into a point — `org.gobofx.black-hole` | Candidate | |
 | ✅ Bulge | Spherical bulge or pinch — `org.gobofx.bulge` | Planned | |
 | Bump Map | Displace via a map image | Candidate | a second image input on an effect |
-| Disc Warp | Wrap the image into a disc | Candidate | |
+| ✅ Disc Warp | Wrap the image into a disc — `org.gobofx.disc-warp` | Candidate | |
 | ✅ Shake | Camera shake — `org.gobofx.shake` | Planned | |
 | ✅ Fisheye | Wide-angle barrel distortion — `org.gobofx.fisheye` | Planned | |
 | ✅ Flop | Flip horizontally or vertically — `org.gobofx.flop` | Core | |
-| Stretch Mirror | Funhouse-mirror warp | Candidate | |
-| Glass Block | Glass-brick refraction | Candidate | |
+| ✅ Stretch Mirror | Funhouse-mirror warp — `org.gobofx.stretch-mirror` | Candidate | |
+| ✅ Glass Block | Glass-brick refraction — `org.gobofx.glass-block` | Candidate | |
 | Glass Distortion | Refraction through textured glass | Candidate | bundled texture |
 | ✅ Mirror | Mirror around an axis — `org.gobofx.mirror` | Planned | |
-| Page Curl | Static page peel | Candidate | |
-| Poke | Localized push dent | Candidate | |
-| Polar | Rectangular-to-polar warp | Candidate | |
+| ✅ Page Curl | Static page peel — `org.gobofx.curled-page` | Candidate | |
+| ✅ Poke | Localized push dent — `org.gobofx.poke` | Candidate | |
+| ✅ Polar | Rectangular-to-polar warp — `org.gobofx.polar` | Candidate | |
 | Refraction | Refract via a map image | Candidate | a second image input on an effect |
-| Ring Lens | Ring-shaped lens | Candidate | |
+| ✅ Ring Lens | Ring-shaped lens — `org.gobofx.ring-lens` | Candidate | |
 | ✅ Ripple | Concentric water ripples — `org.gobofx.water-ripple` | Planned | |
 | ✅ Scrape | Smear pixels from an edge — `org.gobofx.scrape` | Candidate | |
 | ✅ Sliced Scale | 9-slice scale preserving corners — `org.gobofx.sliced-scale` | Candidate | |

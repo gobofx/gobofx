@@ -1,0 +1,57 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.curled-page",
+  "name": "Page Curl",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "corner",
+      "label": "Corner",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "bottom right",
+        "bottom left",
+        "top right",
+        "top left"
+      ]
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 0.15,
+      "min": 0.05,
+      "max": 0.5
+    },
+    {
+      "id": "back_brightness",
+      "label": "Back Face",
+      "type": "float",
+      "default": 0.9,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "curled-page.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

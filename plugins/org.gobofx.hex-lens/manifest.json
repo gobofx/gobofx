@@ -1,0 +1,37 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.hex-lens",
+  "name": "Hex Lens",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "size",
+      "label": "Cell Size",
+      "type": "float",
+      "default": 0.12,
+      "min": 0.02,
+      "max": 0.5
+    },
+    {
+      "id": "amount",
+      "label": "Lens Strength",
+      "type": "float",
+      "default": 0.7,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "hex-lens.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
