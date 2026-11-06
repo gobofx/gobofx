@@ -1,0 +1,32 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.flop",
+  "name": "Flop",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "mode",
+      "label": "Mode",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "horizontal",
+        "vertical",
+        "both"
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "flop.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.posterize",
+  "name": "Posterize",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "levels",
+      "label": "Levels",
+      "type": "int",
+      "default": 6,
+      "min": 2,
+      "max": 64
+    },
+    {
+      "id": "gamma",
+      "label": "Gamma",
+      "type": "float",
+      "default": 2.2,
+      "min": 0.5,
+      "max": 3.0
+    },
+    {
+      "id": "per_channel",
+      "label": "Per Channel",
+      "type": "bool",
+      "default": true
+    }
+  ],
+  "passes": [
+    {
+      "shader": "posterize.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

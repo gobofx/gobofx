@@ -1,0 +1,39 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.directional-blur",
+  "name": "Directional Blur",
+  "kind": "effect",
+  "category": "blur",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "angle",
+      "label": "Angle",
+      "type": "float",
+      "default": 0.0,
+      "min": -180.0,
+      "max": 180.0,
+      "unit": "deg"
+    },
+    {
+      "id": "length",
+      "label": "Length",
+      "type": "float",
+      "default": 32.0,
+      "min": 0.0,
+      "max": 200.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "directional-blur.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

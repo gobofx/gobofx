@@ -50,6 +50,9 @@ pub const TIME_LATER: f32 = 2.5;
 /// it moves the mean by more than a hair.
 pub const ENDPOINT_MAX_DIFF: u8 = 3;
 pub const LIVE_MEAN_DIFF: f32 = 0.5;
+/// A param whose effect is local (a speck of dust, a key's edge spill) barely
+/// moves the mean; a clear change in any pixel counts as live too.
+pub const LIVE_MAX_DIFF: u8 = 8;
 /// Above this on a hardware adapter the perf check warns.
 pub const PERF_WARN_MS: f64 = 250.0;
 
@@ -615,7 +618,7 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         list.iter().zip(&renders).find(|(c, _)| c.name == name).and_then(|(_, r)| r.as_ref())
     };
     if let Some(b) = baseline {
-        let mut per_param: BTreeMap<String, f32> = BTreeMap::new();
+        let mut per_param: BTreeMap<String, (f32, u8)> = BTreeMap::new();
         for (c, r) in list.iter().zip(&renders) {
             let id = match &c.role {
                 Role::Param(id) | Role::Signal(id) => id,
@@ -624,20 +627,22 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
             let against = c.baseline.as_deref().and_then(by_name).unwrap_or(b);
             if let Some(r) = r {
                 let d = mean_abs_diff(&against.image.rgba8, &r.image.rgba8);
-                let e = per_param.entry(id.clone()).or_insert(0.0);
-                *e = e.max(d);
+                let mx = max_abs_diff(&against.image.rgba8, &r.image.rgba8);
+                let e = per_param.entry(id.clone()).or_insert((0.0, 0));
+                e.0 = e.0.max(d);
+                e.1 = e.1.max(mx);
             }
         }
         for p in m.params.iter().map(|p| &p.id).chain(m.signals.iter().map(|s| &s.id)) {
-            let Some(d) = per_param.get(p) else { continue };
-            let live = *d > LIVE_MEAN_DIFF;
+            let Some((d, mx)) = per_param.get(p) else { continue };
+            let live = *d > LIVE_MEAN_DIFF || *mx > LIVE_MAX_DIFF;
             let inert = tuning.inert.iter().any(|i| i == p);
             let (status, detail) = if live {
-                (Status::Pass, format!("live (mean {d:.2}/255 from defaults)"))
+                (Status::Pass, format!("live (mean {d:.2}/255, max {mx}/255 from defaults)"))
             } else if inert {
                 (Status::Pass, "no effect on the default render (declared inert in verify.json)".into())
             } else {
-                (Status::Fail, format!("no visible effect on the default render (mean {d:.2}/255); unused field, wrong struct order, or an inert default?"))
+                (Status::Fail, format!("no visible effect on the default render (mean {d:.2}/255, max {mx}/255); unused field, wrong struct order, or an inert default?"))
             };
             checks.push(Check { name: format!("live:{p}"), status, detail });
         }

@@ -1,0 +1,39 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.pixellate",
+  "name": "Pixellate",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "size",
+      "label": "Size",
+      "type": "float",
+      "default": 16.0,
+      "min": 1.0,
+      "max": 256.0,
+      "unit": "px"
+    },
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "pixellate.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
