@@ -36,10 +36,14 @@ pub enum ParamType {
     Choice,
     Color,
     Point,
+    /// An image the user picks (`spec/assets.md`): bound as a pass input by
+    /// the param's id, no field in `Params`.
+    Asset,
 }
 
 impl ParamType {
-    /// WGSL field type the host expects in the plugin's `Params` struct.
+    /// WGSL field type the host expects in the plugin's `Params` struct
+    /// (`asset` params have none; they are images).
     pub fn wgsl(self) -> &'static str {
         match self {
             ParamType::Float => "f32",
@@ -48,8 +52,40 @@ impl ParamType {
             ParamType::Choice => "u32",
             ParamType::Color => "vec4f",
             ParamType::Point => "vec2f",
+            ParamType::Asset => "texture_2d<f32>",
         }
     }
+
+    /// True for params that live in the `Params` uniform (everything but `asset`).
+    pub fn is_uniform(self) -> bool {
+        self != ParamType::Asset
+    }
+}
+
+/// Asset kinds (`spec/assets.md`). v0.1: a `.cube` 3D lookup table.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AssetKind {
+    Lut3d,
+}
+
+impl AssetKind {
+    pub fn extension(self) -> &'static str {
+        match self {
+            AssetKind::Lut3d => "cube",
+        }
+    }
+}
+
+/// An image shipped in the package that a pass can read by `id`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Asset {
+    pub id: String,
+    pub kind: AssetKind,
+    pub file: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -70,6 +106,9 @@ pub struct Param {
     pub unit: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub options: Option<Vec<String>>,
+    /// `asset` params only: the kind the param accepts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kind: Option<AssetKind>,
     #[serde(default = "default_true")]
     pub animatable: bool,
 }
@@ -182,6 +221,9 @@ pub struct Manifest {
     pub params: Vec<Param>,
     #[serde(default)]
     pub signals: Vec<Signal>,
+    /// Images shipped in the package (`spec/assets.md`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub assets: Vec<Asset>,
     pub passes: Vec<Pass>,
 }
 
@@ -193,6 +235,8 @@ pub struct Plugin {
     /// Shader file name (as written in the manifest) → source text. Missing files are absent here;
     /// `validate` reports them.
     pub shaders: BTreeMap<String, String>,
+    /// Asset file name (as written in `assets[].file`) → bytes. Missing files are absent here.
+    pub assets: BTreeMap<String, Vec<u8>>,
 }
 
 impl Plugin {
@@ -213,6 +257,15 @@ impl Plugin {
                 shaders.insert(pass.shader.clone(), src);
             }
         }
-        Ok(Plugin { dir, manifest, shaders })
+        let mut assets = BTreeMap::new();
+        for a in &manifest.assets {
+            if assets.contains_key(&a.file) {
+                continue;
+            }
+            if let Ok(bytes) = std::fs::read(dir.join(&a.file)) {
+                assets.insert(a.file.clone(), bytes);
+            }
+        }
+        Ok(Plugin { dir, manifest, shaders, assets })
     }
 }

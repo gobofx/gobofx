@@ -72,6 +72,18 @@ Deploy only from a clean, committed `main`, and only when Mat says so. The
 `gobofx.org` zone must exist in the same account for the custom-domain routes
 in `wrangler.jsonc` to attach.
 
+## Verifying plugins (do this before every commit that touches a plugin)
+
+`tools/verify-all.sh [plugins/<id> …]` builds the CLI and runs `gobofx verify`,
+which renders a case matrix derived from each manifest and checks the
+contracts (transition endpoints, every param live, finite output,
+determinism). It needs a GPU adapter; on a Linux box without one, the script
+sources `tools/gpu-env.sh`, which points wgpu at SwiftShader (bundled with
+Playwright's Chromium, or `$SWIFTSHADER_DIR`). Per plugin it writes
+`dist/verify/report.json` and `dist/verify/sheet.png` — read the JSON, look at
+the sheet. `ASSETS=1` also regenerates `icon.png`/`preview.png` from the
+default render. Details: `crates/gobofx/README.md`.
+
 ## Conventions
 
 - Deploy only when explicitly asked; never from an uncommitted tree.

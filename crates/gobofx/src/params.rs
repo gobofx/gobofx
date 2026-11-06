@@ -29,6 +29,7 @@ fn align_size(ty: ParamType) -> (u32, u32) {
         ParamType::Float | ParamType::Int | ParamType::Bool | ParamType::Choice => (4, 4),
         ParamType::Point => (8, 8),
         ParamType::Color => (16, 16),
+        ParamType::Asset => (0, 0), // never laid out; `layout` skips it
     }
 }
 
@@ -40,7 +41,7 @@ fn round_up(n: u32, align: u32) -> u32 {
 pub fn layout(manifest: &Manifest) -> Layout {
     let mut fields = Vec::with_capacity(manifest.params.len());
     let mut offset = 0u32;
-    for p in &manifest.params {
+    for p in manifest.params.iter().filter(|p| p.ty.is_uniform()) {
         let (align, size) = align_size(p.ty);
         offset = round_up(offset, align);
         fields.push(Field { id: p.id.clone(), ty: p.ty, wgsl: p.ty.wgsl(), offset, size });
@@ -102,6 +103,8 @@ pub enum Value {
     Choice(u32),
     Color([f32; 4]),
     Point([f32; 2]),
+    /// The id of a bundled asset (or a host asset) bound for an `asset` param; `None` = nothing bound.
+    Asset(Option<String>),
 }
 
 /// The manifest `default` for a param, or the type's zero when absent.
@@ -148,6 +151,10 @@ pub fn value_from_json(p: &Param, d: Option<&serde_json::Value>) -> Result<Value
             }
             Value::Point(pt)
         }
+        ParamType::Asset => Value::Asset(match d {
+            Some(J::String(s)) if !s.is_empty() => Some(s.clone()),
+            _ => None,
+        }),
     })
 }
 
@@ -188,6 +195,7 @@ pub fn parse_value(p: &Param, text: &str) -> Result<Value> {
             let v = nums(2)?;
             Value::Point([v[0], v[1]])
         }
+        ParamType::Asset => Value::Asset(if text.is_empty() || text == "none" { None } else { Some(text.to_string()) }),
     })
 }
 
@@ -211,7 +219,8 @@ pub fn resolve(manifest: &Manifest, overrides: &BTreeMap<String, String>) -> Res
 /// Encode values into the uniform buffer bytes for `layout`.
 pub fn encode(layout: &Layout, values: &[Value]) -> Vec<u8> {
     let mut buf = vec![0u8; layout.byte_size as usize];
-    for (field, value) in layout.fields.iter().zip(values) {
+    // Asset values are images, not bytes: the layout has no field for them.
+    for (field, value) in layout.fields.iter().zip(values.iter().filter(|v| !matches!(v, Value::Asset(_)))) {
         let o = field.offset as usize;
         match value {
             Value::Float(f) => buf[o..o + 4].copy_from_slice(&f.to_le_bytes()),
@@ -228,6 +237,7 @@ pub fn encode(layout: &Layout, values: &[Value]) -> Vec<u8> {
                     buf[o + i * 4..o + i * 4 + 4].copy_from_slice(&f.to_le_bytes());
                 }
             }
+            Value::Asset(_) => {} // filtered out above; an image has no bytes here
         }
     }
     buf

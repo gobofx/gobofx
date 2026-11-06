@@ -132,7 +132,7 @@ impl WebHost {
     /// Validate and compile a plugin. `shaders` is an object `{ "shader.wgsl": "<source>" }`.
     /// Resolves to the validation report as a JSON string (see `validate::Report`); the plugin
     /// is installed only when the report is ok.
-    pub fn load_plugin(&self, manifest_json: String, shaders: JsValue) -> Promise {
+    pub fn load_plugin(&self, manifest_json: String, shaders: JsValue, assets: JsValue) -> Promise {
         let inner = self.inner.clone();
         future_to_promise(async move {
             let manifest: Manifest = serde_json::from_str(&manifest_json).map_err(js)?;
@@ -145,7 +145,18 @@ impl WebHost {
                     files.insert(k, v);
                 }
             }
-            let plugin = Plugin { dir: std::path::PathBuf::from("."), manifest, shaders: files };
+            // Asset files (`spec/assets.md`): `{ "look.cube": Uint8Array | string }`.
+            let mut asset_files = std::collections::BTreeMap::new();
+            if assets.is_object() {
+                for entry in js_sys::Object::entries(&js_sys::Object::from(assets)).iter() {
+                    let pair = js_sys::Array::from(&entry);
+                    let k = pair.get(0).as_string().unwrap_or_default();
+                    let v = pair.get(1);
+                    let bytes = if let Some(s) = v.as_string() { s.into_bytes() } else { js_sys::Uint8Array::new(&v).to_vec() };
+                    asset_files.insert(k, bytes);
+                }
+            }
+            let plugin = Plugin { dir: std::path::PathBuf::from("."), manifest, shaders: files, assets: asset_files };
             let report = validate::validate(&plugin);
             let json = serde_json::to_string(&report).map_err(js)?;
             if report.ok {

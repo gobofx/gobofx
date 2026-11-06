@@ -38,6 +38,10 @@ pub struct Compiled {
     pub passes: Vec<CompiledPass>,
     pub params_layout: Layout,
     pub signals_layout: Layout,
+    /// Bundled assets decoded and uploaded once: asset id → view (`spec/assets.md`).
+    pub assets: HashMap<String, wgpu::TextureView>,
+    /// `asset` params in manifest order: `(param id, index in the values list)`.
+    pub asset_params: Vec<(String, usize)>,
 }
 
 /// A GPU device plus the fixed GoboFX bind group layouts.
@@ -285,13 +289,55 @@ impl Host {
                 .map_err(|e| anyhow!("pass {} ({}): {}", i, pass.shader, e))?;
             passes.push(CompiledPass { pipeline, uses_group1, inputs: pass.inputs.clone(), output: pass.output.clone() });
         }
+        let mut assets = HashMap::new();
+        for a in &m.assets {
+            let bytes = plugin.assets.get(&a.file).ok_or_else(|| anyhow!("asset \"{}\": file \"{}\" missing", a.id, a.file))?;
+            let view = match a.kind {
+                crate::manifest::AssetKind::Lut3d => {
+                    let lut = crate::cube::parse_cube(&String::from_utf8_lossy(bytes)).map_err(|e| anyhow!("asset \"{}\": {}", a.id, e))?;
+                    self.upload_strip(&lut, &a.id)
+                }
+            };
+            assets.insert(a.id.clone(), view);
+        }
+        let asset_params = m
+            .params
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| p.ty == crate::manifest::ParamType::Asset)
+            .map(|(i, p)| (p.id.clone(), i))
+            .collect();
         Ok(Compiled {
             id: m.id.clone(),
             kind: m.kind,
             passes,
             params_layout: params::layout(m),
             signals_layout: params::signals_layout(m),
+            assets,
+            asset_params,
         })
+    }
+
+    /// Upload a `.cube` lattice as the strip texture the spec fixes (N tiles of N×N, rgba16float).
+    pub fn upload_strip(&self, lut: &crate::cube::Lut3d, label: &str) -> wgpu::TextureView {
+        let (w, h) = lut.strip_size();
+        let tex = self.device.create_texture(&wgpu::TextureDescriptor {
+            label: Some(label),
+            size: wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: WORKING_FORMAT,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+            view_formats: &[],
+        });
+        self.queue.write_texture(
+            tex.as_image_copy(),
+            &lut.strip_rgba16(),
+            wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(w * 8), rows_per_image: None },
+            wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+        );
+        tex.create_view(&Default::default())
     }
 
     /// Record a fullscreen draw of `pipeline` into `target`.
@@ -360,6 +406,21 @@ impl Host {
         });
 
         let mut views: HashMap<String, wgpu::TextureView> = inputs.clone();
+        // Bundled assets by id, then each `asset` param by its id: the chosen
+        // bundled asset, a host-supplied view already in `inputs`, or blank.
+        for (id, view) in &compiled.assets {
+            views.entry(id.clone()).or_insert_with(|| view.clone());
+        }
+        for (pid, index) in &compiled.asset_params {
+            if views.contains_key(pid) {
+                continue;
+            }
+            let chosen = match values.get(*index) {
+                Some(Value::Asset(Some(id))) => compiled.assets.get(id).cloned(),
+                _ => None,
+            };
+            views.insert(pid.clone(), chosen.unwrap_or_else(|| self.blank.clone()));
+        }
         let mut out = None;
         for (i, pass) in compiled.passes.iter().enumerate() {
             let in0 = match pass.inputs.first() {
@@ -388,7 +449,7 @@ impl Host {
 // ── Native image path (CLI) ───────────────────────────────────────────
 
 #[cfg(feature = "cli")]
-pub use native::Image;
+pub use native::{Frame, Image};
 
 #[cfg(feature = "cli")]
 mod native {
@@ -451,20 +512,6 @@ mod native {
         out
     }
 
-    /// linear premultiplied f16 bytes → sRGB straight alpha u8.
-    fn from_working_space(bytes: &[u8], width: u32, height: u32) -> Image {
-        let mut rgba8 = Vec::with_capacity((width * height * 4) as usize);
-        for px in bytes.chunks_exact(8).take((width * height) as usize) {
-            let f = |i: usize| f16::from_bits(u16::from_le_bytes([px[i * 2], px[i * 2 + 1]])).to_f32();
-            let a = f(3).clamp(0.0, 1.0);
-            for i in 0..3 {
-                let straight = if a > 0.0 { f(i) / a } else { 0.0 };
-                rgba8.push((linear_to_srgb(straight) * 255.0 + 0.5) as u8);
-            }
-            rgba8.push((a * 255.0 + 0.5) as u8);
-        }
-        Image { width, height, rgba8 }
-    }
 
     impl Host {
         fn upload(&self, img: &Image, label: &str) -> wgpu::Texture {
@@ -487,7 +534,7 @@ mod native {
             tex
         }
 
-        /// Run the plugin on PNG-style inputs and read the result back.
+        /// Run the plugin on PNG-style inputs and read the result back as a PNG-style image.
         pub fn render_image(
             &self,
             compiled: &Compiled,
@@ -497,6 +544,22 @@ mod native {
             values: &[Value],
             signal_values: &[f32],
         ) -> Result<Image> {
+            Ok(self.render_frame(compiled, inputs, size, globals, values, signal_values)?.to_image())
+        }
+
+        /// Run the plugin and read the working-space result back unconverted:
+        /// linear, premultiplied f32 (from the rgba16float target). This is what
+        /// `verify` inspects, because the PNG conversion clamps and would hide
+        /// NaN, negative or out-of-range values.
+        pub fn render_frame(
+            &self,
+            compiled: &Compiled,
+            inputs: &BTreeMap<String, Image>,
+            size: (u32, u32),
+            globals: Globals,
+            values: &[Value],
+            signal_values: &[f32],
+        ) -> Result<Frame> {
             let textures: Vec<(String, wgpu::Texture)> = inputs.iter().map(|(n, img)| (n.clone(), self.upload(img, n))).collect();
             let views: HashMap<String, wgpu::TextureView> =
                 textures.iter().map(|(n, t)| (n.clone(), t.create_view(&Default::default()))).collect();
@@ -538,7 +601,53 @@ mod native {
             }
             drop(data);
             readback.unmap();
-            Ok(from_working_space(&tight, width, height))
+            let rgba = tight
+                .chunks_exact(2)
+                .map(|b| f16::from_bits(u16::from_le_bytes([b[0], b[1]])).to_f32())
+                .collect();
+            Ok(Frame { width, height, rgba })
+        }
+    }
+
+    /// A rendered frame in the working space: linear, premultiplied, four f32 per pixel.
+    #[derive(Debug, Clone)]
+    pub struct Frame {
+        pub width: u32,
+        pub height: u32,
+        pub rgba: Vec<f32>,
+    }
+
+    impl Frame {
+        /// The frame as PNG-style sRGB straight-alpha 8-bit (clamped).
+        pub fn to_image(&self) -> Image {
+            let mut rgba8 = Vec::with_capacity(self.rgba.len());
+            for px in self.rgba.chunks_exact(4) {
+                let a = px[3].clamp(0.0, 1.0);
+                for c in &px[..3] {
+                    let straight = if a > 0.0 { c / a } else { 0.0 };
+                    rgba8.push((linear_to_srgb(straight) * 255.0 + 0.5) as u8);
+                }
+                rgba8.push((a * 255.0 + 0.5) as u8);
+            }
+            Image { width: self.width, height: self.height, rgba8 }
+        }
+
+        /// An input image in the same working space, for comparing against a render.
+        pub fn from_image(img: &Image) -> Frame {
+            let rgba = img
+                .rgba8
+                .chunks_exact(4)
+                .flat_map(|px| {
+                    let a = px[3] as f32 / 255.0;
+                    [
+                        srgb_to_linear(px[0] as f32 / 255.0) * a,
+                        srgb_to_linear(px[1] as f32 / 255.0) * a,
+                        srgb_to_linear(px[2] as f32 / 255.0) * a,
+                        a,
+                    ]
+                })
+                .collect();
+            Frame { width: img.width, height: img.height, rgba }
         }
     }
 }

@@ -1,0 +1,112 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.reactive-grade",
+  "name": "Reactive Grade",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "saturation",
+      "label": "Saturation",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "contrast",
+      "label": "Contrast",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "temperature",
+      "label": "Temperature",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "bass_to_saturation",
+      "label": "Bass \u2192 Saturation",
+      "type": "float",
+      "default": 1.0,
+      "min": -2.0,
+      "max": 2.0
+    },
+    {
+      "id": "note_to_saturation",
+      "label": "C1 \u2192 Saturation",
+      "type": "float",
+      "default": 1.0,
+      "min": -2.0,
+      "max": 2.0
+    },
+    {
+      "id": "flash_amount",
+      "label": "D1 flash",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "punch_amount",
+      "label": "E1 punch",
+      "type": "float",
+      "default": 0.06,
+      "min": 0.0,
+      "max": 0.25
+    }
+  ],
+  "signals": [
+    {
+      "id": "bass",
+      "label": "Bass",
+      "cc": 1,
+      "hint": "audio follower, 40\u2013160 Hz",
+      "attack_ms": 10,
+      "release_ms": 250
+    },
+    {
+      "id": "sat",
+      "label": "Saturate",
+      "note": 36,
+      "mode": "velocity",
+      "hint": "play C1",
+      "attack_ms": 10,
+      "release_ms": 300
+    },
+    {
+      "id": "flash",
+      "label": "Flash",
+      "note": 38,
+      "mode": "gate",
+      "hint": "kick drum, or play D1",
+      "release_ms": 160
+    },
+    {
+      "id": "punch",
+      "label": "Punch",
+      "note": 40,
+      "mode": "velocity",
+      "hint": "kick drum, or play E1",
+      "release_ms": 160
+    }
+  ],
+  "passes": [
+    {
+      "shader": "reactive-grade.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

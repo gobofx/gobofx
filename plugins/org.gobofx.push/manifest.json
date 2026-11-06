@@ -1,0 +1,42 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.push",
+  "name": "Push",
+  "kind": "transition",
+  "category": "movement",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "direction",
+      "label": "Direction",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "left to right",
+        "right to left",
+        "top to bottom",
+        "bottom to top"
+      ]
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "push.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

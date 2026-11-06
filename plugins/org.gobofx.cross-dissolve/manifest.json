@@ -1,0 +1,30 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.cross-dissolve",
+  "name": "Cross Dissolve",
+  "kind": "transition",
+  "category": "dissolve",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "cross-dissolve.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ Status: **draft 0.1, unstable** — anything may change before 1.0.
 | [`manifest.schema.json`](manifest.schema.json) | JSON Schema for the manifest |
 | [`shader-abi.md`](shader-abi.md) | WGSL interface: bindings, entry point, color space |
 | [`signals.md`](signals.md) | Signals: MIDI 2.0 controllers, notes, note ranges, pitch bend and pressure the plugin reads each frame; the host maps audio, OSC and hardware onto them |
+| [`assets.md`](assets.md) | Assets: `.cube` lookup tables shipped in the package or picked by the user, bound as pass inputs in a fixed strip layout; the `asset` param type |
 | [`package.md`](package.md) | Package format: the `.gobofx` ZIP profile a plugin folder is distributed as |
 | [`prelude.wgsl`](prelude.wgsl) | Host prelude prepended to every plugin shader |
 | [`../plugins/_template/`](../plugins/_template/) | Starting points: one complete, valid plugin per kind, every interface piece shown |

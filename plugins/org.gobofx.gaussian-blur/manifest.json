@@ -1,0 +1,46 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.gaussian-blur",
+  "name": "Gaussian Blur",
+  "kind": "effect",
+  "category": "blur",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 12.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "gaussian-blur.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "horizontal"
+    },
+    {
+      "shader": "gaussian-blur.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "horizontal"
+      ],
+      "output": "out"
+    }
+  ]
+}

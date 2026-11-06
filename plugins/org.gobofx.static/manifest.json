@@ -1,0 +1,55 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.static",
+  "name": "Static",
+  "kind": "transition",
+  "category": "light",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "width",
+      "label": "Width",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.05,
+      "max": 1.0
+    },
+    {
+      "id": "density",
+      "label": "Density",
+      "type": "float",
+      "default": 0.9,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "scanlines",
+      "label": "Scanlines",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "grain",
+      "label": "Grain",
+      "type": "float",
+      "default": 2.0,
+      "min": 1.0,
+      "max": 8.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "static.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

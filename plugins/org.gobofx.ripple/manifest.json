@@ -1,0 +1,63 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.ripple",
+  "name": "Ripple",
+  "kind": "transition",
+  "category": "movement",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "rings",
+      "label": "Rings",
+      "type": "float",
+      "default": 12.0,
+      "min": 1.0,
+      "max": 40.0
+    },
+    {
+      "id": "amplitude",
+      "label": "Amplitude",
+      "type": "float",
+      "default": 0.03,
+      "min": 0.0,
+      "max": 0.1
+    },
+    {
+      "id": "speed",
+      "label": "Speed",
+      "type": "float",
+      "default": 2.0,
+      "min": 0.0,
+      "max": 8.0
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "ripple.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}
