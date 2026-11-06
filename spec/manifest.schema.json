@@ -59,9 +59,44 @@
       "items": {
         "$ref": "#/$defs/signal"
       }
+    },
+    "assets": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
     }
   },
   "$defs": {
+    "asset": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "file"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "kind": {
+          "enum": [
+            "lut3d"
+          ]
+        },
+        "file": {
+          "type": "string",
+          "pattern": "\\.cube$",
+          "description": "Package entry relative to the manifest (no leading `/`, no `..`); `.cube` for lut3d"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
     "param": {
       "type": "object",
       "required": [
@@ -83,8 +118,15 @@
             "bool",
             "choice",
             "color",
-            "point"
+            "point",
+            "asset"
           ]
+        },
+        "kind": {
+          "enum": [
+            "lut3d"
+          ],
+          "description": "asset params only: the asset kind the param accepts"
         },
         "default": {},
         "min": {

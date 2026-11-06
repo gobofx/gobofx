@@ -29,6 +29,9 @@ gobofx render spec/examples/reactive-grade  -i fixtures/a.png -s bass=1 -s flash
   points `x,y`.
 - `--signal id=value` sets a signal (a MIDI 2.0 controller or note level) to a
   fixed 0..1 value for the frame, so a reactive plugin can be tested without MIDI.
+- `--asset id=path.cube` fills an `asset` param with a file from disk, the way a
+  host's picker would (`spec/assets.md`); without it the param's bundled default
+  applies. `-p id=none` binds nothing, which a plugin must treat as identity.
 - Inputs are PNGs (sRGB, straight alpha). They are converted to the working
   space from `spec/shader-abi.md` (linear, premultiplied, rgba16float) on upload
   and back for the output PNG.
@@ -73,6 +76,10 @@ sheet of the inputs and every case, drawn so it can be read without a viewer
 that shows file names. Several plugins at once also write
 `dist/verify/index.json` and `all.png` (one status-coloured cell per plugin).
 Exit code 1 if any check fails.
+
+`asset` params are swept over every other bundled asset of their kind and over
+"none"; bundled `.cube` files are parsed and uploaded as the strip texture the
+spec fixes, so a LUT plugin verifies like any other.
 
 Optional `plugins/<id>/verify.json` (not packed): `{"source": "green" | "alpha"}`
 picks the keying or the transparent fixture for `source`; `"inert": [ids]`

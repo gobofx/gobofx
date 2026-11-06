@@ -6,7 +6,7 @@
 
   type WebHost = {
     adapter_name(): string;
-    load_plugin(manifestJson: string, shaders: Record<string, string>): Promise<string>;
+    load_plugin(manifestJson: string, shaders: Record<string, string>, assets?: Record<string, string | Uint8Array>): Promise<string>;
     set_video(name: string, video: HTMLVideoElement): void;
     resize(width: number, height: number): void;
     render(time: number, progress: number, paramsJson: string, signalsJson: string): void;
@@ -57,7 +57,7 @@
   let manifest = $state<Manifest | null>(null);
   let report = $state<Report | null>(null);
   let loadedName = $state('');
-  let custom = $state<{ manifest: string; shaders: Record<string, string>; name: string } | null>(null);
+  let custom = $state<{ manifest: string; shaders: Record<string, string>; assets?: Record<string, string>; name: string } | null>(null);
   let dirHandle: FileSystemDirectoryHandle | null = null;
 
   let playing = $state(false);
@@ -249,7 +249,7 @@
   }
 
   // ── plugin loading ──────────────────────────────────────────────────
-  async function install(manifestText: string, shaders: Record<string, string>, name: string) {
+  async function install(manifestText: string, shaders: Record<string, string>, name: string, assets: Record<string, string> = {}) {
     if (!host) return;
     let parsed: Manifest | null = null;
     try {
@@ -259,7 +259,7 @@
       manifest = null;
       return;
     }
-    const json = await host.load_plugin(manifestText, shaders);
+    const json = await host.load_plugin(manifestText, shaders, assets);
     report = JSON.parse(json);
     loadedName = name;
     if (report?.ok) {
@@ -300,21 +300,23 @@
     const ex: ExamplePlugin | undefined = examples.find((e) => e.slug === slug);
     if (!ex) return;
     custom = null;
-    await install(ex.manifest, ex.shaders, ex.name);
+    await install(ex.manifest, ex.shaders, ex.name, ex.assets);
   }
 
   async function readDir(handle: FileSystemDirectoryHandle) {
     let manifestText = '';
     const shaders: Record<string, string> = {};
+    const assets: Record<string, string> = {};
     // @ts-expect-error: async iteration of directory handles is not in lib.dom yet
     for await (const [name, entry] of handle.entries()) {
       if (entry.kind !== 'file') continue;
       const file = await (entry as FileSystemFileHandle).getFile();
       if (name === 'manifest.json') manifestText = await file.text();
       else if (name.endsWith('.wgsl')) shaders[name] = await file.text();
+      else if (name.endsWith('.cube')) assets[name] = await file.text();
     }
-    custom = { manifest: manifestText, shaders, name: handle.name };
-    await install(manifestText, shaders, handle.name);
+    custom = { manifest: manifestText, shaders, assets, name: handle.name };
+    await install(manifestText, shaders, handle.name, assets);
   }
 
   async function openFolder() {
@@ -343,14 +345,15 @@
       if (parts.length !== 2) continue; // top level of the chosen folder only
       if (f.name === 'manifest.json') manifestText = await f.text();
       else if (f.name.endsWith('.wgsl')) shaders[f.name] = await f.text();
+      else if (f.name.endsWith('.cube')) assets[f.name] = await f.text();
     }
-    custom = { manifest: manifestText, shaders, name };
-    await install(manifestText, shaders, name);
+    custom = { manifest: manifestText, shaders, assets, name };
+    await install(manifestText, shaders, name, assets);
   }
 
   async function reload() {
     if (dirHandle) await readDir(dirHandle);
-    else if (custom) await install(custom.manifest, custom.shaders, custom.name);
+    else if (custom) await install(custom.manifest, custom.shaders, custom.name, custom.assets ?? {});
     else await loadExample(pluginSlug);
   }
 

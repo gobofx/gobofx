@@ -197,7 +197,7 @@ fn fmt_f(v: f64) -> String {
 
 /// Values of `p` worth trying besides its default, as CLI text. Skips values
 /// equal to the default (the render would equal the baseline by construction).
-fn sweep_values(p: &Param) -> Vec<(String, String)> {
+fn sweep_values(p: &Param, assets: &[crate::manifest::Asset]) -> Vec<(String, String)> {
     let default = params::default_value(p).ok();
     let mut out: Vec<(String, String)> = Vec::new();
     match p.ty {
@@ -257,6 +257,19 @@ fn sweep_values(p: &Param) -> Vec<(String, String)> {
             let cand = if d == [0.15, 0.2] { ("br", "0.85,0.8") } else { ("tl", "0.15,0.2") };
             out.push((cand.0.into(), cand.1.into()));
         }
+        ParamType::Asset => {
+            // Every other bundled asset of the param's kind, and "none" (the
+            // plugin must pass through when nothing is bound).
+            let d = match default { Some(Value::Asset(Some(id))) => Some(id), _ => None };
+            for a in assets.iter().filter(|a| Some(a.kind) == p.kind) {
+                if d.as_deref() != Some(a.id.as_str()) {
+                    out.push((a.id.clone(), a.id.clone()));
+                }
+            }
+            if d.is_some() {
+                out.push(("none".into(), "none".into()));
+            }
+        }
     }
     out
 }
@@ -303,7 +316,7 @@ pub fn cases(m: &Manifest, tuning: &Tuning, perf: bool) -> Vec<Case> {
         }
     }
     for p in &m.params {
-        for (tag, text) in sweep_values(p) {
+        for (tag, text) in sweep_values(p, &m.assets) {
             let mut c = mk(&format!("p-{}-{}", p.id, tag), Role::Param(p.id.clone()));
             c.params.insert(p.id.clone(), text.clone());
             out.push(c);
@@ -970,7 +983,7 @@ mod tests {
     fn sweep_values_round_trip_through_the_param_parser() {
         let m = manifest(TRANSITION);
         for p in &m.params {
-            for (_, text) in sweep_values(p) {
+            for (_, text) in sweep_values(p, &m.assets) {
                 params::parse_value(p, &text).unwrap();
             }
         }
