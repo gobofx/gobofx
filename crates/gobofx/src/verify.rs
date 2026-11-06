@@ -27,6 +27,11 @@ pub const FIXTURE_A: &[u8] = include_bytes!("../../../fixtures/a.png");
 pub const FIXTURE_B: &[u8] = include_bytes!("../../../fixtures/b.png");
 pub const FIXTURE_GREEN: &[u8] = include_bytes!("../../../fixtures/green.png");
 pub const FIXTURE_ALPHA: &[u8] = include_bytes!("../../../fixtures/alpha.png");
+/// Preview fixtures (`--assets`): a day and a night frame with sky, skin, text,
+/// fine detail, a hard diagonal, highlights and a colour strip, so a preview
+/// shows an effect's character rather than the conformance stripes.
+pub const FIXTURE_PREVIEW_A: &[u8] = include_bytes!("../../../fixtures/preview-a.png");
+pub const FIXTURE_PREVIEW_B: &[u8] = include_bytes!("../../../fixtures/preview-b.png");
 
 /// Size every matrix case renders at (the fixtures' size).
 pub const CASE_SIZE: (u32, u32) = (256, 144);
@@ -535,7 +540,11 @@ pub fn max_abs_diff_premul(render: &[u8], reference: &[u8]) -> u8 {
             if y[3] == 0 {
                 (x[3] as i32 - y[3] as i32).unsigned_abs() as u8
             } else {
-                x.iter().zip(y).map(|(p, q)| (*p as i32 - *q as i32).unsigned_abs() as u8).max().unwrap_or(0)
+                x.iter()
+                    .zip(y)
+                    .map(|(p, q)| (*p as i32 - *q as i32).unsigned_abs() as u8)
+                    .max()
+                    .unwrap_or(0)
             }
         })
         .max()
@@ -957,6 +966,9 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
     report.sheet = Some(sheet_path.display().to_string());
 
     if opts.assets {
+        // The preview renders the defaults on the preview fixtures, not on
+        // the conformance stripes: a day frame as `source` / `from`, a night
+        // frame as `to`, a transition caught at its midpoint.
         let mut c = list
             .iter()
             .find(|c| c.role == Role::Baseline)
@@ -965,13 +977,50 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         c.width = PREVIEW_SIZE.0;
         c.height = PREVIEW_SIZE.1;
         c.progress = 0.5;
-        let (r, _) = render_case(host, &compiled, m, &inputs, &c)?;
+        let mut preview_inputs: BTreeMap<String, Image> = BTreeMap::new();
+        match m.kind {
+            Kind::Effect => {
+                preview_inputs.insert("source".into(), load_fixture(FIXTURE_PREVIEW_A));
+            }
+            Kind::Transition => {
+                preview_inputs.insert("from".into(), load_fixture(FIXTURE_PREVIEW_A));
+                preview_inputs.insert("to".into(), load_fixture(FIXTURE_PREVIEW_B));
+            }
+            Kind::Generator => {}
+        }
+        for (k, v) in &inputs {
+            preview_inputs.entry(k.clone()).or_insert_with(|| v.clone());
+        }
+        let (r, _) = render_case(host, &compiled, m, &preview_inputs, &c)?;
         r.image.save_png(&dir.join("preview.png"))?;
-        sheet::icon_from(&r.image, ICON_SIZE).save_png(&dir.join("icon.png"))?;
+        // The icon is the plugin's drawn pictogram when it ships one
+        // (`icon.svg`, plugins/ICONS.md); only a plugin without one falls
+        // back to a crop of its preview.
+        let svg_path = dir.join("icon.svg");
+        let icon_note = if svg_path.is_file() {
+            let svg = std::fs::read_to_string(&svg_path)?;
+            let kind = format!("{:?}", m.kind).to_lowercase();
+            let (w, h, rgba8) =
+                crate::icon::render(&svg, crate::icon::tint_for(&kind, m.category.as_deref()))?;
+            Image {
+                width: w,
+                height: h,
+                rgba8,
+            }
+            .save_png(&dir.join("icon.png"))?;
+            "icon.png (128×128) from icon.svg"
+        } else {
+            sheet::icon_from(&r.image, ICON_SIZE).save_png(&dir.join("icon.png"))?;
+            "icon.png (128×128) cropped from the preview — add an icon.svg"
+        };
         checks.push(Check {
             name: "assets".into(),
-            status: Status::Pass,
-            detail: "wrote preview.png (512×288) and icon.png (128×128)".into(),
+            status: if svg_path.is_file() {
+                Status::Pass
+            } else {
+                Status::Warn
+            },
+            detail: format!("wrote preview.png (512×288) and {icon_note}"),
         });
     }
 

@@ -14,6 +14,8 @@
 
 pub mod assemble;
 pub mod cube;
+#[cfg(feature = "cli")]
+pub mod icon;
 pub mod manifest;
 pub mod pack;
 pub mod params;

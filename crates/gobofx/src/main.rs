@@ -51,6 +51,11 @@ enum Cmd {
     Verify(VerifyArgs),
     /// Pack a plugin folder into a `.gobofx` package (validates first).
     /// Prints the package path; default `<dir>/dist/<id>-<version>.gobofx`.
+    /// Render each plugin's `icon.svg` to `icon.png` (128×128, tinted by category; plugins/ICONS.md).
+    Icon {
+        /// Plugin folders (each must contain icon.svg).
+        dirs: Vec<std::path::PathBuf>,
+    },
     Pack {
         /// Plugin folder containing manifest.json
         dir: PathBuf,
@@ -208,6 +213,49 @@ fn run() -> Result<ExitCode> {
         }
         Cmd::Render(args) => render(args),
         Cmd::Verify(args) => verify(args),
+        Cmd::Icon { dirs } => {
+            let mut failed = 0;
+            for dir in &dirs {
+                let plugin = match Plugin::load(dir) {
+                    Ok(p) => p,
+                    Err(e) => {
+                        eprintln!("{}: {e:#}", dir.display());
+                        failed += 1;
+                        continue;
+                    }
+                };
+                let svg_path = dir.join("icon.svg");
+                let svg = match std::fs::read_to_string(&svg_path) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        eprintln!("{}: icon.svg: {e}", dir.display());
+                        failed += 1;
+                        continue;
+                    }
+                };
+                let m = &plugin.manifest;
+                let kind = format!("{:?}", m.kind).to_lowercase();
+                match gobofx::icon::render(
+                    &svg,
+                    gobofx::icon::tint_for(&kind, m.category.as_deref()),
+                ) {
+                    Ok((w, h, rgba8)) => {
+                        gobofx::render::Image {
+                            width: w,
+                            height: h,
+                            rgba8,
+                        }
+                        .save_png(&dir.join("icon.png"))?;
+                        println!("OK   {} → icon.png", m.id);
+                    }
+                    Err(e) => {
+                        eprintln!("FAIL {}: {e:#}", m.id);
+                        failed += 1;
+                    }
+                }
+            }
+            return Ok(ExitCode::from(if failed > 0 { 1 } else { 0 }));
+        }
         Cmd::Pack { dir, out, json } => {
             let plugin = Plugin::load(&dir)?;
             let report = validate::validate(&plugin);

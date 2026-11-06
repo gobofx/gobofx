@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- Preview fixtures for `gobofx verify --assets`: a 16:9 frame with the things a
+     video effect is judged on — sky and skin, text, fine detail, a hard diagonal,
+     highlights and a colour strip — so every effect's character shows at a glance.
+     Rendered to fixtures/preview-a.png (day) and preview-b.png (night) by render.mjs. -->
+<html><head><meta charset="utf-8"><style>
+  html,body{margin:0;background:#000}
+  canvas{display:block}
+</style></head><body>
+<canvas id="c" width="512" height="288"></canvas>
+<script>
+const variant = new URLSearchParams(location.search).get('v') || 'a';
+const c = document.getElementById('c'), x = c.getContext('2d');
+const W = 512, H = 288;
+function face(cx, cy, r, skin) {
+  x.fillStyle = skin; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+  x.fillStyle = 'rgba(0,0,0,0.75)';
+  x.beginPath(); x.arc(cx - r * 0.35, cy - r * 0.15, r * 0.09, 0, Math.PI * 2); x.fill();
+  x.beginPath(); x.arc(cx + r * 0.35, cy - r * 0.15, r * 0.09, 0, Math.PI * 2); x.fill();
+  x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = r * 0.07; x.beginPath(); x.arc(cx, cy + r * 0.15, r * 0.45, 0.15 * Math.PI, 0.85 * Math.PI); x.stroke();
+  const g = x.createRadialGradient(cx - r * 0.4, cy - r * 0.5, r * 0.1, cx, cy, r);
+  g.addColorStop(0, 'rgba(255,255,255,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0.25)');
+  x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+}
+if (variant === 'a') {
+  // Day: sky, sun, warm ground, a face, text, fine detail, a hard diagonal, a colour strip.
+  let g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2b6cb0'); g.addColorStop(0.55, '#9fd3f5'); g.addColorStop(0.56, '#c9a56a'); g.addColorStop(1, '#5a3e1b');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  g = x.createRadialGradient(430, 52, 4, 430, 52, 60); g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, '#fff2b0'); g.addColorStop(1, 'rgba(255,220,120,0)');
+  x.fillStyle = g; x.fillRect(340, 0, 180, 130);
+  x.fillStyle = '#e8322a'; x.beginPath(); x.moveTo(0, 230); x.lineTo(60, 230); x.lineTo(240, 40); x.lineTo(180, 40); x.closePath(); x.fill();
+  face(150, 160, 58, '#d9a07a');
+  x.fillStyle = '#ffffff'; x.font = 'bold 44px Helvetica, Arial, sans-serif'; x.fillText('Aa 123', 300, 170);
+  x.fillStyle = '#111'; x.font = '15px Helvetica, Arial, sans-serif'; x.fillText('fine detail text line', 300, 195);
+  x.strokeStyle = '#111'; x.lineWidth = 1; for (let i = 0; i < 14; i++) { x.beginPath(); x.moveTo(300 + i * 12, 205); x.lineTo(300 + i * 12, 240); x.stroke(); }
+  for (let i = 0; i < 6; i++) { x.beginPath(); x.moveTo(300, 205 + i * 7); x.lineTo(468, 205 + i * 7); x.stroke(); }
+  const strip = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#ffffff', '#000000'];
+  strip.forEach((col, i) => { x.fillStyle = col; x.fillRect(i * 64, 258, 64, 30); });
+} else {
+  // Night: deep blue, a moon, neon sign text, a second face, a bright specular, a grey ramp.
+  let g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#060814'); g.addColorStop(0.6, '#1a2347'); g.addColorStop(1, '#0b0d1a');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  g = x.createRadialGradient(90, 60, 6, 90, 60, 50); g.addColorStop(0, '#ffffff'); g.addColorStop(0.3, '#e9eefc'); g.addColorStop(1, 'rgba(200,210,255,0)');
+  x.fillStyle = g; x.fillRect(20, 0, 160, 130);
+  x.fillStyle = '#ff2fa0'; x.font = 'bold 40px Helvetica, Arial, sans-serif'; x.fillText('Bb NEON', 250, 80);
+  x.shadowColor = '#ff2fa0'; x.shadowBlur = 24; x.fillText('Bb NEON', 250, 80); x.shadowBlur = 0;
+  face(360, 185, 54, '#8c5a3c');
+  x.fillStyle = '#20e3b2'; x.beginPath(); x.moveTo(0, 288); x.lineTo(140, 288); x.lineTo(220, 120); x.lineTo(160, 120); x.closePath(); x.fill();
+  x.fillStyle = '#ffffff'; x.beginPath(); x.arc(470, 230, 10, 0, Math.PI * 2); x.fill();
+  for (let i = 0; i < 8; i++) { const v = Math.round(i * 255 / 7); x.fillStyle = `rgb(${v},${v},${v})`; x.fillRect(i * 64, 258, 64, 30); }
+}
+</script></body></html>

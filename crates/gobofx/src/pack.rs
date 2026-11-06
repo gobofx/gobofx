@@ -14,7 +14,15 @@ use crate::manifest::Plugin;
 
 /// Entries the profile names besides `manifest.json` and the shaders. Packed
 /// when present in the folder, in this order.
-pub const OPTIONAL_FILES: &[&str] = &["icon.png", "icon.webp", "preview.png", "preview.webp", "README.md", "LICENSE"];
+pub const OPTIONAL_FILES: &[&str] = &[
+    "icon.svg",
+    "icon.png",
+    "icon.webp",
+    "preview.png",
+    "preview.webp",
+    "README.md",
+    "LICENSE",
+];
 
 /// Hard limit from the profile (total uncompressed size).
 pub const MAX_TOTAL_BYTES: u64 = 256 * 1024 * 1024;
@@ -43,7 +51,10 @@ pub fn check_entry_name(name: &str) -> Result<()> {
     if name.chars().any(|c| c.is_control()) {
         bail!("entry name {name:?} contains a control character");
     }
-    if name.split('/').any(|seg| seg.is_empty() || seg == "." || seg == "..") {
+    if name
+        .split('/')
+        .any(|seg| seg.is_empty() || seg == "." || seg == "..")
+    {
         bail!("entry name {name:?} has an empty, `.` or `..` segment");
     }
     if name.len() > u16::MAX as usize {
@@ -91,7 +102,10 @@ fn check_unique(entries: &[Entry]) -> Result<()> {
     for e in entries {
         let folded = e.name.to_lowercase();
         if !seen.insert(folded) {
-            bail!("entry name {:?} collides with another entry case-insensitively", e.name);
+            bail!(
+                "entry name {:?} collides with another entry case-insensitively",
+                e.name
+            );
         }
     }
     Ok(())
@@ -207,8 +221,14 @@ mod tests {
     #[test]
     fn zip_layout_puts_manifest_first_and_agrees_with_central_directory() {
         let entries = vec![
-            Entry { name: "manifest.json".into(), bytes: b"{}".to_vec() },
-            Entry { name: "shader.wgsl".into(), bytes: b"// wgsl".to_vec() },
+            Entry {
+                name: "manifest.json".into(),
+                bytes: b"{}".to_vec(),
+            },
+            Entry {
+                name: "shader.wgsl".into(),
+                bytes: b"// wgsl".to_vec(),
+            },
         ];
         let z = write_zip(&entries).unwrap();
         // First local header: signature, version 20, flags 0x0800, method 0, name manifest.json.
@@ -221,7 +241,8 @@ mod tests {
         let eocd = z.len() - 22;
         assert_eq!(&z[eocd..eocd + 4], &0x0605_4b50u32.to_le_bytes());
         assert_eq!(u16::from_le_bytes([z[eocd + 10], z[eocd + 11]]), 2);
-        let cd_off = u32::from_le_bytes([z[eocd + 16], z[eocd + 17], z[eocd + 18], z[eocd + 19]]) as usize;
+        let cd_off =
+            u32::from_le_bytes([z[eocd + 16], z[eocd + 17], z[eocd + 18], z[eocd + 19]]) as usize;
         assert_eq!(&z[cd_off..cd_off + 4], &0x0201_4b50u32.to_le_bytes());
     }
 
@@ -232,7 +253,10 @@ mod tests {
         assert!(check_entry_name("/abs").is_err());
         assert!(check_entry_name("dir/").is_err());
         assert!(check_entry_name("ok/name.wgsl").is_ok());
-        let e = vec![Entry { name: "shader.wgsl".into(), bytes: vec![] }];
+        let e = vec![Entry {
+            name: "shader.wgsl".into(),
+            bytes: vec![],
+        }];
         assert!(write_zip(&e).is_err());
     }
 }
