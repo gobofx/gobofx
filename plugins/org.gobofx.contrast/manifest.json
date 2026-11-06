@@ -1,0 +1,37 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.contrast",
+  "name": "Contrast",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.25,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "pivot",
+      "label": "Pivot",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "contrast.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

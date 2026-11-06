@@ -1,0 +1,41 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.colorize",
+  "name": "Colorize",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "color_a",
+      "label": "Blacks",
+      "type": "color",
+      "default": [0.0, 0.02, 0.3, 1.0]
+    },
+    {
+      "id": "color_b",
+      "label": "Whites",
+      "type": "color",
+      "default": [1.0, 0.45, 0.65, 1.0]
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "colorize.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

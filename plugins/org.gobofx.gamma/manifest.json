@@ -1,0 +1,53 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.gamma",
+  "name": "Gamma",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "gamma",
+      "label": "Gamma",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.2,
+      "max": 5.0
+    },
+    {
+      "id": "red",
+      "label": "Red Gamma",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.2,
+      "max": 5.0
+    },
+    {
+      "id": "green",
+      "label": "Green Gamma",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.2,
+      "max": 5.0
+    },
+    {
+      "id": "blue",
+      "label": "Blue Gamma",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.2,
+      "max": 5.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "gamma.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
