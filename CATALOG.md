@@ -240,29 +240,29 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
-| Aura | Soft halo | Candidate | |
+| ✅ Aura | Soft halo — `org.gobofx.aura` | Candidate | |
 | ✅ Bloom | Highlights bleed — `org.gobofx.bloom` | Planned | |
-| Dazzle | Star-shaped glints | Candidate | |
-| Glint | Specular glints | Candidate | |
-| Gloom | Dark, moody glow | Candidate | |
+| ✅ Dazzle | Star-shaped glints — `org.gobofx.dazzle` | Candidate | |
+| ✅ Glint | Specular glints — `org.gobofx.glint` | Candidate | |
+| ✅ Gloom | Dark, moody glow — `org.gobofx.gloom` | Candidate | |
 | ✅ Glow | Brightness glow — `org.gobofx.glow` | Core | |
 | ✅ Light Rays | Volumetric rays — `org.gobofx.light-rays` | Planned | |
-| Neon | Neon edge glow | Candidate | |
-| Outer Glow | Glow outside alpha | Candidate | |
-| Overdrive | Blown-out glow | Candidate | |
+| ✅ Neon | Neon edge glow — `org.gobofx.neon` | Candidate | |
+| ✅ Outer Glow | Glow outside alpha — `org.gobofx.outer-glow` | Candidate | |
+| ✅ Overdrive | Blown-out glow — `org.gobofx.overdrive` | Candidate | |
 
 ### Tiling
 
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
 | ✅ Kaleidoscope | Radial mirror segments; the key picks the segment count, mod wheel spins, pitch wheel zooms — `org.gobofx.kaleidoscope` | Core | signals: note range, bend |
-| Kaleidoscope Tile | Kaleidoscopic tiling | Candidate | |
-| Offset | Wraparound offset | Candidate | |
-| Parallelogram Tile | Skewed tiles | Candidate | |
-| Perspective Tile | Tiles on a plane | Candidate | |
-| Random Tile | Shuffled tiles | Candidate | |
+| ✅ Kaleidoscope Tile | Kaleidoscopic tiling — `org.gobofx.kaleidoscope-tile` | Candidate | |
+| ✅ Offset | Wraparound offset — `org.gobofx.offset` | Candidate | |
+| ✅ Parallelogram Tile | Skewed tiles — `org.gobofx.parallelogram-tile` | Candidate | |
+| ✅ Perspective Tile | Tiles on a plane — `org.gobofx.perspective-tile` | Candidate | |
+| ✅ Random Tile | Shuffled tiles — `org.gobofx.random-tile` | Candidate | |
 | ✅ Tile | Grid repeat — `org.gobofx.tile` | Planned | |
-| Triangle Tile | Triangular tiling | Candidate | |
+| ✅ Triangle Tile | Triangular tiling — `org.gobofx.triangle-tile` | Candidate | |
 
 ### Border
 

@@ -1,0 +1,64 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.glint",
+  "name": "Glint",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.85,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "size",
+      "label": "Size",
+      "type": "float",
+      "default": 24.0,
+      "min": 1.0,
+      "max": 48.0,
+      "unit": "px"
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "angle",
+      "label": "Angle",
+      "type": "float",
+      "default": 45.0,
+      "min": 0.0,
+      "max": 180.0,
+      "unit": "deg"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "glint.wgsl",
+      "entry": "fs_bright",
+      "inputs": [
+        "source"
+      ],
+      "output": "bright"
+    },
+    {
+      "shader": "glint.wgsl",
+      "entry": "fs_sparkle",
+      "inputs": [
+        "source",
+        "bright"
+      ],
+      "output": "out"
+    }
+  ]
+}

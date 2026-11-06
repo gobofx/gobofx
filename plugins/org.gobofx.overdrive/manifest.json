@@ -1,0 +1,87 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.overdrive",
+  "name": "Overdrive",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "pre_gain",
+      "label": "Pre-gain",
+      "type": "float",
+      "default": 2.0,
+      "min": 1.0,
+      "max": 8.0
+    },
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 32.0,
+      "min": 1.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.5,
+      "min": 0.0,
+      "max": 3.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "overdrive.wgsl",
+      "entry": "fs_bright",
+      "inputs": [
+        "source"
+      ],
+      "output": "bright"
+    },
+    {
+      "shader": "overdrive.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "bright"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "overdrive.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "blurred"
+    },
+    {
+      "shader": "overdrive.wgsl",
+      "entry": "fs_add",
+      "inputs": [
+        "source",
+        "blurred"
+      ],
+      "output": "out"
+    }
+  ]
+}

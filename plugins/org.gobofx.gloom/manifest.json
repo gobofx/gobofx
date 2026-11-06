@@ -1,0 +1,79 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.gloom",
+  "name": "Gloom",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 32.0,
+      "min": 1.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 0.7,
+      "min": 0.0,
+      "max": 1.5
+    }
+  ],
+  "passes": [
+    {
+      "shader": "gloom.wgsl",
+      "entry": "fs_dark",
+      "inputs": [
+        "source"
+      ],
+      "output": "dark"
+    },
+    {
+      "shader": "gloom.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "dark"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "gloom.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "gloom"
+    },
+    {
+      "shader": "gloom.wgsl",
+      "entry": "fs_apply",
+      "inputs": [
+        "source",
+        "gloom"
+      ],
+      "output": "out"
+    }
+  ]
+}

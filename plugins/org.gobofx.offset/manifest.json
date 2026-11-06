@@ -1,0 +1,37 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.offset",
+  "name": "Offset",
+  "kind": "effect",
+  "category": "tiling",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "offset_x",
+      "label": "Offset X",
+      "type": "float",
+      "default": 0.25,
+      "min": -0.5,
+      "max": 0.5
+    },
+    {
+      "id": "offset_y",
+      "label": "Offset Y",
+      "type": "float",
+      "default": 0.15,
+      "min": -0.5,
+      "max": 0.5
+    }
+  ],
+  "passes": [
+    {
+      "shader": "offset.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

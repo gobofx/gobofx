@@ -1,0 +1,51 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.random-tile",
+  "name": "Random Tile",
+  "kind": "effect",
+  "category": "tiling",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "columns",
+      "label": "Columns",
+      "type": "int",
+      "default": 4,
+      "min": 1,
+      "max": 12
+    },
+    {
+      "id": "rows",
+      "label": "Rows",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 12
+    },
+    {
+      "id": "seed",
+      "label": "Seed",
+      "type": "int",
+      "default": 7,
+      "min": 0,
+      "max": 99
+    },
+    {
+      "id": "flip",
+      "label": "Flip",
+      "type": "bool",
+      "default": true
+    }
+  ],
+  "passes": [
+    {
+      "shader": "random-tile.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

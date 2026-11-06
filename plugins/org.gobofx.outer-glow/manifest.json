@@ -1,0 +1,82 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.outer-glow",
+  "name": "Outer Glow",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 24.0,
+      "min": 1.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.5,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        0.35,
+        0.75,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "outer-glow.wgsl",
+      "entry": "fs_silhouette",
+      "inputs": [
+        "source"
+      ],
+      "output": "silhouette"
+    },
+    {
+      "shader": "outer-glow.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "silhouette"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "outer-glow.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "halo"
+    },
+    {
+      "shader": "outer-glow.wgsl",
+      "entry": "fs_compose",
+      "inputs": [
+        "source",
+        "halo"
+      ],
+      "output": "out"
+    }
+  ]
+}

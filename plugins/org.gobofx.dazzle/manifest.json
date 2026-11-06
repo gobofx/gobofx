@@ -1,0 +1,86 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.dazzle",
+  "name": "Dazzle",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.8,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "points",
+      "label": "Points",
+      "type": "int",
+      "default": 6,
+      "min": 4,
+      "max": 8
+    },
+    {
+      "id": "length",
+      "label": "Length",
+      "type": "float",
+      "default": 48.0,
+      "min": 4.0,
+      "max": 128.0,
+      "unit": "px"
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 3.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "dazzle.wgsl",
+      "entry": "fs_bright",
+      "inputs": [
+        "source"
+      ],
+      "output": "bright"
+    },
+    {
+      "shader": "dazzle.wgsl",
+      "entry": "fs_star",
+      "constants": {
+        "HALF": 0.0
+      },
+      "inputs": [
+        "bright"
+      ],
+      "output": "star_a"
+    },
+    {
+      "shader": "dazzle.wgsl",
+      "entry": "fs_star",
+      "constants": {
+        "HALF": 1.0
+      },
+      "inputs": [
+        "bright",
+        "star_a"
+      ],
+      "output": "star"
+    },
+    {
+      "shader": "dazzle.wgsl",
+      "entry": "fs_add",
+      "inputs": [
+        "source",
+        "star"
+      ],
+      "output": "out"
+    }
+  ]
+}

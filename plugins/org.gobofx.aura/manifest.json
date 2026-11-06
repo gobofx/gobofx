@@ -1,0 +1,82 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.aura",
+  "name": "Aura",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 32.0,
+      "min": 1.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        1.0,
+        0.8,
+        0.35,
+        1.0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "aura.wgsl",
+      "entry": "fs_silhouette",
+      "inputs": [
+        "source"
+      ],
+      "output": "silhouette"
+    },
+    {
+      "shader": "aura.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "silhouette"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "aura.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "halo"
+    },
+    {
+      "shader": "aura.wgsl",
+      "entry": "fs_add",
+      "inputs": [
+        "source",
+        "halo"
+      ],
+      "output": "out"
+    }
+  ]
+}
