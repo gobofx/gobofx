@@ -1,0 +1,57 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.dot-grid",
+  "name": "Dot Grid",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "size",
+      "label": "Pitch",
+      "type": "float",
+      "default": 12.0,
+      "min": 2.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "dot_size",
+      "label": "Dot Size",
+      "type": "float",
+      "default": 0.8,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "background",
+      "label": "Background",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "dot-grid.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

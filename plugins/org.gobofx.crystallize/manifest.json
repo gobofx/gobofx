@@ -1,0 +1,54 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.crystallize",
+  "name": "Crystallize",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "size",
+      "label": "Cell Size",
+      "type": "float",
+      "default": 24.0,
+      "min": 4.0,
+      "max": 128.0,
+      "unit": "px"
+    },
+    {
+      "id": "edge",
+      "label": "Edge Darkness",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "seed",
+      "label": "Seed",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 100.0
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "crystallize.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

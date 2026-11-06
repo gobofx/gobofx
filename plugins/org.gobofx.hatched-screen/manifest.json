@@ -1,0 +1,77 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.hatched-screen",
+  "name": "Hatched Screen",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "size",
+      "label": "Pitch",
+      "type": "float",
+      "default": 8.0,
+      "min": 2.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "angle",
+      "label": "Angle",
+      "type": "float",
+      "default": 45.0,
+      "min": 0.0,
+      "max": 180.0,
+      "unit": "deg"
+    },
+    {
+      "id": "lines",
+      "label": "Line Count",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 4
+    },
+    {
+      "id": "ink",
+      "label": "Ink",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "paper",
+      "label": "Paper",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "hatched-screen.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
