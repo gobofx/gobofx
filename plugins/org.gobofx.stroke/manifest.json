@@ -1,0 +1,69 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.stroke",
+  "name": "Stroke",
+  "kind": "effect",
+  "category": "border",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "width",
+      "label": "Width",
+      "type": "float",
+      "default": 8.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "position",
+      "label": "Position",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "outside",
+        "centre",
+        "inside"
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "stroke.wgsl",
+      "entry": "fs_rows",
+      "inputs": [
+        "source"
+      ],
+      "output": "rows"
+    },
+    {
+      "shader": "stroke.wgsl",
+      "entry": "fs_distance",
+      "inputs": [
+        "rows"
+      ],
+      "output": "distance"
+    },
+    {
+      "shader": "stroke.wgsl",
+      "entry": "fs_draw",
+      "inputs": [
+        "source",
+        "distance"
+      ],
+      "output": "out"
+    }
+  ]
+}

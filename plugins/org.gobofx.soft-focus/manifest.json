@@ -1,0 +1,71 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.soft-focus",
+  "name": "Soft Focus",
+  "kind": "effect",
+  "category": "blur",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 32.0,
+      "min": 1.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "amount",
+      "label": "Amount",
+      "type": "float",
+      "default": 0.7,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "highlights",
+      "label": "Highlights",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "soft-focus.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "soft-focus.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "blurred"
+    },
+    {
+      "shader": "soft-focus.wgsl",
+      "entry": "fs_mix",
+      "inputs": [
+        "source",
+        "blurred"
+      ],
+      "output": "out"
+    }
+  ]
+}

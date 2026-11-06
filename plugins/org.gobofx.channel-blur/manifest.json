@@ -1,0 +1,73 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.channel-blur",
+  "name": "Channel Blur",
+  "kind": "effect",
+  "category": "blur",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "red",
+      "label": "Red",
+      "type": "float",
+      "default": 24.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "green",
+      "label": "Green",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "blue",
+      "label": "Blue",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "alpha",
+      "label": "Alpha",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "channel-blur.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "horizontal"
+    },
+    {
+      "shader": "channel-blur.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "horizontal"
+      ],
+      "output": "out"
+    }
+  ]
+}

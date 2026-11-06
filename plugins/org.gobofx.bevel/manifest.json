@@ -1,0 +1,80 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.bevel",
+  "name": "Bevel",
+  "kind": "effect",
+  "category": "border",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "width",
+      "label": "Width",
+      "type": "float",
+      "default": 12.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "angle",
+      "label": "Light Angle",
+      "type": "float",
+      "default": 135.0,
+      "min": 0.0,
+      "max": 360.0,
+      "unit": "deg"
+    },
+    {
+      "id": "highlight",
+      "label": "Highlight",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "shadow",
+      "label": "Shadow",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 2.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "bevel.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "bevel.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "height"
+    },
+    {
+      "shader": "bevel.wgsl",
+      "entry": "fs_shade",
+      "inputs": [
+        "source",
+        "height"
+      ],
+      "output": "out"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.circle-blur",
+  "name": "Circle Blur",
+  "kind": "effect",
+  "category": "blur",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 0.35,
+      "min": 0.05,
+      "max": 2.0
+    },
+    {
+      "id": "feather",
+      "label": "Feather",
+      "type": "float",
+      "default": 0.15,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "blur",
+      "label": "Blur",
+      "type": "float",
+      "default": 24.0,
+      "min": 0.0,
+      "max": 48.0,
+      "unit": "px"
+    },
+    {
+      "id": "outside",
+      "label": "Blur Outside",
+      "type": "bool",
+      "default": false
+    }
+  ],
+  "passes": [
+    {
+      "shader": "circle-blur.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "source"
+      ],
+      "output": "horizontal"
+    },
+    {
+      "shader": "circle-blur.wgsl",
+      "entry": "fs_main",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "horizontal"
+      ],
+      "output": "out"
+    }
+  ]
+}
