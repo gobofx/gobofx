@@ -87,11 +87,11 @@ any effect with a shape mask and animate any param marked `animatable`.
 |---|---|---|---|
 | Background Removal | ML background removal without a green screen | Candidate | a matte from the host, not a shader alone |
 | ✅ Chroma Keyer | Chroma key for green or blue screen — `org.gobofx.chroma-key` | Core | |
-| Luma Keyer | Key out by brightness | Planned | |
+| ✅ Luma Keyer | Key out by brightness — `org.gobofx.luma-key` | Planned | |
 | ✅ Shape Mask | Rounded-rect or ellipse mask with feather — `org.gobofx.shape-mask` | Core | |
-| Vignette Mask | Soft horizontal ellipse mask | Planned | |
-| Graduated Mask | Soft-edge linear split | Planned | |
-| Corner Mask | Four-corner quad mask, invertible | Planned | |
+| ✅ Vignette Mask | Soft horizontal ellipse mask — `org.gobofx.vignette-mask` | Planned | |
+| ✅ Graduated Mask | Soft-edge linear split — `org.gobofx.graduated-mask` | Planned | |
+| ✅ Corner Mask | Four-corner quad mask, invertible — `org.gobofx.corner-mask` | Planned | |
 | Image Mask | Mask from another clip's alpha or luma | Planned | a second image input on an effect |
 
 ### Color
@@ -109,9 +109,9 @@ any effect with a shape mask and animate any param marked `animatable`.
 | Brightness | Linear brightness | Candidate | |
 | Contrast | Contrast around a pivot | Candidate | |
 | Gamma | Midtone gamma | Candidate | |
-| Levels | Black, white and gamma per channel | Planned | |
+| ✅ Levels | Black, white and gamma per channel — `org.gobofx.levels` | Planned | |
 | Channel Mixer | Remix RGB channels | Candidate | |
-| Color Balance | Shadows, mids, highlights balance | Planned | |
+| ✅ Color Balance | Shadows, mids, highlights balance — `org.gobofx.color-balance` | Planned | |
 | Colorize | Map blacks and whites to two colors | Candidate | |
 | Gradient Colorize | Map luma to a gradient | Candidate | |
 | Color Reduce | Limit to a few colors | Candidate | |
@@ -153,11 +153,11 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 | Channel Blur | Blur per RGBA channel | Candidate | |
 | Circle Blur | Blur inside a circle | Candidate | |
 | Compound Blur | Blur driven by a map image | Candidate | a second image input on an effect |
-| Defocus | Lens defocus with bokeh | Planned | |
+| ✅ Defocus | Lens defocus with bokeh — `org.gobofx.defocus` | Planned | |
 | ✅ Directional Blur | Motion blur at an angle — `org.gobofx.directional-blur` | Planned | |
-| Gradient Blur | Tilt-shift style ramp | Planned | |
+| ✅ Gradient Blur | Tilt-shift style ramp — `org.gobofx.gradient-blur` | Planned | |
 | Prism | Chromatic split blur | Candidate | |
-| Radial Blur | Rotational blur | Planned | |
+| ✅ Radial Blur | Rotational blur — `org.gobofx.radial-blur` | Planned | |
 | Soft Focus | Dreamy diffusion | Candidate | |
 | Variable Blur | Sharp center, blurred falloff | Candidate | |
 | ✅ Zoom Blur | Push-in blur from a point — `org.gobofx.zoom-blur` | Planned | |
@@ -167,31 +167,31 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
 | ✅ Sharpen | Edge sharpening — `org.gobofx.sharpen` | Planned | |
-| Unsharp Mask | Radius and threshold sharpening | Planned | |
+| ✅ Unsharp Mask | Radius and threshold sharpening — `org.gobofx.unsharp-mask` | Planned | |
 
 ### Distort
 
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
-| Droplet | Water-drop ripple rings | Planned | |
+| ✅ Droplet | Water-drop ripple rings — `org.gobofx.droplet` | Planned | |
 | Hex Lens | Compound-eye hexagonal lens | Candidate | |
 | Black Hole | Pixels pulled into a point | Candidate | |
-| Bulge | Spherical bulge or pinch | Planned | |
+| ✅ Bulge | Spherical bulge or pinch — `org.gobofx.bulge` | Planned | |
 | Bump Map | Displace via a map image | Candidate | a second image input on an effect |
 | Disc Warp | Wrap the image into a disc | Candidate | |
-| Shake | Camera shake | Planned | |
-| Fisheye | Wide-angle barrel distortion | Planned | |
+| ✅ Shake | Camera shake — `org.gobofx.shake` | Planned | |
+| ✅ Fisheye | Wide-angle barrel distortion — `org.gobofx.fisheye` | Planned | |
 | ✅ Flop | Flip horizontally or vertically — `org.gobofx.flop` | Core | |
 | Stretch Mirror | Funhouse-mirror warp | Candidate | |
 | Glass Block | Glass-brick refraction | Candidate | |
 | Glass Distortion | Refraction through textured glass | Candidate | bundled texture |
-| Mirror | Mirror around an axis | Planned | |
+| ✅ Mirror | Mirror around an axis — `org.gobofx.mirror` | Planned | |
 | Page Curl | Static page peel | Candidate | |
 | Poke | Localized push dent | Candidate | |
 | Polar | Rectangular-to-polar warp | Candidate | |
 | Refraction | Refract via a map image | Candidate | a second image input on an effect |
 | Ring Lens | Ring-shaped lens | Candidate | |
-| Ripple | Concentric water ripples | Planned | |
+| ✅ Ripple | Concentric water ripples — `org.gobofx.water-ripple` | Planned | |
 | Scrape | Smear pixels from an edge | Candidate | |
 | Sliced Scale | 9-slice scale preserving corners | Candidate | |
 | Sphere | Wrap onto a sphere | Candidate | |
@@ -209,16 +209,16 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 |---|---|---|---|
 | ✅ Film Grain | Grain or noise overlay — `org.gobofx.film-grain` | Core | |
 | ✅ Old Film | Scratches, dust, flicker — `org.gobofx.old-film` | Planned | |
-| Broken TV | Rolling scanline interference | Planned | |
+| ✅ Broken TV | Rolling scanline interference — `org.gobofx.broken-tv` | Planned | |
 | Circle Screen | Circular halftone screen | Candidate | |
 | Dot Grid | Image as a grid of dots | Candidate | |
 | Color Emboss | Emboss keeping color | Candidate | |
 | Comic | Ink-and-color comic look | Candidate | |
 | Crystallize | Voronoi crystal cells | Candidate | |
-| Edges | Edge detection | Planned | |
+| ✅ Edges | Edge detection — `org.gobofx.edges` | Planned | |
 | Extrude | 3D extruded alpha | Candidate | |
 | Fill | Solid or gradient fill of alpha | Candidate | |
-| Halftone | Print halftone dots | Planned | |
+| ✅ Halftone | Print halftone dots — `org.gobofx.halftone` | Planned | |
 | Hatched Screen | Crosshatch screen | Candidate | |
 | Highpass | Keep only fine detail | Candidate | |
 | Indent | Press the image into a surface | Candidate | |
@@ -234,19 +234,19 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 | Texture Screen | Texture-based screen | Candidate | bundled texture |
 | ✅ Vignette | Darkened edges — `org.gobofx.vignette` | Core | |
 | Wavy Screen | Wavy line screen | Candidate | |
-| Drop Shadow | Shadow behind a layer with alpha | Planned | |
+| ✅ Drop Shadow | Shadow behind a layer with alpha — `org.gobofx.drop-shadow` | Planned | |
 
 ### Glow
 
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
 | Aura | Soft halo | Candidate | |
-| Bloom | Highlights bleed | Planned | |
+| ✅ Bloom | Highlights bleed — `org.gobofx.bloom` | Planned | |
 | Dazzle | Star-shaped glints | Candidate | |
 | Glint | Specular glints | Candidate | |
 | Gloom | Dark, moody glow | Candidate | |
 | ✅ Glow | Brightness glow — `org.gobofx.glow` | Core | |
-| Light Rays | Volumetric rays | Planned | |
+| ✅ Light Rays | Volumetric rays — `org.gobofx.light-rays` | Planned | |
 | Neon | Neon edge glow | Candidate | |
 | Outer Glow | Glow outside alpha | Candidate | |
 | Overdrive | Blown-out glow | Candidate | |
@@ -261,7 +261,7 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 | Parallelogram Tile | Skewed tiles | Candidate | |
 | Perspective Tile | Tiles on a plane | Candidate | |
 | Random Tile | Shuffled tiles | Candidate | |
-| Tile | Grid repeat | Planned | |
+| ✅ Tile | Grid repeat — `org.gobofx.tile` | Planned | |
 | Triangle Tile | Triangular tiling | Candidate | |
 
 ### Border
@@ -269,7 +269,7 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 | Title | Short description | Priority | Needs |
 |---|---|---|---|
 | Bevel | Beveled edge | Candidate | |
-| Simple Border | Solid frame | Planned | |
+| ✅ Simple Border | Solid frame — `org.gobofx.simple-border` | Planned | |
 | Stroke | Outline around alpha | Candidate | |
 | ✅ Widescreen | Letterbox bars — `org.gobofx.widescreen` | Core | |
 

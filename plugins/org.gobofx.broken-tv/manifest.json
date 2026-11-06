@@ -1,0 +1,64 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.broken-tv",
+  "name": "Broken TV",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "speed",
+      "label": "Roll Speed",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.0,
+      "max": 4.0
+    },
+    {
+      "id": "band_height",
+      "label": "Band Height",
+      "type": "float",
+      "default": 30.0,
+      "min": 2.0,
+      "max": 100.0,
+      "unit": "%"
+    },
+    {
+      "id": "tear",
+      "label": "Tear",
+      "type": "float",
+      "default": 24.0,
+      "min": 0.0,
+      "max": 200.0,
+      "unit": "px"
+    },
+    {
+      "id": "noise",
+      "label": "Noise",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "fringing",
+      "label": "Color Fringing",
+      "type": "float",
+      "default": 3.0,
+      "min": 0.0,
+      "max": 20.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "broken-tv.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

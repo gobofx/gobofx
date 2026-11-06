@@ -1,0 +1,60 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.edges",
+  "name": "Edges",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.1,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "thickness",
+      "label": "Thickness",
+      "type": "float",
+      "default": 1.5,
+      "min": 1.0,
+      "max": 6.0,
+      "unit": "px"
+    },
+    {
+      "id": "mode",
+      "label": "Mode",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "Edges on Black",
+        "Edges over Source",
+        "Edges as Alpha"
+      ]
+    },
+    {
+      "id": "edge_color",
+      "label": "Edge Color",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "edges.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

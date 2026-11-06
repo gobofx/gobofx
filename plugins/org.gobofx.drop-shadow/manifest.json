@@ -1,0 +1,100 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.drop-shadow",
+  "name": "Drop Shadow",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "offset_x",
+      "label": "Offset X",
+      "type": "float",
+      "default": 12.0,
+      "min": -200.0,
+      "max": 200.0,
+      "unit": "px"
+    },
+    {
+      "id": "offset_y",
+      "label": "Offset Y",
+      "type": "float",
+      "default": 12.0,
+      "min": -200.0,
+      "max": 200.0,
+      "unit": "px"
+    },
+    {
+      "id": "blur",
+      "label": "Blur",
+      "type": "float",
+      "default": 10.0,
+      "min": 0.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "opacity",
+      "label": "Opacity",
+      "type": "float",
+      "default": 0.75,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "drop-shadow.wgsl",
+      "entry": "fs_offset",
+      "inputs": [
+        "source"
+      ],
+      "output": "silhouette"
+    },
+    {
+      "shader": "drop-shadow.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "silhouette"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "drop-shadow.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "shadow"
+    },
+    {
+      "shader": "drop-shadow.wgsl",
+      "entry": "fs_composite",
+      "inputs": [
+        "source",
+        "shadow"
+      ],
+      "output": "out"
+    }
+  ]
+}

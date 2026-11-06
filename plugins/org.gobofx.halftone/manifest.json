@@ -1,0 +1,71 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.halftone",
+  "name": "Halftone",
+  "kind": "effect",
+  "category": "stylize",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "size",
+      "label": "Dot Size",
+      "type": "float",
+      "default": 10.0,
+      "min": 2.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "angle",
+      "label": "Angle",
+      "type": "float",
+      "default": 45.0,
+      "min": 0.0,
+      "max": 180.0,
+      "unit": "deg"
+    },
+    {
+      "id": "mode",
+      "label": "Mode",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "Mono",
+        "CMYK"
+      ]
+    },
+    {
+      "id": "ink",
+      "label": "Ink",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "paper",
+      "label": "Paper",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "halftone.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
