@@ -1,0 +1,99 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.bloom-dissolve",
+  "name": "Bloom",
+  "kind": "transition",
+  "category": "light",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.5,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 32.0,
+      "min": 1.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "tint",
+      "label": "Tint",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "bloom-dissolve.wgsl",
+      "entry": "fs_mix",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "mixed"
+    },
+    {
+      "shader": "bloom-dissolve.wgsl",
+      "entry": "fs_bright",
+      "inputs": [
+        "mixed"
+      ],
+      "output": "bright"
+    },
+    {
+      "shader": "bloom-dissolve.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "bright"
+      ],
+      "output": "bright_h"
+    },
+    {
+      "shader": "bloom-dissolve.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "bright_h"
+      ],
+      "output": "blurred"
+    },
+    {
+      "shader": "bloom-dissolve.wgsl",
+      "entry": "fs_add",
+      "inputs": [
+        "mixed",
+        "blurred"
+      ],
+      "output": "out"
+    }
+  ]
+}

@@ -34,28 +34,28 @@ edge treatment. None of that is per-plugin work.
 | Dissolves | Flow | Morph-style dissolve that hides jump cuts in talking heads | Planned | optical flow (host-side) |
 | Dissolves | ✅ Divide | Frame splits into strips that reveal B — `org.gobofx.divide` | Planned | |
 | Blurs | ✅ Gaussian | Blur out A, blur in B; adjustable amount — `org.gobofx.blur-dissolve` | Planned | |
-| Blurs | Simple | Plain blur dissolve | Planned | |
+| Blurs | ✅ Simple | Plain blur dissolve — `org.gobofx.simple-blur` | Planned | |
 | Blurs | ✅ Zoom | Radial zoom blur through the cut — `org.gobofx.zoom-dissolve` | Planned | |
-| Blurs | Zoom & Pan | Zoom blur with directional pan | Planned | |
-| Lights | Bloom | Bright glow peaks at the edit point | Planned | |
+| Blurs | ✅ Zoom & Pan | Zoom blur with directional pan — `org.gobofx.zoom-pan` | Planned | |
+| Lights | ✅ Bloom | Bright glow peaks at the edit point — `org.gobofx.bloom-dissolve` | Planned | |
 | Lights | ✅ Flash | White flash-frame cut — `org.gobofx.flash` | Planned | |
 | Lights | ✅ Static | TV-noise channel change — `org.gobofx.static` | Planned | |
 | Movements | ✅ Doorway | A opens like double doors onto B — `org.gobofx.doorway` | Planned | |
-| Movements | Drop In | B drops into frame over A | Planned | |
-| Movements | Fall | A tips and falls away | Planned | |
+| Movements | ✅ Drop In | B drops into frame over A — `org.gobofx.drop-in` | Planned | |
+| Movements | ✅ Fall | A tips and falls away — `org.gobofx.fall` | Planned | |
 | Movements | ✅ Flip | 3D card flip from A to B — `org.gobofx.flip` | Planned | |
 | Movements | ✅ Mosaic | Tiles flip to reveal B — `org.gobofx.mosaic` | Planned | |
-| Movements | Page Curl | A peels like a page | Planned | |
-| Movements | Pinwheel | Rotating blades reveal B | Planned | |
+| Movements | ✅ Page Curl | A peels like a page — `org.gobofx.page-curl` | Planned | |
+| Movements | ✅ Pinwheel | Rotating blades reveal B — `org.gobofx.pinwheel` | Planned | |
 | Movements | ✅ Push | B pushes A off-frame — `org.gobofx.push` | Core | |
-| Movements | Puzzle | A breaks into jigsaw pieces | Planned | |
+| Movements | ✅ Puzzle | A breaks into jigsaw pieces — `org.gobofx.puzzle` | Planned | |
 | Movements | ✅ Ripple | Water ripple from a center point — `org.gobofx.ripple` | Planned | |
 | Movements | ✅ Scale | A shrinks or B grows to fill — `org.gobofx.scale` | Planned | |
 | Movements | ✅ Slide | B slides over A — `org.gobofx.slide` | Planned | |
 | Movements | ✅ Spin | A spins away into B — `org.gobofx.spin` | Planned | |
-| Movements | Spin Slide | Spin combined with slide | Planned | |
-| Movements | Swap | A and B trade places in 3D | Planned | |
-| Movements | Switch | Quick swap with motion blur | Planned | |
+| Movements | ✅ Spin Slide | Spin combined with slide — `org.gobofx.spin-slide` | Planned | |
+| Movements | ✅ Swap | A and B trade places in 3D — `org.gobofx.swap` | Planned | |
+| Movements | ✅ Switch | Quick swap with motion blur — `org.gobofx.switch` | Planned | |
 | Objects | Leaves | Falling leaves cover the cut | Planned | bundled textures |
 | Objects | Stars | Star shapes sweep through | Planned | |
 | Clones | Clones | A multiplies into a grid, resolves to B | Planned | |

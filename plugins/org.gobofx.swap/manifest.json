@@ -1,0 +1,50 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.swap",
+  "name": "Swap",
+  "kind": "transition",
+  "category": "movement",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "direction",
+      "label": "Direction",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "left",
+        "right",
+        "up",
+        "down"
+      ]
+    },
+    {
+      "id": "depth",
+      "label": "Depth",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "swap.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}
