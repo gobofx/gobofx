@@ -1,0 +1,70 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.droplet",
+  "name": "Droplet",
+  "kind": "effect",
+  "category": "distort",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.05,
+      "max": 2.0
+    },
+    {
+      "id": "rings",
+      "label": "Rings",
+      "type": "float",
+      "default": 4.0,
+      "min": 1.0,
+      "max": 30.0
+    },
+    {
+      "id": "amplitude",
+      "label": "Amplitude",
+      "type": "float",
+      "default": 0.06,
+      "min": 0.0,
+      "max": 0.2
+    },
+    {
+      "id": "decay",
+      "label": "Decay",
+      "type": "float",
+      "default": 0.2,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "phase",
+      "label": "Phase",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 20.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "droplet.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
