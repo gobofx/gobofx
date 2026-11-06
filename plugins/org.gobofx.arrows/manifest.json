@@ -1,0 +1,85 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.arrows",
+  "name": "Arrows",
+  "kind": "transition",
+  "category": "stylized",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "direction",
+      "label": "Direction",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "left to right",
+        "right to left",
+        "top to bottom",
+        "bottom to top"
+      ]
+    },
+    {
+      "id": "count",
+      "label": "Count",
+      "type": "int",
+      "default": 5,
+      "min": 1,
+      "max": 16
+    },
+    {
+      "id": "depth",
+      "label": "Depth",
+      "type": "float",
+      "default": 0.15,
+      "min": 0.02,
+      "max": 0.5
+    },
+    {
+      "id": "band",
+      "label": "Band",
+      "type": "float",
+      "default": 0.08,
+      "min": 0.0,
+      "max": 0.3
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        1.0,
+        0.55,
+        0.03,
+        1.0
+      ]
+    },
+    {
+      "id": "softness",
+      "label": "Softness",
+      "type": "float",
+      "default": 0.01,
+      "min": 0.0,
+      "max": 0.1
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "arrows.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

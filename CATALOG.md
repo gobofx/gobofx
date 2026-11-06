@@ -57,17 +57,17 @@ edge treatment. None of that is per-plugin work.
 | Movements | ✅ Swap | A and B trade places in 3D — `org.gobofx.swap` | Planned | |
 | Movements | ✅ Switch | Quick swap with motion blur — `org.gobofx.switch` | Planned | |
 | Objects | Leaves | Falling leaves cover the cut | Planned | bundled textures |
-| Objects | Stars | Star shapes sweep through | Planned | |
-| Clones | Clones | A multiplies into a grid, resolves to B | Planned | |
-| Clones | Clone Spin | Cloned tiles spin into B | Planned | |
-| Clones | Multi-Flip | Grid of tiles flips individually | Planned | |
-| Clones | Reflection | Mirrored clones on a reflective floor | Planned | |
-| Stylized | Arrows | Graphic arrows wipe across | Planned | |
-| Stylized | Billboard | B appears on a rotating billboard | Planned | |
-| Stylized | Band Sweep | Graphic band sweeps the lower frame | Planned | |
-| Stylized | Album | Clips as pages in a photo album | Planned | |
+| Objects | ✅ Stars | Star shapes sweep through — `org.gobofx.stars` | Planned | |
+| Clones | ✅ Clones | A multiplies into a grid, resolves to B — `org.gobofx.clones` | Planned | |
+| Clones | ✅ Clone Spin | Cloned tiles spin into B — `org.gobofx.clone-spin` | Planned | |
+| Clones | ✅ Multi-Flip | Grid of tiles flips individually — `org.gobofx.multi-flip` | Planned | |
+| Clones | ✅ Reflection | Mirrored clones on a reflective floor — `org.gobofx.reflection` | Planned | |
+| Stylized | ✅ Arrows | Graphic arrows wipe across — `org.gobofx.arrows` | Planned | |
+| Stylized | ✅ Billboard | B appears on a rotating billboard — `org.gobofx.billboard` | Planned | |
+| Stylized | ✅ Band Sweep | Graphic band sweeps the lower frame — `org.gobofx.band-sweep` | Planned | |
+| Stylized | ✅ Album | Clips as pages in a photo album — `org.gobofx.album` | Planned | |
 | Wipes | ✅ Band | Multiple bands wipe across — `org.gobofx.band-wipe` | Planned | |
-| Wipes | Center | Wipe opens from center | Planned | |
+| Wipes | ✅ Center | Wipe opens from center — `org.gobofx.center-wipe` | Planned | |
 | Wipes | ✅ Checker | Checkerboard wipe — `org.gobofx.checker-wipe` | Planned | |
 | Wipes | ✅ Clock | Radial clock-hand sweep — `org.gobofx.clock-wipe` | Planned | |
 | Wipes | Gradient Image | Wipe shaped by a grayscale image | Planned | a third image input |

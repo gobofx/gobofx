@@ -1,0 +1,56 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.album",
+  "name": "Album",
+  "kind": "transition",
+  "category": "stylized",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "direction",
+      "label": "Direction",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "right page turns",
+        "left page turns"
+      ]
+    },
+    {
+      "id": "perspective",
+      "label": "Perspective",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "shadow",
+      "label": "Shadow",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "album.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

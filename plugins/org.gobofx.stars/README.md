@@ -1,11 +1,12 @@
 # Stars
 
-A field of five-point stars drifts across the cut, each swelling until
-together they cover the frame, then shrinking away to leave `to`. The stars
-are drawn procedurally, so they stay crisp at any size.
+Five-point stars sweep across the cut from left to right. Each star swells
+over its own patch of the frame, the patch beneath it becomes `to` while it
+is covered, and the star shrinks away to reveal it. The stars are drawn
+procedurally, so they stay crisp at any size.
 
 - **Count** — stars in the field (1–24).
-- **Size** — star scale; 1 covers the frame at the midpoint, less leaves gaps that dissolve.
+- **Size** — star scale; 1 lets each star cover its patch, less leaves gaps that dissolve late.
 - **Color** — the star fill (alpha respected).
 - **Ease** — timing.
 

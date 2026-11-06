@@ -1,0 +1,54 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.clone-spin",
+  "name": "Clone Spin",
+  "kind": "transition",
+  "category": "clone",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "grid",
+      "label": "Grid",
+      "type": "int",
+      "default": 4,
+      "min": 2,
+      "max": 12
+    },
+    {
+      "id": "turns",
+      "label": "Turns",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.25,
+      "max": 3.0
+    },
+    {
+      "id": "stagger",
+      "label": "Stagger",
+      "type": "float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "clone-spin.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.reflection",
+  "name": "Reflection",
+  "kind": "transition",
+  "category": "clone",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "size",
+      "label": "Size",
+      "type": "float",
+      "default": 0.72,
+      "min": 0.4,
+      "max": 0.9
+    },
+    {
+      "id": "reflection",
+      "label": "Reflection",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "reflection.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}

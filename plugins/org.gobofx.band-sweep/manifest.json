@@ -1,0 +1,92 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.band-sweep",
+  "name": "Band Sweep",
+  "kind": "transition",
+  "category": "stylized",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "direction",
+      "label": "Direction",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "left to right",
+        "right to left"
+      ]
+    },
+    {
+      "id": "height",
+      "label": "Height",
+      "type": "float",
+      "default": 0.22,
+      "min": 0.05,
+      "max": 0.5
+    },
+    {
+      "id": "offset",
+      "label": "Offset",
+      "type": "float",
+      "default": 0.1,
+      "min": 0.0,
+      "max": 0.5
+    },
+    {
+      "id": "width",
+      "label": "Width",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.1,
+      "max": 1.0
+    },
+    {
+      "id": "slant",
+      "label": "Slant",
+      "type": "float",
+      "default": 12.0,
+      "min": -40.0,
+      "max": 40.0,
+      "unit": "deg"
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        0.8,
+        0.04,
+        0.03,
+        1.0
+      ]
+    },
+    {
+      "id": "softness",
+      "label": "Softness",
+      "type": "float",
+      "default": 0.01,
+      "min": 0.0,
+      "max": 0.1
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "band-sweep.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}
