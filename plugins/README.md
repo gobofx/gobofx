@@ -32,8 +32,16 @@ plugins/
 - **Licence is the repo's**, MIT OR Apache-2.0, DCO sign-off on every commit
   (`git commit -s`). A plugin that differs adds its own `LICENSE` and sets
   `manifest.license`.
-- **Every plugin validates** with the reference crate before it is merged:
-  `cargo run -p gobofx -- validate plugins/<id>`.
+- **Every plugin verifies** with the reference crate before it is merged:
+  `tools/verify-all.sh plugins/<id>` (= `gobofx verify`: validation, a render
+  matrix derived from the manifest, and the contract checks — transition
+  endpoints, every param live, deterministic, finite output). Read
+  `plugins/<id>/dist/verify/report.json` and look at `sheet.png`. An optional
+  `verify.json` in the plugin folder tunes the matrix (`source`, `inert`,
+  `identity`, `flat`); it is never packed.
+- **`icon.png` and `preview.png` are renders**, written by
+  `ASSETS=1 tools/verify-all.sh plugins/<id>` (the default case at 512×288,
+  and a 128×128 centre crop of it). Don't hand-draw them.
 - **Kinds**: `effect` (one input, `source`), `transition` (`from` + `to` +
   `progress`), `generator` (no input).
 - **Category** is one of the catalogue's groups, as a lowercase slug.

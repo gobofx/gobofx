@@ -41,6 +41,10 @@ enum Cmd {
     },
     /// Render the plugin to PNG on the GPU (validates first).
     Render(RenderArgs),
+    /// Render a case matrix derived from the manifest, check the contracts
+    /// (endpoints, param liveness, determinism, finite output …) and write
+    /// `report.json` + a labelled `sheet.png` per plugin. Exit 1 on any failed check.
+    Verify(VerifyArgs),
     /// Pack a plugin folder into a `.gobofx` package (validates first).
     /// Prints the package path; default `<dir>/dist/<id>-<version>.gobofx`.
     Pack {
@@ -87,6 +91,27 @@ struct RenderArgs {
     #[arg(long, default_value = "frames")]
     out_dir: PathBuf,
     /// Machine-readable summary
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Args)]
+struct VerifyArgs {
+    /// Plugin folder(s) containing manifest.json
+    dirs: Vec<PathBuf>,
+    /// Output folder for one plugin (default: <dir>/dist/verify). With several plugins, each keeps its own.
+    #[arg(long)]
+    out_dir: Option<PathBuf>,
+    /// Where the multi-plugin `index.json` and `all.png` overview go
+    #[arg(long, default_value = "dist/verify")]
+    summary_dir: PathBuf,
+    /// Also write `preview.png` (512×288) and `icon.png` (128×128) into each plugin folder
+    #[arg(long)]
+    assets: bool,
+    /// Skip the 1280×720 timed render
+    #[arg(long)]
+    no_perf: bool,
+    /// Machine-readable report (one plugin: the report; several: the index)
     #[arg(long)]
     json: bool,
 }
@@ -158,6 +183,7 @@ fn run() -> Result<ExitCode> {
             Ok(if report.ok { ExitCode::SUCCESS } else { ExitCode::from(1) })
         }
         Cmd::Render(args) => render(args),
+        Cmd::Verify(args) => verify(args),
         Cmd::Pack { dir, out, json } => {
             let plugin = Plugin::load(&dir)?;
             let report = validate::validate(&plugin);
@@ -328,4 +354,134 @@ fn render(args: RenderArgs) -> Result<ExitCode> {
         }
     }
     Ok(ExitCode::SUCCESS)
+}
+
+fn verify(args: VerifyArgs) -> Result<ExitCode> {
+    use gobofx::verify::{self as v, Status};
+    if args.dirs.is_empty() {
+        bail!("verify needs at least one plugin folder");
+    }
+    let host = Host::new().context(
+        "no GPU adapter; on a headless Linux box run `source tools/gpu-env.sh` first (SwiftShader), or set WGPU_BACKEND",
+    )?;
+    let opts = v::Options { out_dir: if args.dirs.len() == 1 { args.out_dir.clone() } else { None }, assets: args.assets, no_perf: args.no_perf };
+
+    let mut reports = Vec::new();
+    for dir in &args.dirs {
+        let report = match v::verify(&host, dir, &opts) {
+            Ok(r) => r,
+            Err(e) => {
+                // A plugin that cannot even be loaded still gets a row, so a batch run reports it.
+                eprintln!("{}: {e:#}", dir.display());
+                let id = dir.file_name().map(|f| f.to_string_lossy().to_string()).unwrap_or_default();
+                let mut r = v::Report {
+                    ok: false, id, version: String::new(), kind: Kind::Effect, adapter: host.adapter_name.clone(),
+                    backend: host.backend.clone(), software_gpu: false, out_dir: dir.join("dist").join("verify").display().to_string(),
+                    cases: vec![], checks: vec![v::Check { name: "load".into(), status: Status::Fail, detail: format!("{e:#}") }],
+                    animated: None, summary: v::Summary { pass: 0, warn: 0, fail: 1 }, sheet: None,
+                };
+                r.ok = false;
+                r
+            }
+        };
+        if std::path::Path::new(&report.out_dir).is_dir() {
+            v::write_report(&report)?;
+        }
+        if !args.json || args.dirs.len() > 1 {
+            print_verify(&report);
+        }
+        reports.push(report);
+    }
+
+    if args.dirs.len() == 1 {
+        if args.json {
+            println!("{}", serde_json::to_string_pretty(&reports[0])?);
+        }
+        return Ok(if reports[0].ok { ExitCode::SUCCESS } else { ExitCode::from(1) });
+    }
+
+    // Batch: index + overview sheet.
+    std::fs::create_dir_all(&args.summary_dir)?;
+    let mut cells = Vec::new();
+    for r in &reports {
+        let worst = r.checks.iter().map(|c| c.status).max().unwrap_or(Status::Pass);
+        let img = r
+            .cases
+            .iter()
+            .find(|c| c.role == v::Role::Baseline)
+            .and_then(|c| c.path.as_ref())
+            .and_then(|p| Image::load_png(std::path::Path::new(p)).ok())
+            .unwrap_or(Image { width: 4, height: 4, rgba8: vec![0; 64] });
+        let short = r.id.strip_prefix("org.gobofx.").unwrap_or(&r.id).to_string();
+        cells.push((short, worst, img));
+    }
+    let all_png = args.summary_dir.join("all.png");
+    v::sheet::write_overview(&all_png, &format!("{} plugins on {}", reports.len(), host.adapter_name), &cells, v::CASE_SIZE, 5)?;
+    #[derive(Serialize)]
+    struct Row<'a> { ok: bool, id: &'a str, version: &'a str, kind: Kind, fail: usize, warn: usize, pass: usize, report: String, sheet: Option<&'a str>, failed: Vec<&'a str> }
+    #[derive(Serialize)]
+    struct Index<'a> { ok: bool, adapter: &'a str, backend: &'a str, software_gpu: bool, overview: String, plugins: Vec<Row<'a>> }
+    let index = Index {
+        ok: reports.iter().all(|r| r.ok),
+        adapter: &host.adapter_name,
+        backend: &host.backend,
+        software_gpu: reports.first().map(|r| r.software_gpu).unwrap_or(false),
+        overview: all_png.display().to_string(),
+        plugins: reports
+            .iter()
+            .map(|r| Row {
+                ok: r.ok,
+                id: &r.id,
+                version: &r.version,
+                kind: r.kind,
+                fail: r.summary.fail,
+                warn: r.summary.warn,
+                pass: r.summary.pass,
+                report: std::path::Path::new(&r.out_dir).join("report.json").display().to_string(),
+                sheet: r.sheet.as_deref(),
+                failed: r.checks.iter().filter(|c| c.status == Status::Fail).map(|c| c.name.as_str()).collect(),
+            })
+            .collect(),
+    };
+    let index_path = args.summary_dir.join("index.json");
+    std::fs::write(&index_path, serde_json::to_string_pretty(&index)?)?;
+    if args.json {
+        println!("{}", serde_json::to_string_pretty(&index)?);
+    } else {
+        let failed = reports.iter().filter(|r| !r.ok).count();
+        println!(
+            "{} {}/{} plugins pass · {} · {}",
+            if failed == 0 { "OK  " } else { "FAIL" },
+            reports.len() - failed,
+            reports.len(),
+            index_path.display(),
+            all_png.display()
+        );
+    }
+    Ok(if index.ok { ExitCode::SUCCESS } else { ExitCode::from(1) })
+}
+
+fn print_verify(r: &gobofx::verify::Report) {
+    use gobofx::verify::Status;
+    println!(
+        "{} {}@{} ({:?}) — {} cases, {} checks: {} pass, {} warn, {} fail{}",
+        if r.ok { "OK  " } else { "FAIL" },
+        r.id,
+        r.version,
+        r.kind,
+        r.cases.len(),
+        r.checks.len(),
+        r.summary.pass,
+        r.summary.warn,
+        r.summary.fail,
+        r.animated.map(|a| if a { " · animated" } else { " · static" }).unwrap_or(""),
+    );
+    for c in &r.checks {
+        if c.status != Status::Pass {
+            println!("  {}: {}: {}", if c.status == Status::Fail { "fail" } else { "warn" }, c.name, c.detail);
+        }
+    }
+    if let Some(s) = &r.sheet {
+        println!("  sheet {s}");
+    }
 }

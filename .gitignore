@@ -63,3 +63,8 @@ apps/site/src/lib/wasm/
 
 # packed plugins (gobofx pack)
 plugins/*/dist/
+
+# gobofx verify output (per plugin and the batch overview)
+plugins/*/dist/
+spec/examples/*/dist/
+/dist/
