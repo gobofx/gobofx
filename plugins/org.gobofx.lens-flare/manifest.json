@@ -1,0 +1,71 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.lens-flare",
+  "name": "Lens Flare",
+  "kind": "generator",
+  "category": "light",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "center",
+      "label": "Light",
+      "type": "point",
+      "default": [
+        0.3,
+        0.3
+      ]
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "ghosts",
+      "label": "Ghosts",
+      "type": "int",
+      "default": 6,
+      "min": 0,
+      "max": 12
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        1.0,
+        0.85,
+        0.6,
+        1.0
+      ]
+    },
+    {
+      "id": "streak",
+      "label": "Streak",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "size",
+      "label": "Size",
+      "type": "float",
+      "default": 0.15,
+      "min": 0.02,
+      "max": 0.6
+    }
+  ],
+  "passes": [
+    {
+      "shader": "lens-flare.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}

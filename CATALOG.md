@@ -299,6 +299,8 @@ spec questions.
 
 A generator takes no input image (`kind: "generator"`, added to spec 0.1 on
 2026-10-15).
+Categories: `solid`, `gradient`, `noise`, `pattern`, `shapes`, `light` (light
+sources and film artefacts that sit over footage).
 
 | Title | Short description | Priority |
 |---|---|---|
@@ -307,6 +309,16 @@ A generator takes no input image (`kind: "generator"`, added to spec 0.1 on
 | ✅ Noise | Value, Perlin and cellular noise — `org.gobofx.noise` (and `org.gobofx.plasma`) | Planned |
 | ✅ Patterns | Checker, stripes, grid, dots — `org.gobofx.checkerboard`, `stripes`, `grid`, `dots`, `color-bars` | Planned |
 | ✅ Shapes | Rectangle, ellipse, polygon, star with fill and stroke — `org.gobofx.shape` | Planned |
+| ✅ Spotlight | A soft light pool over transparent: centre, radius, aspect, softness, colour — `org.gobofx.spotlight` | Planned |
+| ✅ Sunburst | Rays radiating from a centre, turning with speed — `org.gobofx.sunburst` | Planned |
+| ✅ Starfield | Hash-per-cell stars on a sky, twinkling; background alpha 0 to stack — `org.gobofx.starfield` | Planned |
+| ✅ Scanlines | Horizontal lines over transparent, optional roll — `org.gobofx.scanlines` | Planned |
+| ✅ Hex Grid | Honeycomb lines over transparent, optional fill — `org.gobofx.hex-grid` | Planned |
+| ✅ Caustics | Underwater light web, two drifting cellular layers — `org.gobofx.caustics` | Planned |
+| ✅ Clouds | Self-warped fBm cumulus over a sky colour, drifting — `org.gobofx.clouds` | Planned |
+| ✅ Lens Flare | Source glow, anamorphic streak and tinted ghosts over transparent — `org.gobofx.lens-flare` | Planned |
+| ✅ Light Leak | Warm noise-shaped leaks creeping in from an edge, drifting — `org.gobofx.light-leak` | Planned |
+| ✅ Film Burn | A burning-film front eating in from an edge, boiling with time — `org.gobofx.film-burn` | Planned |
 
 ## Editor features, not plugins
 

@@ -1,0 +1,61 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.light-leak",
+  "name": "Light Leak",
+  "kind": "generator",
+  "category": "light",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "hue",
+      "label": "Hue Shift",
+      "type": "float",
+      "default": 0.0,
+      "min": -180.0,
+      "max": 180.0,
+      "unit": "deg"
+    },
+    {
+      "id": "scale",
+      "label": "Scale",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.25,
+      "max": 4.0
+    },
+    {
+      "id": "speed",
+      "label": "Speed",
+      "type": "float",
+      "default": 0.2,
+      "min": 0.0,
+      "max": 4.0
+    },
+    {
+      "id": "angle",
+      "label": "Angle",
+      "type": "float",
+      "default": 0.0,
+      "min": -180.0,
+      "max": 180.0,
+      "unit": "deg"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "light-leak.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}
