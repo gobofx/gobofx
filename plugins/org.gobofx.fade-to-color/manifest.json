@@ -1,0 +1,49 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.fade-to-color",
+  "name": "Fade To Color",
+  "kind": "transition",
+  "category": "dissolve",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": "hold",
+      "label": "Hold",
+      "type": "float",
+      "default": 0.2,
+      "min": 0.0,
+      "max": 0.9
+    },
+    {
+      "id": "ease",
+      "label": "Ease",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "fade-to-color.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "from",
+        "to"
+      ],
+      "output": "out"
+    }
+  ]
+}
