@@ -1,0 +1,56 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.simple-border",
+  "name": "Simple Border",
+  "kind": "effect",
+  "category": "border",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "width",
+      "label": "Width",
+      "type": "float",
+      "default": 24.0,
+      "min": 0.0,
+      "max": 128.0,
+      "unit": "px"
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "corner_radius",
+      "label": "Corner Radius",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 128.0,
+      "unit": "px"
+    },
+    {
+      "id": "inset",
+      "label": "Inset",
+      "type": "bool",
+      "default": true
+    }
+  ],
+  "passes": [
+    {
+      "shader": "simple-border.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

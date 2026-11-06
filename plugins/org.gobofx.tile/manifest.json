@@ -1,0 +1,60 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.tile",
+  "name": "Tile",
+  "kind": "effect",
+  "category": "tiling",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "columns",
+      "label": "Columns",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 12
+    },
+    {
+      "id": "rows",
+      "label": "Rows",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 12
+    },
+    {
+      "id": "mirror",
+      "label": "Mirror",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "id": "offset",
+      "label": "Row Offset",
+      "type": "float",
+      "default": 0.0,
+      "min": -0.5,
+      "max": 0.5
+    },
+    {
+      "id": "gap",
+      "label": "Gap",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 32.0,
+      "unit": "px"
+    }
+  ],
+  "passes": [
+    {
+      "shader": "tile.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

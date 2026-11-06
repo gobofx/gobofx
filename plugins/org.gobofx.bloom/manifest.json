@@ -1,0 +1,90 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.bloom",
+  "name": "Bloom",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.7,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 40.0,
+      "min": 1.0,
+      "max": 64.0,
+      "unit": "px"
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "tint",
+      "label": "Tint",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "bloom.wgsl",
+      "entry": "fs_bright",
+      "inputs": [
+        "source"
+      ],
+      "output": "bright"
+    },
+    {
+      "shader": "bloom.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 1.0,
+        "DIR_Y": 0.0
+      },
+      "inputs": [
+        "bright"
+      ],
+      "output": "h"
+    },
+    {
+      "shader": "bloom.wgsl",
+      "entry": "fs_blur",
+      "constants": {
+        "DIR_X": 0.0,
+        "DIR_Y": 1.0
+      },
+      "inputs": [
+        "h"
+      ],
+      "output": "blurred"
+    },
+    {
+      "shader": "bloom.wgsl",
+      "entry": "fs_add",
+      "inputs": [
+        "source",
+        "blurred"
+      ],
+      "output": "out"
+    }
+  ]
+}

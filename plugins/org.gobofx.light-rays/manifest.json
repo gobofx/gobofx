@@ -1,0 +1,71 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.light-rays",
+  "name": "Light Rays",
+  "kind": "effect",
+  "category": "glow",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "light",
+      "label": "Light",
+      "type": "point",
+      "default": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "id": "length",
+      "label": "Length",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "decay",
+      "label": "Decay",
+      "type": "float",
+      "default": 0.95,
+      "min": 0.5,
+      "max": 1.0
+    },
+    {
+      "id": "intensity",
+      "label": "Intensity",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 3.0
+    },
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.6,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "light-rays.wgsl",
+      "entry": "fs_bright",
+      "inputs": [
+        "source"
+      ],
+      "output": "bright"
+    },
+    {
+      "shader": "light-rays.wgsl",
+      "entry": "fs_rays",
+      "inputs": [
+        "source",
+        "bright"
+      ],
+      "output": "out"
+    }
+  ]
+}

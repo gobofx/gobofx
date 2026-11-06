@@ -1,0 +1,56 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.defocus",
+  "name": "Defocus",
+  "kind": "effect",
+  "category": "blur",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "radius",
+      "label": "Radius",
+      "type": "float",
+      "default": 16.0,
+      "min": 0.0,
+      "max": 48.0,
+      "unit": "px"
+    },
+    {
+      "id": "shape",
+      "label": "Bokeh Shape",
+      "type": "choice",
+      "default": 0,
+      "options": [
+        "disc",
+        "hexagon"
+      ]
+    },
+    {
+      "id": "highlight_boost",
+      "label": "Highlight Boost",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 4.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "defocus.wgsl",
+      "entry": "fs_bokeh",
+      "inputs": [
+        "source"
+      ],
+      "output": "bokeh"
+    },
+    {
+      "shader": "defocus.wgsl",
+      "entry": "fs_smooth",
+      "inputs": [
+        "bokeh"
+      ],
+      "output": "out"
+    }
+  ]
+}
