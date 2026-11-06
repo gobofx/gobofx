@@ -1,0 +1,49 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.luma-key",
+  "name": "Luma Keyer",
+  "kind": "effect",
+  "category": "masks",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "type": "float",
+      "default": 0.4,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "softness",
+      "label": "Softness",
+      "type": "float",
+      "default": 0.12,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "invert",
+      "label": "Invert",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "id": "show_matte",
+      "label": "Show Matte",
+      "type": "bool",
+      "default": false
+    }
+  ],
+  "passes": [
+    {
+      "shader": "luma-key.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

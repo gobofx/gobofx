@@ -1,0 +1,93 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.color-balance",
+  "name": "Color Balance",
+  "kind": "effect",
+  "category": "color",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "shadows_red",
+      "label": "Shadows Cyan-Red",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "shadows_green",
+      "label": "Shadows Magenta-Green",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "shadows_blue",
+      "label": "Shadows Yellow-Blue",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "midtones_red",
+      "label": "Midtones Cyan-Red",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "midtones_green",
+      "label": "Midtones Magenta-Green",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "midtones_blue",
+      "label": "Midtones Yellow-Blue",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "highlights_red",
+      "label": "Highlights Cyan-Red",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "highlights_green",
+      "label": "Highlights Magenta-Green",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "id": "highlights_blue",
+      "label": "Highlights Yellow-Blue",
+      "type": "float",
+      "default": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    }
+  ],
+  "passes": [
+    {
+      "shader": "color-balance.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}

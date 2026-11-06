@@ -1,0 +1,71 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.corner-mask",
+  "name": "Corner Mask",
+  "kind": "effect",
+  "category": "masks",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "top_left",
+      "label": "Top Left",
+      "type": "point",
+      "default": [
+        0.2,
+        0.1
+      ]
+    },
+    {
+      "id": "top_right",
+      "label": "Top Right",
+      "type": "point",
+      "default": [
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "id": "bottom_right",
+      "label": "Bottom Right",
+      "type": "point",
+      "default": [
+        0.95,
+        0.9
+      ]
+    },
+    {
+      "id": "bottom_left",
+      "label": "Bottom Left",
+      "type": "point",
+      "default": [
+        0.05,
+        0.9
+      ]
+    },
+    {
+      "id": "feather",
+      "label": "Feather",
+      "type": "float",
+      "default": 0.05,
+      "min": 0.0,
+      "max": 0.5
+    },
+    {
+      "id": "invert",
+      "label": "Invert",
+      "type": "bool",
+      "default": false
+    }
+  ],
+  "passes": [
+    {
+      "shader": "corner-mask.wgsl",
+      "entry": "fs_main",
+      "inputs": [
+        "source"
+      ],
+      "output": "out"
+    }
+  ]
+}
