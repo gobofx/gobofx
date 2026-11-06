@@ -134,16 +134,16 @@ Adjustments), not a shader each: `manifest.presets[]` (spec/manifest.md
 | ✅ Warm Sun | Warm, sunny grade — `org.gobofx.color-adjustments` preset `warm_sun` | Candidate |
 | ✅ Chrome | Punchy, saturated look — `org.gobofx.color-adjustments` preset `chrome` | Candidate |
 | ✅ Cool | Blue-shifted grade — `org.gobofx.color-adjustments` preset `cool` | Candidate |
-| Faded Film | Lifted blacks, faded print | Candidate |
-| Instant Camera | Instant-photo look | Candidate |
+| ✅ Faded Film | Lifted blacks, faded print — `org.gobofx.lut` preset `faded_film` | Candidate |
+| ✅ Instant Camera | Instant-photo look — `org.gobofx.lut` preset `instant_camera` | Candidate |
 | ✅ Mono | Black and white — `org.gobofx.color-adjustments` preset `mono` | Candidate |
 | ✅ Desert | Dry, dusty grade — `org.gobofx.color-adjustments` preset `desert` | Candidate |
 | ✅ Urban | Cool, high-contrast city look — `org.gobofx.color-adjustments` preset `urban` | Candidate |
 | ✅ Noir | High-contrast black and white — `org.gobofx.color-adjustments` preset `noir` | Candidate |
-| Cross Process | Cross-processed color shift | Candidate |
-| Vintage | Period film stock look | Candidate |
-| Soft Tonal | Soft black-and-white tonal | Candidate |
-| Print Transfer | Old print transfer | Candidate |
+| ✅ Cross Process | Cross-processed color shift — `org.gobofx.lut` preset `cross_process` | Candidate |
+| ✅ Vintage | Period film stock look — `org.gobofx.lut` preset `vintage` | Candidate |
+| ✅ Soft Tonal | Soft black-and-white tonal — `org.gobofx.lut` preset `soft_tonal` | Candidate |
+| ✅ Print Transfer | Old print transfer — `org.gobofx.lut` preset `print_transfer` | Candidate |
 
 ### Blur
 
