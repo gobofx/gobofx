@@ -521,6 +521,27 @@ pub fn mean_abs_diff(a: &[u8], b: &[u8]) -> f32 {
     sum as f32 / a.len() as f32
 }
 
+/// `max_abs_diff` for a render against a straight-alpha reference: where the
+/// reference pixel's alpha is 0 its colour is undefined, so only the alpha
+/// channel is compared there.
+pub fn max_abs_diff_premul(render: &[u8], reference: &[u8]) -> u8 {
+    if render.len() != reference.len() || render.len() % 4 != 0 {
+        return u8::MAX;
+    }
+    render
+        .chunks_exact(4)
+        .zip(reference.chunks_exact(4))
+        .map(|(x, y)| {
+            if y[3] == 0 {
+                (x[3] as i32 - y[3] as i32).unsigned_abs() as u8
+            } else {
+                x.iter().zip(y).map(|(p, q)| (*p as i32 - *q as i32).unsigned_abs() as u8).max().unwrap_or(0)
+            }
+        })
+        .max()
+        .unwrap_or(0)
+}
+
 pub fn max_abs_diff(a: &[u8], b: &[u8]) -> u8 {
     if a.len() != b.len() {
         return u8::MAX;
@@ -870,9 +891,11 @@ pub fn verify(host: &Host, dir: &Path, opts: &Options) -> Result<Report> {
         }
     }
 
-    // Identity.
+    // Identity. Compared in premultiplied terms: a fixture pixel with alpha 0
+    // may carry colour in the PNG, but no plugin can emit colour under zero
+    // alpha, so there only alpha is compared.
     if let (Some(r), Some(src)) = (find(&Role::Identity), inputs.get("source")) {
-        let d = max_abs_diff(&r.image.rgba8, &src.rgba8);
+        let d = max_abs_diff_premul(&r.image.rgba8, &src.rgba8);
         checks.push(Check {
             name: "identity".into(),
             status: if d <= ENDPOINT_MAX_DIFF { Status::Pass } else { Status::Fail },
@@ -1371,6 +1394,16 @@ mod tests {
                 assert!(!c.params.is_empty(), "{}", c.name);
             }
         }
+    }
+
+    #[test]
+    fn identity_diff_ignores_colour_under_zero_alpha() {
+        let reference = [255u8, 120, 40, 0, 10, 20, 30, 255];
+        let render = [0u8, 0, 0, 0, 10, 20, 30, 255];
+        assert_eq!(max_abs_diff_premul(&render, &reference), 0);
+        assert_eq!(max_abs_diff(&render, &reference), 255);
+        let wrong_alpha = [0u8, 0, 0, 9, 10, 20, 30, 255];
+        assert_eq!(max_abs_diff_premul(&wrong_alpha, &reference), 9);
     }
 
     #[test]
