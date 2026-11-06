@@ -1,0 +1,30 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.solid",
+  "name": "Solid",
+  "kind": "generator",
+  "category": "solid",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "color",
+      "label": "Color",
+      "type": "color",
+      "default": [
+        0.1,
+        0.1,
+        0.12,
+        1.0
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "solid.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}

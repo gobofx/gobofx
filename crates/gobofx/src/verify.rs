@@ -40,7 +40,10 @@ pub const ICON_SIZE: u32 = 128;
 /// (`mix(p, smoothstep(p), ease)` has a fixed point there), and 0.35 keeps
 /// the picture clearly mid-transition.
 pub const SWEEP_PROGRESS: f32 = 0.35;
-pub const TIME_LATER: f32 = 1.5;
+/// Every case runs at this `time`, not 0: a `speed` or phase param is inert
+/// at t=0 and would fail its liveness check for no reason.
+pub const TIME_BASE: f32 = 1.0;
+pub const TIME_LATER: f32 = 2.5;
 
 /// Pixel tolerances in 8-bit sRGB: a transition endpoint may differ from its
 /// input by the round trip through rgba16float, and a param is "live" when
@@ -207,6 +210,11 @@ fn sweep_values(p: &Param) -> Vec<(String, String)> {
                 (Some(lo), Some(hi)) => {
                     if lo != d { out.push(("min".into(), text(lo))); }
                     if hi != d { out.push(("max".into(), text(hi))); }
+                    // A periodic param (angle 0..360, rotation ±180, a speed
+                    // that is whole cycles at t=1) can look identical at both
+                    // ends; an off-centre interior value is never a period.
+                    let mid = lo + (hi - lo) * 0.37;
+                    if !is_int && mid != d { out.push(("mid".into(), text(mid))); }
                 }
                 (Some(lo), None) => {
                     if lo != d { out.push(("min".into(), text(lo))); }
@@ -259,7 +267,7 @@ pub fn cases(m: &Manifest, tuning: &Tuning, perf: bool) -> Vec<Case> {
         params: BTreeMap::new(),
         signals: BTreeMap::new(),
         progress: base_progress,
-        time: 0.0,
+        time: TIME_BASE,
         width: w,
         height: h,
         role,
@@ -929,7 +937,7 @@ mod tests {
         assert!(names.contains(&"progress-1.00"));
         // choice: the two non-default options; float min skipped when equal to default
         assert!(names.contains(&"p-direction-b") && names.contains(&"p-direction-c") && !names.contains(&"p-direction-a"));
-        assert!(names.contains(&"p-softness-min") && names.contains(&"p-softness-max"));
+        assert!(names.contains(&"p-softness-min") && names.contains(&"p-softness-max") && names.contains(&"p-softness-mid"));
         assert!(!names.contains(&"p-ease-min") && names.contains(&"p-ease-max"));
         assert!(names.contains(&"p-flag-on"));
         // colour default is green, so the sweep picks magenta

@@ -1,0 +1,75 @@
+{
+  "gobofx": "0.1",
+  "id": "org.gobofx.grid",
+  "name": "Grid",
+  "kind": "generator",
+  "category": "pattern",
+  "version": "1.0.0",
+  "license": "MIT OR Apache-2.0",
+  "params": [
+    {
+      "id": "line_color",
+      "label": "Line",
+      "type": "color",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "background",
+      "label": "Background",
+      "type": "color",
+      "default": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": "columns",
+      "label": "Columns",
+      "type": "int",
+      "default": 8,
+      "min": 1,
+      "max": 64
+    },
+    {
+      "id": "rows",
+      "label": "Rows",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 64
+    },
+    {
+      "id": "line_width",
+      "label": "Line Width",
+      "type": "float",
+      "default": 2.0,
+      "min": 0.5,
+      "max": 32.0,
+      "unit": "px"
+    },
+    {
+      "id": "center",
+      "label": "Center",
+      "type": "point",
+      "default": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "shader": "grid.wgsl",
+      "entry": "fs_main",
+      "inputs": [],
+      "output": "out"
+    }
+  ]
+}
